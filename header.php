@@ -120,9 +120,6 @@ $totalFav  = count($_SESSION['favorite']);
 .nav-menu .nav-link::after{
   display:none;
 }
-.nav-menu .nav-link.active {
-    color: #ff7a00 !important;
-}
 
 </style>
 
