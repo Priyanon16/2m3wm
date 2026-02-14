@@ -129,7 +129,7 @@
     <div class="row justify-content-center">
         <div class="col-lg-10">
             <div class="welcome-card mb-5 text-center">
-                <h1 class="h2 mb-2">ยินดีต้อนรับกลับมา, <span class="admin-name"><?php echo htmlspecialchars($_SESSION['aname']); ?></span> 👋</h1>
+                <h1 class="h2 mb-2">ยินดีต้อนรับกลับมา, <span class="admin-name"><?php echo htmlspecialchars($_SESSION['uname']); ?></span> 👋</h1>
                 <p class="mb-0 text-muted">เลือกเมนูที่ต้องการจัดการเพื่ออัปเดตข้อมูลหน้าร้าน Sneaker ของคุณ</p>
             </div>
         </div>
