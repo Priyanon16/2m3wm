@@ -120,13 +120,8 @@ $totalFav  = count($_SESSION['favorite']);
 .nav-menu .nav-link::after{
   display:none;
 }
-/* เอาสีน้ำเงินของ Bootstrap ออก */
-.nav-menu .nav-link,
-.nav-menu .nav-link:focus,
-.nav-menu .nav-link:active,
 .nav-menu .nav-link.active {
-    color: #ddd !important;
-    box-shadow: none !important;
+    color: #ff7a00 !important;
 }
 
 </style>
