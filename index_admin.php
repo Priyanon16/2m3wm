@@ -132,6 +132,7 @@
         </div>
     </div>
 
+    
     <div class="row g-4 justify-content-center">
         <div class="col-md-4 col-sm-6">
             <a href="edit_product.php" class="menu-card">

@@ -17,16 +17,20 @@ include_once("connectdb.php");
     </style>
 </head>
 <body>
+
 <header>
     <div class="container d-flex justify-content-between align-items-center">
         <h4 class="mb-0"><i class="bi bi-people me-2"></i>จัดการลูกค้า</h4>
-        <a href="index.php" class="btn btn-outline-light btn-sm"><i class="bi bi-house-door"></i> กลับหน้าหลัก</a>
+        <a href="index.php" class="btn btn-outline-light btn-sm">
+            <i class="bi bi-house-door"></i> กลับหน้าหลัก
+        </a>
     </div>
 </header>
 
 <div class="container mt-4">
     <div class="table-container">
         <h5 class="fw-bold mb-4">รายชื่อสมาชิกทั้งหมด</h5>
+
         <table class="table table-hover align-middle">
             <thead class="table-dark">
                 <tr>
@@ -38,24 +42,53 @@ include_once("connectdb.php");
                 </tr>
             </thead>
             <tbody>
+
                 <?php
-                $sql = "SELECT id, name, email, created_at FROM users WHERE role = 'member' ORDER BY id DESC";
+                $sql = "SELECT id, name, email, created_at 
+                        FROM users 
+                        WHERE role = 'member' 
+                        ORDER BY id DESC";
+
                 $result = mysqli_query($conn, $sql);
+
                 while($row = mysqli_fetch_assoc($result)) {
                 ?>
+
                 <tr>
                     <td><?= $row['id']; ?></td>
                     <td class="fw-bold"><?= $row['name']; ?></td>
                     <td><?= $row['email']; ?></td>
-                    <td><small class="text-muted"><?= date('d/m/Y H:i', strtotime($row['created_at'])); ?></small></td>
+                    <td>
+                        <small class="text-muted">
+                            <?= date('d/m/Y H:i', strtotime($row['created_at'])); ?>
+                        </small>
+                    </td>
+
                     <td class="text-center">
-                        <a href="delete_user.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('ระงับการใช้งานสมาชิกรายนี้?')"><i class="bi bi-person-x"></i></a>
+
+                        <!-- ปุ่มแก้ไข -->
+                        <a href="edit_customer_data.php?id=<?= $row['id']; ?>" 
+                           class="btn btn-sm btn-outline-primary me-1">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+
+                        <!-- ปุ่มลบ -->
+                        <a href="delete_data.php?id=<?= $row['id']; ?>" 
+                           class="btn btn-sm btn-outline-danger"
+                           onclick="return confirm('คุณต้องการลบสมาชิกคนนี้หรือไม่?');">
+                            <i class="bi bi-trash"></i>
+                        </a>
+
                     </td>
                 </tr>
+
                 <?php } ?>
+
             </tbody>
         </table>
+
     </div>
 </div>
+
 </body>
 </html>
