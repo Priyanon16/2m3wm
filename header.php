@@ -120,6 +120,18 @@ $totalFav  = count($_SESSION['favorite']);
 .nav-menu .nav-link::after{
   display:none;
 }
+/* ปิดสีน้ำเงินหลังคลิก */
+.nav-menu .nav-link,
+.nav-menu .nav-link:visited,
+.nav-menu .nav-link:focus,
+.nav-menu .nav-link:active {
+    color: #ddd !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+.nav-menu .nav-link:hover {
+    color: #ff7a00 !important;
+}
 
 </style>
 
