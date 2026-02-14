@@ -1,6 +1,7 @@
 <?php
 // admin_product.php
 session_start();
+include "sidebar.php";
 
 // ============================================
 // 1. ตั้งค่าการเชื่อมต่อฐานข้อมูล

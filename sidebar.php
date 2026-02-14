@@ -173,7 +173,7 @@ body {
     <div class="collapse ps-4" id="productMenu">
         <ul class="nav flex-column mt-1">
             <li class="nav-item">
-                <a href="edit_product.php" class="nav-link text-white small">
+                <a href="admin_product.php" class="nav-link text-white small">
                     จัดการสินค้า
                 </a>
             </li>
