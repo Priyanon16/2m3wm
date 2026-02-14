@@ -1,150 +1,72 @@
 <?php
     include_once("check_login.php"); 
+    include_once("connectdb.php");
+
+    // --- ส่วนประมวลผล: เมื่อมีการกดปุ่ม Submit ---
+    if (isset($_POST['Submit'])) {
+        // รับค่าจากฟอร์มและป้องกัน SQL Injection
+        // ใช้ชื่อคอลัมน์ c_name และ c_details ตามฐานข้อมูลของคุณ
+        $name = mysqli_real_escape_string($conn, $_POST['c_name']);
+        $details = mysqli_real_escape_string($conn, $_POST['c_details']);
+
+        $sql = "INSERT INTO category (c_name, c_details) VALUES ('$name', '$details')";
+
+        if (mysqli_query($conn, $sql)) {
+            // บันทึกสำเร็จ ให้เด้งกลับหน้าหลักพร้อมส่งค่า success=add
+            echo "<script>
+                alert('บันทึกหมวดหมู่ใหม่สำเร็จ!');
+                window.location.href='category_products.php?success=add';
+            </script>";
+            exit;
+        } else {
+            echo "<script>alert('เกิดข้อผิดพลาด: " . mysqli_error($conn) . "');</script>";
+        }
+    }
 ?>
 
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>เพิ่มหมวดหมู่สินค้า - 2M3WM ADMIN</title>
-    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Kanit', sans-serif;
-            background: #f8f9fa;
-        }
-
-        /* HEADER สไตล์เดียวกับหน้าหลัก */
-        header {
-            background: #111;
-            padding: 1.5rem 0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .navbar-brand {
-            font-weight: 700;
-            letter-spacing: 2px;
-            color: #fff !important;
-        }
-
-        /* CARD สไตล์ใหม่ */
-        .card-add {
-            background: white;
-            border-radius: 16px;
-            border: none;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-            margin-top: 20px;
-        }
-        .card-header-dark {
-            background-color: #111;
-            color: #fff;
-            border-bottom: 4px solid #ff5722; /* เส้นใต้สีส้ม */
-            padding: 20px;
-        }
-        
-        .btn-orange {
-            background-color: #ff5722;
-            color: white;
-            border-radius: 10px;
-            padding: 10px 25px;
-            border: none;
-            transition: 0.3s;
-            font-weight: 500;
-        }
-        .btn-orange:hover {
-            background-color: #e64a19;
-            color: white;
-            transform: translateY(-2px);
-        }
-        
-        .form-label {
-            color: #333;
-            font-size: 0.95rem;
-        }
-        .form-control {
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            padding: 12px;
-            transition: 0.3s;
-        }
-        .form-control:focus {
-            border-color: #ff5722;
-            box-shadow: 0 0 0 0.25rem rgba(255, 87, 34, 0.1);
-        }
-        
-        .btn-back-link {
-            color: #666;
-            transition: 0.3s;
-            font-weight: 400;
-        }
-        .btn-back-link:hover {
-            color: #ff5722;
-        }
+        body { font-family: 'Kanit', sans-serif; background: #f8f9fa; }
+        .card-add { background: white; border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-top: 50px; }
+        .btn-orange { background: #ff5722; color: white; border: none; border-radius: 10px; padding: 10px 25px; }
+        .btn-orange:hover { background: #e64a19; }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="container d-flex align-items-center justify-content-between">
-        <a class="navbar-brand" href="index.php">
-            <i class="bi bi-shield-check me-2"></i>2M3WM ADMIN
-        </a>
-    </div>
-</header>
-
-<div class="container py-5">
+<div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-7">
-            <div class="mb-4">
-                <a href="category_products.php" class="text-decoration-none btn-back-link">
-                    <i class="bi bi-arrow-left-circle me-1"></i> กลับหน้าจัดการหมวดหมู่
-                </a>
-            </div>
-            
+        <div class="col-md-6">
             <div class="card card-add">
-                <div class="card-header-dark">
-                    <h4 class="mb-0"><i class="bi bi-folder-plus me-2"></i>เพิ่มหมวดหมู่สินค้าใหม่</h4>
+                <div class="card-header bg-dark text-white p-3 fw-bold text-center">
+                    เพิ่มหมวดหมู่สินค้าใหม่
                 </div>
-                <div class="card-body p-4 p-lg-5">
-                    <form action="process_category.php" method="POST">
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">ชื่อหมวดหมู่ <span class="text-danger">*</span></label>
-                            <input type="text" name="cat_name" class="form-control" placeholder="ระบุชื่อหมวดหมู่ เช่น Running, Limited Edition" required>
+                <div class="card-body p-4">
+                    <form action="" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">ชื่อหมวดหมู่</label>
+                            <input type="text" name="c_name" class="form-control" placeholder="เช่น Running, Lifestyle" required>
                         </div>
-                        
                         <div class="mb-4">
-                            <label class="form-label fw-bold">คำอธิบายเพิ่มเติม</label>
-                            <textarea name="cat_detail" class="form-control" rows="5" placeholder="ระบุรายละเอียดสั้นๆ เกี่ยวกับหมวดหมู่นี้ เพื่อแสดงผลหน้าร้าน"></textarea>
+                            <label class="form-label fw-bold">รายละเอียด</label>
+                            <textarea name="c_details" class="form-control" rows="4" placeholder="ระบุรายละเอียดเพิ่มเติม..."></textarea>
                         </div>
-
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-5">
-                            <button type="reset" class="btn btn-light px-4" style="border-radius: 10px;">
-                                <i class="bi bi-arrow-counterclockwise me-1"></i> ล้างข้อมูล
-                            </button>
-                            <button type="submit" name="Submit" class="btn btn-orange px-5">
-                                <i class="bi bi-check-circle me-1"></i> ยืนยันบันทึกหมวดหมู่
-                            </button>
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="category_products.php" class="btn btn-light">ยกเลิก</a>
+                            <button type="submit" name="Submit" class="btn btn-orange">บันทึกข้อมูล</button>
                         </div>
                     </form>
                 </div>
             </div>
-            
-            <footer class="text-center mt-5 mb-4 text-muted">
-                <small>&copy; 2026 2M3WM SNEAKER HUB. All rights reserved.</small>
-            </footer>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

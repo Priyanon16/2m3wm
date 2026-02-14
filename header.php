@@ -177,6 +177,11 @@ $totalFav  = count($_SESSION['favorite']);
           <?php } ?>
         </a>
 
+        <!-- Logout -->
+        <a href="logout.php" title="ออกจากระบบ">
+          <i class="bi bi-box-arrow-right"></i>
+        </a>
+
       </div>
 
     </div>
