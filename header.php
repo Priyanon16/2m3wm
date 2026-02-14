@@ -138,9 +138,33 @@ $totalFav  = count($_SESSION['favorite']);
       <li class="nav-item">
         <a class="nav-link" href="#">ติดต่อเรา</a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#">การตั้งค่า</a>
-      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" 
+          data-bs-toggle="dropdown" aria-expanded="false">
+            การตั้งค่า
+        </a>
+
+        <ul class="dropdown-menu shadow border-0 rounded-3">
+            <li>
+                <a class="dropdown-item" href="profile.php">
+                    <i class="bi bi-person me-2 text-warning"></i>โปรไฟล์
+                </a>
+            </li>
+
+            <li>
+                <a class="dropdown-item" href="order_status.php">
+                    <i class="bi bi-truck me-2 text-primary"></i>เช็คสถานะออเดอร์
+                </a>
+            </li>
+
+            <li>
+                <a class="dropdown-item" href="order_history.php">
+                    <i class="bi bi-clock-history me-2 text-success"></i>ประวัติการสั่งซื้อ
+                </a>
+            </li>
+        </ul>
+    </li>
+
     </ul>
 
     <!-- RIGHT SIDE -->
