@@ -126,6 +126,16 @@ header {
 .container {
     max-width: 1200px;
 }
+.menu-card {
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.stat-card {
+    min-height: 170px;
+}
 
 </style>
 </head>
@@ -167,9 +177,9 @@ header {
 
         </div>
     </div>
-   <div class="row g-4 mb-5 text-center">
+   <div class="row g-4 mb-5 text-center justify-content-center">
 
-    <div class="col-lg-3 col-md-6">
+    <div class="col-xl-3 col-lg-4 col-md-6">
         <div class="stat-card">
             <i class="bi bi-receipt fs-1 text-warning"></i>
             <div class="stat-number">125</div>
@@ -177,7 +187,7 @@ header {
         </div>
     </div>
 
-    <div class="col-lg-3 col-md-6">
+    <div class="col-xl-3 col-lg-4 col-md-6">
         <div class="stat-card">
             <i class="bi bi-box-seam fs-1 text-success"></i>
             <div class="stat-number">48</div>
@@ -185,7 +195,7 @@ header {
         </div>
     </div>
 
-    <div class="col-lg-3 col-md-6">
+    <div class="col-xl-3 col-lg-4 col-md-6">
         <div class="stat-card">
             <i class="bi bi-people fs-1 text-primary"></i>
             <div class="stat-number">320</div>
@@ -195,40 +205,43 @@ header {
 
 </div>
 
+
     
-    <div class="row g-4">
-        <div class="col-lg-3 col-md-6">
-            <a href="admin_product.php" class="menu-card">
-                <i class="bi bi-box-seam card-icon" style="color: #ff5722;"></i>
-                <h4 class="card-title">จัดการสินค้า</h4>
-                <p class="card-desc">เพิ่มรายการสินค้าใหม่ แก้ไขราคา หรือจำนวนสต็อก</p>
-            </a>
-        </div>
+    <div class="row g-4 justify-content-center">
 
-        <div class="col-md-4 col-sm-6">
-            <a href="a_orderlist.php" class="menu-card">
-                <i class="bi bi-receipt card-icon" style="color: #ff5722;"></i>
-                <h4 class="card-title">จัดการออเดอร์</h4>
-                <p class="card-desc">ตรวจสอบรายการสั่งซื้อและการแจ้งชำระเงินของลูกค้า</p>
-            </a>
-        </div>
-
-        <div class="col-md-4 col-sm-6">
-            <a href="customers_data.php" class="menu-card">
-                <i class="bi bi-people card-icon" style="color: #ff5722;"></i>
-                <h4 class="card-title">จัดการลูกค้า</h4>
-                <p class="card-desc">ดูรายชื่อสมาชิก และประวัติการเข้าใช้งาน</p>
-            </a>
-        </div>
-
-        <div class="col-md-4 col-sm-6">
-            <a href="category_products.php" class="menu-card">
-                <i class="bi bi-tags card-icon" style="color: #ff5722;"></i>
-                <h4 class="card-title">จัดการหมวดหมู่</h4>
-                <p class="card-desc">แยกประเภทสินค้า เช่น รองเท้าวิ่ง, รองเท้าแฟชั่น</p>
-            </a>
-        </div>
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <a href="admin_product.php" class="menu-card">
+            <i class="bi bi-box-seam card-icon"></i>
+            <h4 class="card-title">จัดการสินค้า</h4>
+            <p class="card-desc">เพิ่มรายการสินค้าใหม่ แก้ไขราคา หรือจำนวนสต็อก</p>
+        </a>
     </div>
+
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <a href="a_orderlist.php" class="menu-card">
+            <i class="bi bi-receipt card-icon"></i>
+            <h4 class="card-title">จัดการออเดอร์</h4>
+            <p class="card-desc">ตรวจสอบรายการสั่งซื้อและการแจ้งชำระเงิน</p>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <a href="customers_data.php" class="menu-card">
+            <i class="bi bi-people card-icon"></i>
+            <h4 class="card-title">จัดการลูกค้า</h4>
+            <p class="card-desc">ดูรายชื่อสมาชิก และประวัติการใช้งาน</p>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <a href="category_products.php" class="menu-card">
+            <i class="bi bi-tags card-icon"></i>
+            <h4 class="card-title">จัดการหมวดหมู่</h4>
+            <p class="card-desc">แยกประเภทสินค้า เช่น รองเท้าวิ่ง รองเท้าแฟชั่น</p>
+        </a>
+    </div>
+
+</div>
 
     <footer class="text-center pb-5">
         <p class="small">&copy; 2026 2M3WM SNEAKER HUB - ADMIN PANEL</p>
