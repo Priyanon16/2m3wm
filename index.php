@@ -1,6 +1,7 @@
 <?php
 session_start();
 include "data.php";
+include "header.php";
 
 if(!isset($_SESSION['cart'])){
     $_SESSION['cart'] = [];
