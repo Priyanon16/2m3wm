@@ -128,8 +128,8 @@
         <p>คุณกำลังจะออกจากระบบ 2M3WM <br>อย่าลืมกลับมาเช็คคอลเลคชันใหม่ปี 2026 นะ!</p>
         
         <div class="button-group">
-            <a href="index.php" class="btn btn-logout">ออกจากระบบ</a>
-            <a href="login.php" class="btn btn-back">กลับไปเลือกสินค้าต่อ</a>
+            <a href="login.php" class="btn btn-logout">ออกจากระบบ</a>
+            <a href="index.php" class="btn btn-back">กลับไปเลือกสินค้าต่อ</a>
         </div>
     </div>
 
