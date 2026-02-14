@@ -54,7 +54,7 @@ header {
     background: #fff;
     border-radius: 20px;
     padding: 50px;
-    margin-top: -40px;
+    margin-top: 40px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.08);
     border-bottom: 6px solid #ff5722;
     position: relative;
@@ -123,6 +123,9 @@ header {
     color:#888;
     font-size:0.9rem;
 }
+.container {
+    max-width: 1200px;
+}
 
 </style>
 </head>
@@ -151,7 +154,7 @@ header {
                 </div>
 
                 <h1 class="h2 fw-bold">
-                    ยินดีต้อนรับกลับมา,
+                    ยินดีต้อนรับกลับมา
                     <span class="admin-name">
                         <?= htmlspecialchars($_SESSION['uname']); ?>
                     </span> 👋
@@ -193,8 +196,8 @@ header {
 </div>
 
     
-    <div class="row g-4 justify-content-center">
-        <div class="col-md-4 col-sm-6">
+    <div class="row g-4">
+        <div class="col-lg-3 col-md-6">
             <a href="admin_product.php" class="menu-card">
                 <i class="bi bi-box-seam card-icon" style="color: #ff5722;"></i>
                 <h4 class="card-title">จัดการสินค้า</h4>
