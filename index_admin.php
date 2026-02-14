@@ -167,7 +167,7 @@ header {
 
         </div>
     </div>
-    <div class="row g-4 mb-5 text-center">
+   <div class="row g-4 mb-5 text-center">
 
     <div class="col-lg-3 col-md-6">
         <div class="stat-card">
@@ -185,7 +185,7 @@ header {
         </div>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-lg-3 col-md-6">
         <div class="stat-card">
             <i class="bi bi-people fs-1 text-primary"></i>
             <div class="stat-number">320</div>
