@@ -10,21 +10,22 @@ if(isset($_POST['save'])){
     $name = mysqli_real_escape_string($conn, $_POST['p_name']);
     $price = $_POST['p_price'];
     
-    // รับค่าประเภท (ชาย/หญิง) ที่เพิ่มเข้ามา
+    // รับค่าประเภท (ชาย/หญิง)
     $type = mysqli_real_escape_string($conn, $_POST['p_type']); 
     
     $detail = mysqli_real_escape_string($conn, $_POST['p_detail']);
     $c_id = $_POST['c_id'];
     $img = $_POST['p_img'];
 
-    // เพิ่ม p_type ลงในคำสั่ง SQL
+    // บันทึกข้อมูลลงฐานข้อมูล (ต้องทำขั้นตอนที่ 1 ก่อนนะ ไม่งั้น Error)
     $sql = "INSERT INTO products (p_name, p_price, p_type, p_detail, p_img, c_id) 
             VALUES ('$name', '$price', '$type', '$detail', '$img', '$c_id')";
     
     if(mysqli_query($conn, $sql)){
         echo "<script>alert('เพิ่มสินค้าสำเร็จ!'); window.location='admin_product.php';</script>";
     } else {
-        echo "Error: " . mysqli_error($conn);
+        // แสดง Error ชัดๆ ถ้าบันทึกไม่ได้
+        echo "<div class='alert alert-danger'>Error: " . mysqli_error($conn) . "</div>";
     }
 }
 ?>
@@ -67,14 +68,27 @@ if(isset($_POST['save'])){
                                     </select>
                                 </div>
                             </div>
+
+                            <div class="mb-3">
+                                <label>หมวดหมู่ (แบรนด์)</label>
+                                <select name="c_id" class="form-select" required>
+                                    <option value="" selected disabled>-- เลือกหมวดหมู่ --</option>
+                                    <?php while($c = mysqli_fetch_assoc($cat_query)){ ?>
+                                        <option value="<?= $c['c_id']; ?>"><?= $c['c_name']; ?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+
                             <div class="mb-3">
                                 <label>URL รูปภาพ</label>
                                 <input type="text" name="p_img" class="form-control" placeholder="https://...">
                             </div>
+                            
                             <div class="mb-3">
                                 <label>รายละเอียดสินค้า</label>
                                 <textarea name="p_detail" class="form-control" rows="3"></textarea>
                             </div>
+                            
                             <div class="d-grid gap-2">
                                 <button type="submit" name="save" class="btn btn-success">บันทึกข้อมูล</button>
                                 <a href="admin_product.php" class="btn btn-secondary">ยกเลิก</a>
