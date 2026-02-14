@@ -2,7 +2,7 @@
 include_once("connectdb.php");
 include_once("check_login.php");
 
-// ส่วนหัวสำหรับเรียกใช้งาน SweetAlert2 และ Font Kanit เพื่อให้เข้ากับธีม
+// ส่วนหัวสำหรับเรียกใช้งาน SweetAlert2 และ Font Kanit
 echo '<!DOCTYPE html>
 <html lang="th">
 <head>
@@ -16,13 +16,14 @@ echo '<!DOCTYPE html>
 <body>';
 
 if (isset($_GET['id'])) {
-    $cat_id = mysqli_real_escape_string($conn, $_GET['id']);
+    // ใช้ตัวแปร $c_id เพื่อให้สอดคล้องกับฐานข้อมูล
+    $c_id = mysqli_real_escape_string($conn, $_GET['id']);
 
-    // คำสั่งลบข้อมูล
-    $sql = "DELETE FROM category WHERE cat_id = '$cat_id'";
+    // แก้ไขคำสั่ง SQL: เปลี่ยนจาก cat_id เป็น c_id ตามโครงสร้างจริงของคุณ
+    $sql = "DELETE FROM category WHERE c_id = '$c_id'";
 
     if (mysqli_query($conn, $sql)) {
-        // แจ้งเตือนสำเร็จด้วยธีมสีส้ม-ดำ
+        // แจ้งเตือนสำเร็จ
         echo "<script>
             Swal.fire({
                 title: 'ลบสำเร็จ!',
@@ -37,7 +38,7 @@ if (isset($_GET['id'])) {
             });
         </script>";
     } else {
-        // แจ้งเตือนเมื่อเกิดข้อผิดพลาด
+        // แจ้งเตือนเมื่อเกิดข้อผิดพลาด (เช่น ติดเงื่อนไข Foreign Key)
         $error_msg = mysqli_error($conn);
         echo "<script>
             Swal.fire({

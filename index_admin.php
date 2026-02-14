@@ -18,95 +18,112 @@
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        body {
-            font-family: 'Kanit', sans-serif;
-            background: #f8f9fa;
-        }
+       body {
+    font-family: 'Kanit', sans-serif;
+    background: linear-gradient(135deg,#f8f9fa,#eef1f4);
+}
 
-        /* HEADER - ใช้สไตล์เดียวกับหน้าหลัก */
-        header {
-            background: #111;
-            padding: 1.5rem 0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .navbar-brand {
-            font-weight: 700;
-            letter-spacing: 2px;
-            color: #fff !important;
-        }
-        .btn-logout {
-            background: #ff5722;
-            color: white !important;
-            border-radius: 50px;
-            padding: 8px 20px;
-            transition: 0.3s;
-            border: none;
-        }
-        .btn-logout:hover {
-            background: #e64a19;
-            transform: scale(1.05);
-        }
+/* ===== HEADER ===== */
+header {
+    background: linear-gradient(90deg,#111,#1a1a1a);
+    padding: 1.5rem 0;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
 
-        /* WELCOME SECTION */
-        .welcome-card {
-            background: #fff;
-            border: none;
-            border-radius: 16px;
-            padding: 40px;
-            margin-top: -30px; /* ให้เกยขึ้นไปบนสีพื้นหลังถ้ามี */
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            border-bottom: 5px solid #ff5722;
-        }
-        .admin-name {
-            color: #ff5722;
-            font-weight: 600;
-        }
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #fff !important;
+}
 
-    /* MENU CARDS - ปรับปรุงให้ยืดหยุ่นและขนาดเท่ากัน */
-    .menu-card {
-        border: none;
-        border-radius: 20px;
-        background: #fff;
-        transition: all 0.3s ease;
-        text-align: center;
-        padding: 40px 20px;
-        height: 100%; /* บังคับให้สูงเท่ากับแถว */
-        display: flex; /* ใช้ Flexbox */
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-decoration: none;
-        color: #333;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-    }
+.btn-logout {
+    background: #ff5722;
+    color: white !important;
+    border-radius: 50px;
+    padding: 8px 22px;
+    transition: .3s;
+}
 
-    .menu-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 15px 35px rgba(255, 87, 34, 0.15);
-        color: #ff5722;
-    }
+.btn-logout:hover {
+    background: #e64a19;
+    transform: translateY(-2px);
+}
 
-    .card-icon {
-        font-size: 3.5rem;
-        margin-bottom: 20px;
-        display: block;
-        transition: 0.3s;
-        color: #ff5722; /* กำหนดสีส้มมาตรฐาน */
-    }
+/* ===== WELCOME CARD ===== */
+.welcome-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 50px;
+    margin-top: -40px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    border-bottom: 6px solid #ff5722;
+    position: relative;
+}
 
-    .menu-card:hover .card-icon {
-        transform: scale(1.1);
-    }
+.admin-name {
+    color: #ff5722;
+    font-weight: 700;
+}
 
-    .card-title {
-        font-weight: 600;
-        margin-bottom: 10px;
-    }
+/* ===== STAT BOX ===== */
+.stat-card {
+    background:#fff;
+    border-radius:20px;
+    padding:25px;
+    text-align:center;
+    box-shadow:0 8px 25px rgba(0,0,0,0.05);
+    transition:.3s;
+}
 
-    .card-desc {
-        color: #888;
-        font-size: 0.9rem;
-    }
+.stat-card:hover {
+    transform:translateY(-6px);
+}
+
+.stat-number {
+    font-size:28px;
+    font-weight:700;
+    color:#ff5722;
+}
+
+/* ===== MENU CARD ===== */
+.menu-card {
+    border:none;
+    border-radius:25px;
+    background:#fff;
+    padding:45px 25px;
+    text-align:center;
+    transition:.3s;
+    box-shadow:0 10px 25px rgba(0,0,0,0.05);
+    text-decoration:none;
+    color:#333;
+}
+
+.menu-card:hover {
+    transform:translateY(-12px);
+    box-shadow:0 20px 45px rgba(255,87,34,.2);
+    color:#ff5722;
+}
+
+.card-icon {
+    font-size:3.8rem;
+    margin-bottom:20px;
+    color:#ff5722;
+    transition:.3s;
+}
+
+.menu-card:hover .card-icon {
+    transform:scale(1.1);
+}
+
+.card-title {
+    font-weight:600;
+}
+
+.card-desc {
+    color:#888;
+    font-size:0.9rem;
+}
+
 </style>
 </head>
 <body>
@@ -128,10 +145,23 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-lg-10">
-            <div class="welcome-card mb-5 text-center">
-                <h1 class="h2 mb-2">ยินดีต้อนรับกลับมา, <span class="admin-name"><?php echo htmlspecialchars($_SESSION['uname']); ?></span> 👋</h1>
-                <p class="mb-0 text-muted">เลือกเมนูที่ต้องการจัดการเพื่ออัปเดตข้อมูลหน้าร้าน Sneaker ของคุณ</p>
+            <div class="welcome-card text-center mb-5">
+                <div class="mb-3">
+                    <i class="bi bi-person-circle" style="font-size:70px;color:#ff5722;"></i>
+                </div>
+
+                <h1 class="h2 fw-bold">
+                    ยินดีต้อนรับกลับมา,
+                    <span class="admin-name">
+                        <?= htmlspecialchars($_SESSION['uname']); ?>
+                    </span> 👋
+                </h1>
+
+                <p class="text-muted">
+                    ผู้ดูแลระบบร้าน 2M3WM Sneaker
+                </p>
             </div>
+
         </div>
     </div>
 
