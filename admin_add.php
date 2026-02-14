@@ -54,7 +54,11 @@ if(isset($_POST['save'])){
                                     <label>หมวดหมู่</label>
                                     <select name="c_id" class="form-select" required>
                                         <option value="">-- เลือกหมวดหมู่ --</option>
-                                        
+                                        <select id="position" name="position" class="form-select" required>
+                                            <option value="" selected disabled>--- กรุณาเลือกตำแหน่ง ---</option>
+                                            <option value="male">ผู้ชาย</option>
+                                            <option value="female">ผู้หญิง</option>
+                                        </select>
                                         <?php while($c = mysqli_fetch_assoc($cat_query)){ ?>
                                             <option value="<?= $c['c_id']; ?>"><?= $c['c_name']; ?></option>
                                         <?php } ?>
