@@ -6,13 +6,13 @@ session_start();
 // 1. ตั้งค่าการเชื่อมต่อฐานข้อมูล
 // ============================================
 $servername = "localhost";
-$username = "admin_man";      // ✅ แก้ตามที่คุณแจ้ง
-$password = "66010914015";    // ✅ แก้ตามที่คุณแจ้ง
-$dbname = "2m3wm";            // ชื่อฐานข้อมูล
+$username = "admin_man";      
+$password = "66010914015";    
+$dbname = "2m3wm";            
 
 $conn = mysqli_connect($servername, $username, $password, $dbname);
 
-// เช็คการเชื่อมต่อ ถ้าพังให้แจ้งเตือน
+// เช็คการเชื่อมต่อ
 if (!$conn) {
     die("<h3>เชื่อมต่อฐานข้อมูลล้มเหลว</h3><p>" . mysqli_connect_error() . "</p>");
 }
@@ -20,7 +20,7 @@ mysqli_set_charset($conn, "utf8");
 
 
 // ============================================
-// 2. ส่วนคำสั่งลบสินค้า (เมื่อกดปุ่มลบ)
+// 2. ส่วนคำสั่งลบสินค้า
 // ============================================
 if(isset($_GET['delete_id'])){
     $id = mysqli_real_escape_string($conn, $_GET['delete_id']);
@@ -37,7 +37,6 @@ if(isset($_GET['delete_id'])){
 // ============================================
 // 3. ดึงข้อมูลสินค้าออกมาแสดง
 // ============================================
-// ใช้ LEFT JOIN ตาราง category เพื่อเอาชื่อหมวดหมู่ (c_name) มาโชว์แทนเลข c_id
 $sql = "SELECT p.*, c.c_name 
         FROM products p 
         LEFT JOIN category c ON p.c_id = c.c_id 
@@ -45,7 +44,6 @@ $sql = "SELECT p.*, c.c_name
 
 $result = mysqli_query($conn, $sql);
 
-// ถ้า Query พัง ให้โชว์ Error
 if (!$result) {
     die("Error getting data: " . mysqli_error($conn));
 }
@@ -77,14 +75,14 @@ if (!$result) {
                             <th width="50" class="text-center">ID</th>
                             <th width="80">รูปภาพ</th>
                             <th>ชื่อสินค้า</th>
-                            <th width="100">ประเภท</th> <th width="120">ราคา</th>
+                            <th width="100">ประเภท</th> 
+                            <th width="120">ราคา</th>
                             <th width="150">หมวดหมู่</th>
                             <th width="150" class="text-center">จัดการ</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php 
-                        // ตรวจสอบว่ามีสินค้าในตารางไหม
                         if (mysqli_num_rows($result) > 0) {
                             while($row = mysqli_fetch_assoc($result)){ 
                         ?>
@@ -108,13 +106,24 @@ if (!$result) {
 
                             <td>
                                 <?php 
-                                    // แปลงค่าภาษาอังกฤษเป็นไทย หรือใส่สีให้สวยงาม
-                                    $type_color = 'secondary';
-                                    if($row['p_type'] == 'male') $type_color = 'primary';
-                                    if($row['p_type'] == 'female') $type_color = 'danger';
-                                    if($row['p_type'] == 'unisex') $type_color = 'success';
+                                    // แปลงค่าจาก Database (อังกฤษ) เป็น ภาษาไทย
+                                    $type_show = $row['p_type']; // ค่าเริ่มต้น
+                                    $type_color = 'secondary'; // สีเริ่มต้น (เทา)
+
+                                    if($row['p_type'] == 'male') {
+                                        $type_show = 'ผู้ชาย';
+                                        $type_color = 'primary'; // สีน้ำเงิน
+                                    }
+                                    elseif($row['p_type'] == 'female') {
+                                        $type_show = 'ผู้หญิง';
+                                        $type_color = 'danger';  // สีแดง
+                                    }
+                                    elseif($row['p_type'] == 'unisex') {
+                                        $type_show = 'Unisex';
+                                        $type_color = 'success'; // สีเขียว
+                                    }
                                 ?>
-                                <span class="badge bg-<?= $type_color; ?>"><?= ucfirst($row['p_type']); ?></span>
+                                <span class="badge bg-<?= $type_color; ?>"><?= $type_show; ?></span>
                             </td>
 
                             <td class="text-primary fw-bold">฿<?= number_format($row['p_price']); ?></td>

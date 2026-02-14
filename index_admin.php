@@ -226,7 +226,7 @@ header {
     </div>
 
     <div class="col-xl-3 col-lg-4 col-md-6">
-        <a href="customers_data.php" class="menu-card">
+        <a href="customer_data.php" class="menu-card">
             <i class="bi bi-people card-icon"></i>
             <h4 class="card-title">จัดการลูกค้า</h4>
             <p class="card-desc">ดูรายชื่อสมาชิก และประวัติการใช้งาน</p>
