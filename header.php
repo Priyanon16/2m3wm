@@ -117,6 +117,9 @@ $totalFav  = count($_SESSION['favorite']);
   transform:translateY(-50%);
   color:#aaa;
 }
+.nav-menu .nav-link::after{
+  display:none;
+}
 
 </style>
 
@@ -213,3 +216,5 @@ $totalFav  = count($_SESSION['favorite']);
 
   </div>
 </header>
+
+
