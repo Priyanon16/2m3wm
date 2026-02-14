@@ -1,4 +1,4 @@
-<!--ไฟล์เทสเข้าสู่ระบบ-->
+
 
 <?php
 include "connectdb.php";
