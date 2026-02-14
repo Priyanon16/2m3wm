@@ -1,11 +1,31 @@
 <?php 
+    // 1. เปิดแสดง Error (เอาไว้ดูว่าพังตรงไหน)
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
+
     session_start();
-    include_once("check_login.php"); // เช็คว่า login แล้ว
-    include_once("connect.php"); // เชื่อมฐานข้อมูล
+
+    // 2. เช็คว่ามีไฟล์เหล่านี้จริงไหม (ถ้าไม่มี ระบบจะแจ้งเตือน)
+    if (!file_exists("check_login.php")) { die("หาไฟล์ check_login.php ไม่เจอ"); }
+    if (!file_exists("connect.php")) { die("หาไฟล์ connect.php ไม่เจอ"); }
+
+    include_once("check_login.php"); 
+    include_once("connect.php"); 
+
+    // 3. ตรวจสอบการเชื่อมต่อฐานข้อมูล
+    if ($conn->connect_error) {
+        die("เชื่อมต่อฐานข้อมูลล้มเหลว: " . $conn->connect_error);
+    }
 
     // ดึงข้อมูลสินค้าทั้งหมด
     $sql = "SELECT * FROM products ORDER BY p_id DESC";
     $result = $conn->query($sql);
+
+    // ถ้า Query พัง ให้บอกสาเหตุ
+    if (!$result) {
+        die("ดึงข้อมูลไม่ได้ SQL Error: " . $conn->error);
+    }
 ?>
 <!doctype html>
 <html lang="th">
@@ -31,7 +51,7 @@
     <div class="container">
         <span class="navbar-brand mb-0 h1 fw-bold">2M3WM ADMIN</span>
         <div class="d-flex align-items-center text-white">
-            <span class="me-3">Admin: <span style="color: #ff9900;"><?php echo $_SESSION['aname']; ?></span></span>
+            <span class="me-3">Admin: <span style="color: #ff9900;"><?php echo isset($_SESSION['aname']) ? $_SESSION['aname'] : 'Guest'; ?></span></span>
             <a href="logout.php" class="btn btn-outline-light btn-sm">ออกจากระบบ</a>
         </div>
     </div>
@@ -63,11 +83,22 @@
                             while($row = $result->fetch_assoc()) { ?>
                             <tr>
                                 <td class="ps-4">
-                                    <img src="uploads/<?php echo $row['p_img']; ?>" width="60" height="60" class="rounded object-fit-cover bg-light" alt="img">
+                                    <?php $img_show = !empty($row['p_img']) ? "uploads/".$row['p_img'] : "https://dummyimage.com/60x60/dee2e6/6c757d.jpg"; ?>
+                                    <img src="<?php echo $img_show; ?>" width="60" height="60" class="rounded object-fit-cover bg-light" alt="img">
                                 </td>
                                 <td class="fw-bold"><?php echo $row['p_name']; ?></td>
                                 <td class="text-success fw-bold"><?php echo number_format($row['p_price']); ?> ฿</td>
-                                <td class="text-secondary small"><?php echo mb_strimwidth($row['p_detail'], 0, 50, "..."); ?></td>
+                                <td class="text-secondary small">
+                                    <?php 
+                                        // ใช้ substr แทน mb_strimwidth เพื่อความชัวร์เรื่อง Server รองรับ
+                                        $detail = $row['p_detail'];
+                                        if(strlen($detail) > 50) {
+                                            echo substr($detail, 0, 50) . "...";
+                                        } else {
+                                            echo $detail;
+                                        }
+                                    ?>
+                                </td>
                                 <td class="text-end pe-4">
                                     <a href="product_form.php?id=<?php echo $row['p_id']; ?>" class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i></a>
                                     <a href="product_save.php?del=<?php echo $row['p_id']; ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('ยืนยันการลบสินค้า?');"><i class="bi bi-trash"></i></a>

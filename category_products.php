@@ -45,10 +45,12 @@
             color: white;
             border-radius: 8px;
             border: none;
+            transition: 0.3s;
         }
 
         .btn-orange:hover {
             background-color: #e64a19;
+            transform: translateY(-2px);
         }
 
         .main-card {
@@ -88,7 +90,7 @@
         <div class="d-flex gap-4 align-items-center">
             <a href="index.php" class="text-white text-decoration-none">หน้าหลัก</a>
             <a href="products.php" class="text-white text-decoration-none">สินค้า</a>
-            <a href="logout.php" class="btn-logout text-decoration-none">
+            <a href="logout.php" class="btn-logout text-decoration-none text-center">
                 <i class="bi bi-box-arrow-right me-2"></i>ออกจากระบบ
             </a>
         </div>
@@ -98,19 +100,20 @@
 <div class="container mt-5">
 
     <?php if(isset($_GET['success'])) { ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
             <i class="bi bi-check-circle-fill me-2"></i>
+            <strong>สำเร็จ!</strong> 
             <?php
-                if($_GET['success']=="add") echo "เพิ่มหมวดหมู่สำเร็จเรียบร้อยแล้ว";
-                if($_GET['success']=="edit") echo "แก้ไขข้อมูลหมวดหมู่สำเร็จ";
-                if($_GET['success']=="delete") echo "ลบหมวดหมู่สินค้าออกจากระบบแล้ว";
+                if($_GET['success']=="add") echo "เพิ่มหมวดหมู่ใหม่เรียบร้อยแล้ว";
+                if($_GET['success']=="edit") echo "แก้ไขข้อมูลหมวดหมู่เรียบร้อยแล้ว";
+                if($_GET['success']=="delete") echo "ลบหมวดหมู่สินค้าสำเร็จ";
             ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php } ?>
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="h4 fw-bold">
+        <h2 class="h4 fw-bold mb-0">
             <i class="bi bi-tags-fill me-2" style="color:#ff5722;"></i>
             จัดการหมวดหมู่สินค้า
         </h2>
@@ -120,28 +123,30 @@
         </a>
     </div>
 
-    <div class="main-card shadow-sm">
+    <div class="main-card border-0 shadow-sm">
         <div class="table-responsive">
             <table class="table table-hover align-middle">
-                <thead class="table-dark">
+                <thead>
                     <tr>
-                        <th width="10%">ID</th>
-                        <th width="50%">ชื่อหมวดหมู่</th>
-                        <th width="20%">จำนวนสินค้า</th>
-                        <th width="20%" class="text-center">จัดการ</th>
+                        <th width="10%" class="ps-4">ID</th>
+                        <th width="40%">ชื่อหมวดหมู่</th>
+                        <th width="25%">จำนวนสินค้า</th>
+                        <th width="25%" class="text-center pe-4">จัดการ</th>
                     </tr>
                 </thead>
                 <tbody>
 
                 <?php
-                // แก้ไขคำสั่ง SQL ให้ดึงข้อมูลมาเรียงลำดับตาม c_id
+                // ดึงข้อมูลตามชื่อคอลัมน์จริง c_id
                 $sql = "SELECT * FROM category ORDER BY c_id DESC";
                 $result = mysqli_query($conn, $sql);
 
-                while($row = mysqli_fetch_array($result)) {
+                if (mysqli_num_rows($result) > 0) {
+                    while($row = mysqli_fetch_array($result)) {
+                        $current_id = $row['c_id'];
                 ?>
                     <tr>
-                        <td><?php echo $row['c_id']; ?></td>
+                        <td class="ps-4 fw-bold text-muted"><?php echo $current_id; ?></td>
 
                         <td>
                             <span class="badge-category">
@@ -151,42 +156,37 @@
 
                         <td>
                             <?php
-                            // นับจำนวนสินค้าที่มี c_id ตรงกับหมวดหมู่ปัจจุบัน
-                            $current_id = $row['c_id'];
+                            // นับจำนวนสินค้าที่มี c_id ตรงกับหมวดหมู่ปัจจุบันจากตาราง products
                             $count_sql = "SELECT COUNT(*) as total FROM products WHERE c_id = '$current_id'";
                             $count_result = mysqli_query($conn, $count_sql);
-                            
-                            if($count_result) {
-                                $count_data = mysqli_fetch_assoc($count_result);
-                                echo number_format($count_data['total']) . " รายการ";
-                            } else {
-                                echo "0 รายการ";
-                            }
+                            $count_data = mysqli_fetch_assoc($count_result);
+                            echo number_format($count_data['total']) . " รายการ";
                             ?>
                         </td>
 
-                        <td class="text-center">
-
-                            <a href="edit_category.php?id=<?php echo $row['c_id']; ?>" 
-                               class="btn btn-sm btn-outline-dark btn-action me-1">
+                        <td class="text-center pe-4">
+                            <a href="edit_category.php?id=<?php echo $current_id; ?>" 
+                               class="btn btn-sm btn-outline-dark btn-action me-2 shadow-sm">
                                 <i class="bi bi-pencil-square"></i> แก้ไข
                             </a>
 
-                            <a href="delete_category.php?id=<?php echo $row['c_id']; ?>" 
-                               class="btn btn-sm btn-outline-danger btn-action"
-                               onclick="return confirm('คุณต้องการลบหมวดหมู่ [<?php echo $row['c_name']; ?>] หรือไม่?\nการลบนี้ไม่สามารถย้อนกลับได้');">
+                            <a href="delete_category.php?id=<?php echo $current_id; ?>" 
+                               class="btn btn-sm btn-outline-danger btn-action shadow-sm"
+                               onclick="return confirm('คุณต้องการลบหมวดหมู่ [<?php echo $row['c_name']; ?>] หรือไม่?\nการลบข้อมูลนี้จะไม่สามารถกู้คืนได้');">
                                 <i class="bi bi-trash"></i> ลบ
                             </a>
-
+                        </td>
+                    </tr>
+                <?php 
+                    } 
+                } else { ?>
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">
+                            <i class="bi bi-folder2-open d-block mb-2" style="font-size: 2rem;"></i>
+                            ยังไม่มีข้อมูลหมวดหมู่ในระบบ
                         </td>
                     </tr>
                 <?php } ?>
-
-                <?php if(mysqli_num_rows($result) == 0): ?>
-                    <tr>
-                        <td colspan="4" class="text-center py-5 text-muted">ไม่พบข้อมูลหมวดหมู่สินค้าในระบบ</td>
-                    </tr>
-                <?php endif; ?>
 
                 </tbody>
             </table>

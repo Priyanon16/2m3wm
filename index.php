@@ -50,17 +50,7 @@ body{
 }
 
 /* HEADER */
-header{
-  background:#111;
-}
-.header-icons a{
-  color:#fff;
-  font-size:1.2rem;
-  transition:.2s;
-}
-.header-icons a:hover{
-  color:#ffc107;
-}
+
 
 #bannerSlider{
   max-height: 480px;
@@ -92,31 +82,6 @@ header{
   font-weight:600;
 }
 
-/* SEARCH BAR */
-.search-box{
-  position: relative;
-  width: 260px;
-}
-
-.search-box input{
-  border-radius: 50px;
-  padding-left: 42px;
-  background:#222;
-  border:none;
-  color:#fff;
-}
-
-.search-box input::placeholder{
-  color:#aaa;
-}
-
-.search-box i{
-  position:absolute;
-  top:50%;
-  left:15px;
-  transform:translateY(-50%);
-  color:#aaa;
-}
 
 /* HEADER SPACING */
 header .container{
