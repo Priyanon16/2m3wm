@@ -213,7 +213,7 @@ header {
         <a href="admin_product.php" class="menu-card">
             <i class="bi bi-box-seam card-icon"></i>
             <h4 class="card-title">จัดการสินค้า</h4>
-            <p class="card-desc">เพิ่มรายการสินค้าใหม่ แก้ไขราคา หรือจำนวนสต็อก</p>
+            <p class="card-desc">เพิ่มรายการสินค้าใหม่ แก้ไขราคา</p>
         </a>
     </div>
 
@@ -221,7 +221,7 @@ header {
         <a href="a_orderlist.php" class="menu-card">
             <i class="bi bi-receipt card-icon"></i>
             <h4 class="card-title">จัดการออเดอร์</h4>
-            <p class="card-desc">ตรวจสอบรายการสั่งซื้อและการแจ้งชำระเงิน</p>
+            <p class="card-desc">ตรวจสอบรายการสั่งซื้อ</p>
         </a>
     </div>
 
@@ -237,7 +237,7 @@ header {
         <a href="category_products.php" class="menu-card">
             <i class="bi bi-tags card-icon"></i>
             <h4 class="card-title">จัดการหมวดหมู่</h4>
-            <p class="card-desc">แยกประเภทสินค้า เช่น รองเท้าวิ่ง รองเท้าแฟชั่น</p>
+            <p class="card-desc">แยกประเภทสินค้า</p>
         </a>
     </div>
 
