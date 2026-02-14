@@ -117,6 +117,14 @@ $totalFav  = count($_SESSION['favorite']);
   transform:translateY(-50%);
   color:#aaa;
 }
+.nav-link:focus,
+.nav-link:active,
+.dropdown-toggle:focus,
+.dropdown-item:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
 </style>
 
 <header class="main-header">

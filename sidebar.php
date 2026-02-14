@@ -197,7 +197,7 @@ body {
         <hr>
 
         <div class="dropdown mt-auto">
-            <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
+            <a href="admin_setting.php" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
                 data-bs-toggle="dropdown">
                 <i class="bi bi-person-circle me-2 fs-4"></i>
                 <strong class="user-text"><?= $_SESSION['username'] ?? 'Admin' ?></strong>
