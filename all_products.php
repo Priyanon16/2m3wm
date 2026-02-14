@@ -2,6 +2,7 @@
 session_start();
 include "data.php";
 include "functions.php";
+include "header.php";
 
 if(isset($_GET['add_to_cart'])){
     addToCart($_GET['add_to_cart']);
@@ -97,8 +98,6 @@ body{
 </style>
 </head>
 <body>
-
-<?php include "header.php"; ?>
 
 <!-- PAGE HEADER -->
 <div class="page-header">

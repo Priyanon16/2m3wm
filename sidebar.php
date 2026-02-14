@@ -200,7 +200,7 @@ body {
     <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
         data-bs-toggle="dropdown" aria-expanded="false">
         <i class="bi bi-person-circle me-2 fs-4"></i>
-        <strong class="user-text"><?= $_SESSION['aname'] ?? 'Admin' ?></strong>
+        <strong class="user-text"><?= $_SESSION['uname'] ?? 'Admin' ?></strong>
     </a>
 
     <ul class="dropdown-menu dropdown-menu-dark shadow">
