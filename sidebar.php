@@ -205,11 +205,6 @@ body {
 
     <ul class="dropdown-menu dropdown-menu-dark shadow">
         <li>
-            <a class="dropdown-item" href="admin_profile.php">
-                <i class="bi bi-person me-2"></i>โปรไฟล์
-            </a>
-        </li>
-        <li>
             <a class="dropdown-item" href="admin_setting.php">
                 <i class="bi bi-gear me-2"></i>การตั้งค่า
             </a>
