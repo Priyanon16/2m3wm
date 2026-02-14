@@ -1,5 +1,35 @@
 <?php
-    session_start();
+session_start();
+include_once("connectdb.php");
+
+if(isset($_POST['email'])){
+
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+
+    $sql = "SELECT * FROM users 
+            WHERE email='$email' 
+            AND password='$password' 
+            LIMIT 1";
+
+    $rs = mysqli_query($conn,$sql);
+
+    if(mysqli_num_rows($rs) == 1){
+
+        $data = mysqli_fetch_array($rs);
+
+        $_SESSION['uid'] = $data['id'];
+        $_SESSION['uname'] = $data['name'];
+        $_SESSION['role'] = $data['role'];
+
+        // 👑 แยกสิทธิ์
+        if($data['role'] == 'admin'){
+            header("Location: index_admin.php");
+        } else {
+            header("Location: index.php");
+        }
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -14,6 +44,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <style>
+        :root {
+            --primary-orange: #ff5722;
+            --hover-orange: #e64a19;
+            --dark-bg: #1a1a1a;
+            --input-bg: #000000;
+        }
+
         body { 
             background-color: #ffffff; 
             font-family: 'Kanit', sans-serif; 
@@ -24,73 +61,107 @@
             margin: 0; 
             color: white; 
         }
+
         .login-card { 
-            background-color: #1a1a1a; 
-            padding: 40px; 
-            border-radius: 12px; 
+            background-color: var(--dark-bg); 
+            padding: 45px; 
+            border-radius: 16px; 
             width: 100%; 
             max-width: 400px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-            text-align: center; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
+            text-align: center;
+            border: 1px solid #333;
         }
+
         .brand-name { 
             color: #ffffff; 
             font-size: 2.5rem; 
             font-weight: 700; 
-            margin-bottom: 20px; 
-            letter-spacing: 2px; 
+            margin-bottom: 15px; 
+            letter-spacing: 3px; 
         }
-        h2 { margin-bottom: 5px; font-size: 1.8rem; font-weight: 600; }
-        p.subtitle { color: #888; font-size: 0.9rem; margin-bottom: 30px; font-weight: 300; }
-        .form-group { text-align: left; margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 400; }
+
+        h2 { margin: 0 0 8px 0; font-size: 1.8rem; font-weight: 600; }
+        p.subtitle { color: #888; font-size: 0.95rem; margin-bottom: 35px; font-weight: 300; }
+
+        .form-group { text-align: left; margin-bottom: 22px; }
+        label { display: block; margin-bottom: 10px; font-weight: 400; color: #bbb; font-size: 0.9rem; }
+
         .input-wrapper { position: relative; }
-        .input-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #666; }
+        .input-wrapper i { 
+            position: absolute; 
+            left: 18px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            color: #666;
+            font-size: 1.1rem;
+        }
+
         input[type="email"], input[type="password"] { 
             width: 100%; 
-            padding: 12px 12px 12px 45px; 
-            background: #000; 
+            padding: 14px 14px 14px 50px; 
+            background: var(--input-bg); 
             border: 1px solid #333; 
-            border-radius: 8px; 
+            border-radius: 10px; 
             color: white; 
             box-sizing: border-box; 
             outline: none; 
-            font-family: 'Kanit', sans-serif; 
+            font-family: 'Kanit', sans-serif;
+            transition: all 0.3s ease;
         }
+
+        input:focus {
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 2px rgba(255, 87, 34, 0.2);
+        }
+
         .btn-login { 
             width: 100%; 
-            padding: 14px; 
-            background-color: #ff5722; 
+            padding: 15px; 
+            background-color: var(--primary-orange); 
             border: none; 
-            border-radius: 8px; 
+            border-radius: 10px; 
             color: white; 
             font-size: 1.1rem; 
             font-weight: 600; 
             cursor: pointer; 
-            margin-top: 25px; 
-            transition: 0.3s; 
+            margin-top: 15px; 
+            transition: all 0.3s ease; 
             font-family: 'Kanit', sans-serif; 
         }
-        .btn-login:hover { background-color: #e64a19; }
-        .footer-text { margin-top: 20px; color: #888; font-size: 0.9rem; }
-        .footer-text a { color: #ff5722; text-decoration: none; }
+
+        .btn-login:hover { 
+            background-color: var(--hover-orange); 
+            transform: translateY(-2px);
+        }
+
+        .footer-text { margin-top: 25px; color: #888; font-size: 0.9rem; }
+        .footer-text a { color: var(--primary-orange); text-decoration: none; font-weight: 500; }
+        .footer-text a:hover { text-decoration: underline; }
+
         .btn-back { 
             position: fixed; 
             top: 25px; 
             left: 25px; 
-            background: #1a1a1a; 
+            background: var(--dark-bg); 
             color: white; 
-            width: 45px; 
-            height: 45px; 
+            width: 50px; 
+            height: 50px; 
             border-radius: 50%; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             text-decoration: none; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4); 
-            transition: .3s; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
+            transition: all 0.3s ease;
+            border: 1px solid #333;
         }
-        .btn-back:hover { background: #ff5722; }
+
+        .btn-back:hover { 
+            background: var(--primary-orange); 
+            border-color: var(--primary-orange);
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -101,30 +172,32 @@
     <div class="login-card">
         <div class="brand-name">SNEAKERHUB</div>
         <h2>เข้าสู่ระบบ</h2>
-        <p class="subtitle">เข้าสู่บัญชีของคุณเพื่อดำเนินการต่อ</p>
+        <p class="subtitle">ระบบจัดการหลังบ้าน (Admin Panel)</p>
 
         <form action="" method="POST">
             <div class="form-group">
-                <label>อีเมล</label>
+                <label><i class="fa-regular fa-envelope me-1"></i> อีเมล</label>
                 <div class="input-wrapper">
-                    <i class="fa-regular fa-envelope"></i>
-                    <input type="email" name="email" placeholder="your@email.com" required>
+                    <i class="fa-solid fa-user-tag"></i>
+                    <input type="email" name="email" placeholder="example@sneakerhub.com" required autofocus>
                 </div>
             </div>
 
             <div class="form-group">
-                <label>รหัสผ่าน</label>
+                <label><i class="fa-solid fa-key me-1"></i> รหัสผ่าน</label>
                 <div class="input-wrapper">
                     <i class="fa-solid fa-lock"></i>
                     <input type="password" name="password" placeholder="********" required>
                 </div>
             </div>
 
-            <button type="submit" name="Submit" class="btn-login">เข้าสู่ระบบ</button>
+            <button type="submit" name="Submit" class="btn-login">
+                <i class="fa-solid fa-right-to-bracket me-2"></i> เข้าสู่ระบบ
+            </button>
         </form>
 
         <p class="footer-text">
-            ยังไม่มีบัญชี? <a href="register.php">สมัครสมาชิก</a>
+            กลับไปยังหน้าหลัก? <a href="index.php">คลิกที่นี่</a>
         </p>
     </div>
 
@@ -132,28 +205,32 @@
         if(isset($_POST['Submit'])) {
             include_once("connectdb.php");
             
-            // ป้องกัน SQL Injection เบื้องต้น
-            $email = mysqli_real_escape_string($conn, $_POST['email']);
+            // รับค่าและป้องกัน SQL Injection
+            $email = mysqli_real_escape_string($conn, trim($_POST['email']));
             $password = mysqli_real_escape_string($conn, $_POST['password']);
 
-            // ตรวจสอบข้อมูลจากตาราง users โดยเช็คสิทธิ์ role เป็น admin
+            // ตรวจสอบข้อมูลในตาราง users (id, name, email, password, role)
+            // หมายเหตุ: ในระบบจริงควรใช้ password_verify() แต่กรณีนี้อิงตามฐานข้อมูลเดิมของคุณ
             $sql = "SELECT * FROM users WHERE email='{$email}' AND password='{$password}' AND role='admin' LIMIT 1";
             $rs = mysqli_query($conn, $sql);
             
             if($rs) {
                 if(mysqli_num_rows($rs) == 1) {
                     $data = mysqli_fetch_array($rs);
-                    // บันทึก Session เพื่อใช้ตรวจสอบในหน้าอื่นๆ
+                    
+                    // ตั้งค่า Session
                     $_SESSION['aid'] = $data['id']; 
                     $_SESSION['aname'] = $data['name'];
                     
+                    // ล็อกอินสำเร็จ ส่งไปหน้า index หลังบ้าน
                     echo "<script>window.location='index.php';</script>";
                 } else {
-                    echo "<script>alert('อีเมลหรือรหัสผ่านไม่ถูกต้อง หรือคุณไม่มีสิทธิ์เข้าถึงส่วนนี้');</script>";
+                    echo "<script>alert('อีเมลหรือรหัสผ่านไม่ถูกต้อง หรือคุณไม่มีสิทธิ์ Admin');</script>";
                 }
             } else {
-                echo "Error: " . mysqli_error($conn);
+                echo "<script>alert('เกิดข้อผิดพลาดทางเทคนิค: " . mysqli_error($conn) . "');</script>";
             }
+            mysqli_close($conn);
         }
     ?>
 </body>
