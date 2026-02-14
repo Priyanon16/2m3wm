@@ -9,4 +9,5 @@ $sql = "INSERT INTO users (name,email,password)
 mysqli_query($conn,$sql);
 
 echo "เพิ่มผู้ใช้เรียบร้อย";
+
 ?>
