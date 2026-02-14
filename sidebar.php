@@ -149,25 +149,25 @@ body {
                 </a>
             </li>
             <li>
-                <a href="orders.php" class="nav-link text-white">
+                <a href="orderlist.php" class="nav-link text-white">
                     <i class="bi bi-table"></i>
                     <span>ออเดอร์</span>
                 </a>
             </li>
-            <li class="nav-item">
-    <a class="nav-link text-white d-flex justify-content-between align-items-center"
-        data-bs-toggle="collapse"
-        href="#productMenu"
-        role="button"
-        aria-expanded="false">
+                        <li class="nav-item">
+                <a class="nav-link text-white d-flex justify-content-between align-items-center"
+                    data-bs-toggle="collapse"
+                    href="#productMenu"
+                    role="button"
+                    aria-expanded="false">
 
-        <div>
-            <i class="bi bi-box me-2"></i>
-            <span>สินค้า</span>
-        </div>
+                        <div>
+                            <i class="bi bi-box me-2"></i>
+                            <span>สินค้า</span>
+                        </div>
 
-        <i class="bi bi-chevron-down submenu-arrow small"></i>
-    </a>
+                        <i class="bi bi-chevron-down submenu-arrow small"></i>
+                </a>
 
     <!-- Submenu -->
     <div class="collapse ps-4" id="productMenu">
