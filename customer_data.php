@@ -7,88 +7,128 @@ include_once("connectdb.php");
 <head>
     <meta charset="UTF-8">
     <title>จัดการลูกค้า - 2M3WM ADMIN</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: 'Kanit', sans-serif; background: #f8f9fa; }
-        header { background: #111; padding: 1rem 0; color: white; }
-        .table-container { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        body { background-color: #f8f9fa; font-family: 'Kanit', sans-serif; }
+        
+        /* สไตล์สำหรับเนื้อหาหลักที่อยู่ข้าง Sidebar */
+        .content { 
+            flex: 1; 
+            min-height: 100vh; 
+            padding: 30px; 
+            background-color: #f8f9fa;
+        }
+
+        .main-card { 
+            background: #fff; 
+            border-radius: 16px; 
+            padding: 25px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
+            border: none; 
+        }
+
+        .brand-accent { color: #ff7a00; }
+        
+        /* Sidebar CSS Essential */
+        .sidebar {
+            width: 280px; min-height: 100vh; background: #212529; color: #fff;
+            transition: all 0.3s ease; display: flex; flex-direction: column;
+        }
+        .sidebar.collapsed { width: 80px; }
+        .sidebar.collapsed span, .sidebar.collapsed .logo-text, .sidebar.collapsed .user-text { display: none; }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="container d-flex justify-content-between align-items-center">
-        <h4 class="mb-0"><i class="bi bi-people me-2"></i>จัดการลูกค้า</h4>
-        <a href="index.php" class="btn btn-outline-light btn-sm">
-            <i class="bi bi-house-door"></i> กลับหน้าหลัก
-        </a>
-    </div>
-</header>
+<div class="d-flex">
+    <?php include_once("sidebar.php"); ?>
 
-<div class="container mt-4">
-    <div class="table-container">
-        <h5 class="fw-bold mb-4">รายชื่อสมาชิกทั้งหมด</h5>
+    <div class="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h4 fw-bold mb-0">
+                <i class="bi bi-people-fill me-2 brand-accent"></i> จัดการข้อมูลลูกค้า
+            </h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="index_admin.php" class="text-decoration-none text-muted">หน้าแรก</a></li>
+                    <li class="breadcrumb-item active">จัดการลูกค้า</li>
+                </ol>
+            </nav>
+        </div>
 
-        <table class="table table-hover align-middle">
-            <thead class="table-dark">
-                <tr>
-                    <th width="10%">ID</th>
-                    <th width="30%">ชื่อ-นามสกุล</th>
-                    <th width="30%">อีเมล</th>
-                    <th width="20%">วันที่สมัคร</th>
-                    <th width="10%" class="text-center">จัดการ</th>
-                </tr>
-            </thead>
-            <tbody>
+        <div class="main-card">
+            <h5 class="fw-bold mb-4">รายชื่อสมาชิกทั้งหมด (Member)</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="10%" class="ps-4">ID</th>
+                            <th width="30%">ชื่อ-นามสกุล</th>
+                            <th width="30%">อีเมล</th>
+                            <th width="20%">วันที่สมัคร</th>
+                            <th width="10%" class="text-center pe-4">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        $sql = "SELECT id, name, email, created_at 
+                                FROM users 
+                                WHERE role = 'member' 
+                                ORDER BY id DESC";
+                        $result = mysqli_query($conn, $sql);
 
-                <?php
-                $sql = "SELECT id, name, email, created_at 
-                        FROM users 
-                        WHERE role = 'member' 
-                        ORDER BY id DESC";
+                        if(mysqli_num_rows($result) > 0) {
+                            while($row = mysqli_fetch_assoc($result)) {
+                        ?>
+                        <tr>
+                            <td class="ps-4 fw-bold text-muted"><?= $row['id']; ?></td>
+                            <td class="fw-bold"><?= htmlspecialchars($row['name']); ?></td>
+                            <td><?= htmlspecialchars($row['email']); ?></td>
+                            <td>
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    <?= date('d/m/Y H:i', strtotime($row['created_at'])); ?>
+                                </small>
+                            </td>
+                            <td class="text-center pe-4">
+                                <div class="btn-group">
+                                    <a href="edit_customer_data.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-dark">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <a href="delete_data.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-danger" 
+                                       onclick="return confirm('คุณต้องการลบสมาชิก [<?= $row['name']; ?>] ใช่หรือไม่?');">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php 
+                            } 
+                        } else {
+                            echo "<tr><td colspan='5' class='text-center py-5 text-muted'>ไม่มีข้อมูลลูกค้าในระบบ</td></tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-                $result = mysqli_query($conn, $sql);
-
-                while($row = mysqli_fetch_assoc($result)) {
-                ?>
-
-                <tr>
-                    <td><?= $row['id']; ?></td>
-                    <td class="fw-bold"><?= $row['name']; ?></td>
-                    <td><?= $row['email']; ?></td>
-                    <td>
-                        <small class="text-muted">
-                            <?= date('d/m/Y H:i', strtotime($row['created_at'])); ?>
-                        </small>
-                    </td>
-
-                    <td class="text-center">
-
-                        <!-- ปุ่มแก้ไข -->
-                        <a href="edit_customer_data.php?id=<?= $row['id']; ?>" 
-                           class="btn btn-sm btn-outline-primary me-1">
-                            <i class="bi bi-pencil-square"></i>
-                        </a>
-
-                        <!-- ปุ่มลบ -->
-                        <a href="delete_data.php?id=<?= $row['id']; ?>" 
-                           class="btn btn-sm btn-outline-danger"
-                           onclick="return confirm('คุณต้องการลบสมาชิกคนนี้หรือไม่?');">
-                            <i class="bi bi-trash"></i>
-                        </a>
-
-                    </td>
-                </tr>
-
-                <?php } ?>
-
-            </tbody>
-        </table>
-
+        <footer class="text-center mt-5 text-muted">
+            <small>&copy; 2026 2M3WM SNEAKER HUB. All rights reserved.</small>
+        </footer>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.getElementById('toggleBtn').addEventListener('click', function () {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('collapsed');
+    });
+</script>
 </body>
 </html>
