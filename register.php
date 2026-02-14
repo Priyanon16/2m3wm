@@ -24,7 +24,7 @@ if (isset($_POST['Submit'])) {
         if (mysqli_num_rows($rs_check) > 0) {
             $error = "อีเมลนี้ถูกใช้งานแล้ว กรุณาใช้อีเมลอื่น";
         } else {
-            // 3. บันทึกข้อมูลลงตาราง users (id, name, email, password, role, created_at)
+            // 3. บันทึกข้อมูลลงตาราง users (id, name, email, password, role)
             $sql = "INSERT INTO users (name, email, password, role) VALUES ('$name', '$email', '$password', '$role')";
             
             if (mysqli_query($conn, $sql)) {
@@ -47,9 +47,7 @@ if (isset($_POST['Submit'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SNEAKERHUB - Register</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <title>2M3WM - Register</title> <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -58,9 +56,9 @@ if (isset($_POST['Submit'])) {
         body {
             background-color: #ffffff;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            justify-content: center; /* จัดกลางแนวนอน */
+            align-items: center;     /* จัดกลางแนวตั้ง */
+            min-height: 100vh;       /* ให้พื้นที่ความสูงเต็มหน้าจอ */
             margin: 0;
             font-family: 'Kanit', sans-serif;
         }
@@ -73,6 +71,7 @@ if (isset($_POST['Submit'])) {
             text-align: center;
             border: 1px solid #333;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative; /* เพื่อรองรับการจัดวางภายใน */
         }
         .logo {
             color: #ffffff;
@@ -144,6 +143,7 @@ if (isset($_POST['Submit'])) {
             text-decoration: none;
         }
 
+        /* ปุ่มย้อนกลับมุมซ้ายบน */
         .btn-back {
             position: fixed;
             top: 25px;
@@ -159,6 +159,7 @@ if (isset($_POST['Submit'])) {
             text-decoration: none;
             box-shadow: 0 5px 15px rgba(0,0,0,0.4);
             transition: .3s;
+            z-index: 1000;
         }
         .btn-back:hover { background: #ff5722; }
 
@@ -179,8 +180,7 @@ if (isset($_POST['Submit'])) {
 </a>
 
 <div class="register-container">
-    <div class="logo">SNEAKERHUB</div>
-    <h2>สมัครสมาชิก</h2>
+    <div class="logo">2M3WM</div> <h2>สมัครสมาชิก</h2>
     <p class="subtitle">สร้างบัญชีใหม่เพื่อเริ่มช้อปปิ้ง</p>
 
     <?php if ($error != ""): ?>

@@ -97,7 +97,7 @@
                 <div class="card menu-card text-center p-4">
                     <div class="card-body">
                         <i class="fa-solid fa-boxes-stacked card-icon"></i>
-                        <h4 class="text-dark">จัดการสินค้า</h4>
+                        <h4 class="text-dark">จัดการคลังสินค้า</h4>
                         <p class="text-muted">เพิ่ม ลบ แก้ไข รายการสินค้า</p>
                     </div>
                 </div>
