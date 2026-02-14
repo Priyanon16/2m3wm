@@ -146,7 +146,7 @@
         </div>
 
         <div class="col-md-4 col-sm-6">
-            <a href="orderlist.php" class="menu-card">
+            <a href="a_orderlist.php" class="menu-card">
                 <i class="bi bi-receipt card-icon" style="color: #ff5722;"></i>
                 <h4 class="card-title">จัดการออเดอร์</h4>
                 <p class="card-desc">ตรวจสอบรายการสั่งซื้อและการแจ้งชำระเงินของลูกค้า</p>

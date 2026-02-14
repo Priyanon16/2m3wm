@@ -3,9 +3,6 @@
 session_start();
 include "data.php";
 
-// ดึงหมวดหมู่มาแสดงใน Select Box
-$cat_query = mysqli_query($conn, "SELECT * FROM category");
-
 if(isset($_POST['save'])){
     $name = mysqli_real_escape_string($conn, $_POST['p_name']);
     $price = $_POST['p_price'];
@@ -14,17 +11,15 @@ if(isset($_POST['save'])){
     $type = mysqli_real_escape_string($conn, $_POST['p_type']); 
     
     $detail = mysqli_real_escape_string($conn, $_POST['p_detail']);
-    $c_id = $_POST['c_id'];
     $img = $_POST['p_img'];
 
-    // บันทึกข้อมูลลงฐานข้อมูล (ต้องทำขั้นตอนที่ 1 ก่อนนะ ไม่งั้น Error)
-    $sql = "INSERT INTO products (p_name, p_price, p_type, p_detail, p_img, c_id) 
-            VALUES ('$name', '$price', '$type', '$detail', '$img', '$c_id')";
+    // SQL ตัด c_id ออกแล้ว เหลือแค่ p_type
+    $sql = "INSERT INTO products (p_name, p_price, p_type, p_detail, p_img) 
+            VALUES ('$name', '$price', '$type', '$detail', '$img')";
     
     if(mysqli_query($conn, $sql)){
         echo "<script>alert('เพิ่มสินค้าสำเร็จ!'); window.location='admin_product.php';</script>";
     } else {
-        // แสดง Error ชัดๆ ถ้าบันทึกไม่ได้
         echo "<div class='alert alert-danger'>Error: " . mysqli_error($conn) . "</div>";
     }
 }
@@ -67,16 +62,6 @@ if(isset($_POST['save'])){
                                         <option value="unisex">Unisex</option>
                                     </select>
                                 </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label>หมวดหมู่ (แบรนด์)</label>
-                                <select name="c_id" class="form-select" required>
-                                    <option value="" selected disabled>-- เลือกหมวดหมู่ --</option>
-                                    <?php while($c = mysqli_fetch_assoc($cat_query)){ ?>
-                                        <option value="<?= $c['c_id']; ?>"><?= $c['c_name']; ?></option>
-                                    <?php } ?>
-                                </select>
                             </div>
 
                             <div class="mb-3">
