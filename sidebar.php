@@ -212,12 +212,6 @@ body {
         </div>
 
     </div>
-
-    <!-- Content -->
-    <div class="content p-4">
-        <h1>Dashboard</h1>
-        <p>เนื้อหาหลักอยู่ตรงนี้</p>
-    </div>
 </div>
 
 <!-- Bootstrap JS -->
