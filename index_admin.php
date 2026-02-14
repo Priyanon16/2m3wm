@@ -169,16 +169,16 @@ header {
     </div>
     <div class="row g-4 mb-5 text-center">
 
-    <div class="col-md-4">
-        <div class="col-lg-3 col-md-6">
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
             <i class="bi bi-receipt fs-1 text-warning"></i>
             <div class="stat-number">125</div>
             <div class="text-muted">ออเดอร์ทั้งหมด</div>
         </div>
     </div>
 
-    <div class="col-md-4">
-        <div class="col-lg-3 col-md-6">
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
             <i class="bi bi-box-seam fs-1 text-success"></i>
             <div class="stat-number">48</div>
             <div class="text-muted">สินค้าทั้งหมด</div>
