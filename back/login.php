@@ -39,8 +39,8 @@ if(isset($_POST['Submit'])) {
 
         $data = mysqli_fetch_array($rs);
 
-        $_SESSION['uid'] = $data['id'];
-        $_SESSION['uname'] = $data['name'];
+        $_SESSION['aid'] = $data['id'];
+        $_SESSION['aname'] = $data['name'];
 
         echo "<script>";
         echo "window.location='index.php';";
