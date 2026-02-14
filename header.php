@@ -50,12 +50,21 @@ $totalFav  = count($_SESSION['favorite']);
   width:100%;
 }
 
-/* ICONS */
+/* ===== ICONS ===== */
+.header-icons{
+  display:flex;
+  align-items:center;
+  gap:18px;
+}
+
 .header-icons a{
-  color:#fff;
-  font-size:18px;
-  transition:.3s;
   position:relative;
+  color:#fff;
+  font-size:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:.3s;
 }
 
 .header-icons a:hover{
@@ -63,15 +72,25 @@ $totalFav  = count($_SESSION['favorite']);
   transform:translateY(-2px);
 }
 
-/* BADGE */
+/* ===== BADGE ===== */
 .icon-badge{
   position:absolute;
-  top:-6px;
-  right:-8px;
-  font-size:11px;
-  padding:4px 6px;
+  top:-5px;
+  right:-6px;
+  min-width:16px;
+  height:16px;
+  font-size:10px;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   border-radius:50%;
+  background:#e53935;
+  color:#fff;
+  box-shadow:0 2px 6px rgba(0,0,0,.4);
+  padding:0 4px;
 }
+
 
 /* SEARCH */
 .search-box{
@@ -143,7 +162,7 @@ $totalFav  = count($_SESSION['favorite']);
         <a href="favorite.php">
           <i class="bi bi-heart"></i>
           <?php if($totalFav>0){ ?>
-            <span class="badge bg-danger icon-badge">
+            <span class="icon-badge">
               <?= $totalFav ?>
             </span>
           <?php } ?>

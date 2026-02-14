@@ -151,7 +151,7 @@
         </div>
 
         <div class="col-md-4 col-sm-6">
-            <a href="customers.php" class="menu-card">
+            <a href="customers_data.php" class="menu-card">
                 <i class="bi bi-people card-icon" style="color: #ff5722;"></i>
                 <h4 class="card-title">จัดการลูกค้า</h4>
                 <p class="card-desc">ดูรายชื่อสมาชิก และประวัติการเข้าใช้งาน</p>
