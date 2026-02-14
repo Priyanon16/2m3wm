@@ -61,6 +61,7 @@
             color: #ff5722;
             font-weight: 600;
         }
+
     /* MENU CARDS - ปรับปรุงให้ยืดหยุ่นและขนาดเท่ากัน */
     .menu-card {
         border: none;

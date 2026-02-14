@@ -149,7 +149,7 @@ body {
                 </a>
             </li>
             <li>
-                <a href="orderlist.php" class="nav-link text-white">
+                <a href="a_orderlist.php" class="nav-link text-white">
                     <i class="bi bi-table"></i>
                     <span>ออเดอร์</span>
                 </a>
