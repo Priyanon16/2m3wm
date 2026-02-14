@@ -28,7 +28,7 @@ if (isset($_POST['save_settings'])) {
     }
     
     // 3. อัปเดตค่าใน Session เพื่อให้ชื่อที่แสดงผลในเมนูต่างๆ เปลี่ยนตามทันที
-    $_SESSION['aname'] = $name;
+    $_SESSION['uname'] = $name;
     
     // แจ้งเตือนและรีเฟรชหน้า
     echo "<script>alert('อัปเดตข้อมูลผู้ดูแลระบบเรียบร้อยแล้ว'); window.location='admin_setting.php';</script>";
