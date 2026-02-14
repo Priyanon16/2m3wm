@@ -1,6 +1,6 @@
 <?php
-include_once("check_login.php"); 
-include_once("connectdb.php"); 
+    include_once("check_login.php"); 
+    include_once("connectdb.php"); 
 ?>
 
 <!DOCTYPE html>
@@ -85,7 +85,7 @@ include_once("connectdb.php");
         <a class="navbar-brand" href="index.php">
             <i class="bi bi-shield-check me-2"></i>2M3WM ADMIN
         </a>
-        <div class="d-flex gap-4">
+        <div class="d-flex gap-4 align-items-center">
             <a href="index.php" class="text-white text-decoration-none">หน้าหลัก</a>
             <a href="products.php" class="text-white text-decoration-none">สินค้า</a>
             <a href="logout.php" class="btn-logout text-decoration-none">
@@ -97,14 +97,15 @@ include_once("connectdb.php");
 
 <div class="container mt-5">
 
-    <!-- แจ้งเตือน -->
     <?php if(isset($_GET['success'])) { ?>
-        <div class="alert alert-success">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
             <?php
-                if($_GET['success']=="add") echo "เพิ่มหมวดหมู่สำเร็จ";
-                if($_GET['success']=="edit") echo "แก้ไขหมวดหมู่สำเร็จ";
-                if($_GET['success']=="delete") echo "ลบหมวดหมู่สำเร็จ";
+                if($_GET['success']=="add") echo "เพิ่มหมวดหมู่สำเร็จเรียบร้อยแล้ว";
+                if($_GET['success']=="edit") echo "แก้ไขข้อมูลหมวดหมู่สำเร็จ";
+                if($_GET['success']=="delete") echo "ลบหมวดหมู่สินค้าออกจากระบบแล้ว";
             ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php } ?>
 
@@ -114,16 +115,15 @@ include_once("connectdb.php");
             จัดการหมวดหมู่สินค้า
         </h2>
 
-        <!-- ปุ่มเพิ่ม -->
-        <a href="add_category.php" class="btn btn-orange px-4">
+        <a href="add_category.php" class="btn btn-orange px-4 shadow-sm">
             <i class="bi bi-plus-circle me-1"></i> เพิ่มหมวดหมู่ใหม่
         </a>
     </div>
 
-    <div class="main-card">
+    <div class="main-card shadow-sm">
         <div class="table-responsive">
             <table class="table table-hover align-middle">
-                <thead>
+                <thead class="table-dark">
                     <tr>
                         <th width="10%">ID</th>
                         <th width="50%">ชื่อหมวดหมู่</th>
@@ -134,53 +134,59 @@ include_once("connectdb.php");
                 <tbody>
 
                 <?php
-                $sql = "SELECT * FROM category ORDER BY cat_id DESC";
+                // แก้ไขคำสั่ง SQL ให้ดึงข้อมูลมาเรียงลำดับตาม c_id
+                $sql = "SELECT * FROM category ORDER BY c_id DESC";
                 $result = mysqli_query($conn, $sql);
 
                 while($row = mysqli_fetch_array($result)) {
                 ?>
                     <tr>
-                        <td><?php echo $row['cat_id']; ?></td>
+                        <td><?php echo $row['c_id']; ?></td>
 
                         <td>
                             <span class="badge-category">
-                                <?php echo $row['cat_name']; ?>
+                                <?php echo htmlspecialchars($row['c_name']); ?>
                             </span>
                         </td>
 
                         <td>
                             <?php
-                            // ถ้ามีตารางสินค้า (products) และมี cat_id
-                            /*
-                            $count_sql = "SELECT COUNT(*) as total 
-                                          FROM products 
-                                          WHERE cat_id=".$row['cat_id'];
+                            // นับจำนวนสินค้าที่มี c_id ตรงกับหมวดหมู่ปัจจุบัน
+                            $current_id = $row['c_id'];
+                            $count_sql = "SELECT COUNT(*) as total FROM products WHERE c_id = '$current_id'";
                             $count_result = mysqli_query($conn, $count_sql);
-                            $count_data = mysqli_fetch_assoc($count_result);
-                            echo $count_data['total']." รายการ";
-                            */
-                            echo "0 รายการ";
+                            
+                            if($count_result) {
+                                $count_data = mysqli_fetch_assoc($count_result);
+                                echo number_format($count_data['total']) . " รายการ";
+                            } else {
+                                echo "0 รายการ";
+                            }
                             ?>
                         </td>
 
                         <td class="text-center">
 
-                            <!-- ปุ่มแก้ไข -->
-                            <a href="edit_category.php?id=<?php echo $row['cat_id']; ?>" 
+                            <a href="edit_category.php?id=<?php echo $row['c_id']; ?>" 
                                class="btn btn-sm btn-outline-dark btn-action me-1">
                                 <i class="bi bi-pencil-square"></i> แก้ไข
                             </a>
 
-                            <!-- ปุ่มลบ -->
-                            <a href="delete_category.php?id=<?php echo $row['cat_id']; ?>" 
+                            <a href="delete_category.php?id=<?php echo $row['c_id']; ?>" 
                                class="btn btn-sm btn-outline-danger btn-action"
-                               onclick="return confirm('คุณต้องการลบหมวดหมู่นี้หรือไม่?');">
+                               onclick="return confirm('คุณต้องการลบหมวดหมู่ [<?php echo $row['c_name']; ?>] หรือไม่?\nการลบนี้ไม่สามารถย้อนกลับได้');">
                                 <i class="bi bi-trash"></i> ลบ
                             </a>
 
                         </td>
                     </tr>
                 <?php } ?>
+
+                <?php if(mysqli_num_rows($result) == 0): ?>
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">ไม่พบข้อมูลหมวดหมู่สินค้าในระบบ</td>
+                    </tr>
+                <?php endif; ?>
 
                 </tbody>
             </table>
