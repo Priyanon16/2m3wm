@@ -1,5 +1,3 @@
-
-
 <?php
 include "connectdb.php";
 
