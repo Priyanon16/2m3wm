@@ -137,14 +137,9 @@
         <h2>เข้าสู่ระบบ</h2>
         <p class="subtitle">เข้าสู่บัญชีของคุณเพื่อดำเนินการต่อ</p>
 
-        <form action="process_login.php" method="POST">
-            <div class="form-group">
-                <label>อีเมล</label>
-                <div class="input-wrapper">
-                    <i class="fa-regular fa-envelope"></i>
-                    <input type="email" name="email" placeholder="your@email.com" required>
-                </div>
-            </div>
+        <form action="" method="POST">
+            Username <input type="text" name="auser" autofocus required><br>
+            Password <input type="password" name="apwd" required><br>
 
             <div class="form-group">
                 <label>รหัสผ่าน</label>
@@ -164,6 +159,30 @@
             ยังไม่มีบัญชี? <a href="register.php">สมัครสมาชิก</a>
         </p>
     </div>
+
+<?php
+if(isset($_POST['Submit'])) {
+    include_once("connectdb.php");
+    $sql = "SELECT * FROM admin WHERE a_username='{$_POST['auser']}' AND a_password='{$_POST['apwd']}' LIMIT 1 ";
+    $rs = mysqli_query($conn,$sql);
+    $num = mysqli_num_rows($rs);
+
+    if($num == 1) {
+        $data = mysqli_fetch_array($rs);
+        $_SESSION['aid'] = $data['a_id'];
+        $_SESSION['aname'] = $data['a_name'];
+        echo"<script>" ;
+        echo "window.location='index.php';";
+        echo "</script>";
+    } else {
+        echo"<script>" ;
+        echo "alert('Username หรือ Password ไม่ถูกต้อง');";
+        echo "</script>";
+    }
+
+}
+?>
+
 
 </body>
 </html>
