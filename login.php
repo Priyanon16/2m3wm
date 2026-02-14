@@ -195,7 +195,7 @@ if(isset($_POST['email'])){
         </form>
 
         <p class="footer-text">
-            กลับไปยังหน้าหลัก? <a href="index.php">คลิกที่นี่</a>
+            ยังไม่มีบัญชีใช่ไหม? <a href="register.php">คลิกที่นี่</a>
         </p>
     </div>
 
