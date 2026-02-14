@@ -54,6 +54,7 @@ if(isset($_POST['save'])){
                                     <label>หมวดหมู่</label>
                                     <select name="c_id" class="form-select" required>
                                         <option value="">-- เลือกหมวดหมู่ --</option>
+                                        
                                         <?php while($c = mysqli_fetch_assoc($cat_query)){ ?>
                                             <option value="<?= $c['c_id']; ?>"><?= $c['c_name']; ?></option>
                                         <?php } ?>

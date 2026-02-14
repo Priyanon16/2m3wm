@@ -143,7 +143,7 @@ body {
 
         <ul class="nav nav-pills flex-column mb-auto">
             <li>
-                <a href="#" class="nav-link text-white">
+                <a href="index_admin.php" class="nav-link text-white">
                     <i class="bi bi-speedometer2"></i>
                     <span>แดชบอร์ด</span>
                 </a>
@@ -173,12 +173,12 @@ body {
     <div class="collapse ps-4" id="productMenu">
         <ul class="nav flex-column mt-1">
             <li class="nav-item">
-                <a href="#" class="nav-link text-white small">
+                <a href="edit_product.php" class="nav-link text-white small">
                     จัดการสินค้า
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link text-white small">
+                <a href="category_products.php" class="nav-link text-white small">
                     จัดการประเภทสินค้า
                 </a>
             </li>
@@ -187,7 +187,7 @@ body {
 </li>
 
             <li>
-                <a href="#" class="nav-link text-white">
+                <a href="customer_data.php" class="nav-link text-white">
                     <i class="bi bi-people"></i>
                     <span>ลูกค้า</span>
                 </a>
