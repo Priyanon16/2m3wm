@@ -37,8 +37,7 @@ if(isset($_POST['email'])){
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SNEAKERHUB - Login</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>2M3WM - Login</title> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -170,8 +169,7 @@ if(isset($_POST['email'])){
     </a>
 
     <div class="login-card">
-        <div class="brand-name">SNEAKERHUB</div>
-        <h2>เข้าสู่ระบบ</h2>
+        <div class="brand-name">2M3WM</div> <h2>เข้าสู่ระบบ</h2>
         <p class="subtitle">ระบบจัดการหลังบ้าน (Admin Panel)</p>
 
         <form action="" method="POST">
@@ -179,7 +177,7 @@ if(isset($_POST['email'])){
                 <label><i class="fa-regular fa-envelope me-1"></i> อีเมล</label>
                 <div class="input-wrapper">
                     <i class="fa-solid fa-user-tag"></i>
-                    <input type="email" name="email" placeholder="example@sneakerhub.com" required autofocus>
+                    <input type="email" name="email" placeholder="example@2m3wm.com" required autofocus>
                 </div>
             </div>
 
@@ -205,12 +203,9 @@ if(isset($_POST['email'])){
         if(isset($_POST['Submit'])) {
             include_once("connectdb.php");
             
-            // รับค่าและป้องกัน SQL Injection
             $email = mysqli_real_escape_string($conn, trim($_POST['email']));
             $password = mysqli_real_escape_string($conn, $_POST['password']);
 
-            // ตรวจสอบข้อมูลในตาราง users (id, name, email, password, role)
-            // หมายเหตุ: ในระบบจริงควรใช้ password_verify() แต่กรณีนี้อิงตามฐานข้อมูลเดิมของคุณ
             $sql = "SELECT * FROM users WHERE email='{$email}' AND password='{$password}' AND role='admin' LIMIT 1";
             $rs = mysqli_query($conn, $sql);
             
@@ -218,11 +213,9 @@ if(isset($_POST['email'])){
                 if(mysqli_num_rows($rs) == 1) {
                     $data = mysqli_fetch_array($rs);
                     
-                    // ตั้งค่า Session
                     $_SESSION['aid'] = $data['id']; 
                     $_SESSION['aname'] = $data['name'];
                     
-                    // ล็อกอินสำเร็จ ส่งไปหน้า index หลังบ้าน
                     echo "<script>window.location='index.php';</script>";
                 } else {
                     echo "<script>alert('อีเมลหรือรหัสผ่านไม่ถูกต้อง หรือคุณไม่มีสิทธิ์ Admin');</script>";
