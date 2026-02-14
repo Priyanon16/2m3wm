@@ -9,12 +9,17 @@ $cat_query = mysqli_query($conn, "SELECT * FROM category");
 if(isset($_POST['save'])){
     $name = mysqli_real_escape_string($conn, $_POST['p_name']);
     $price = $_POST['p_price'];
+    
+    // รับค่าประเภท (ชาย/หญิง) ที่เพิ่มเข้ามา
+    $type = mysqli_real_escape_string($conn, $_POST['p_type']); 
+    
     $detail = mysqli_real_escape_string($conn, $_POST['p_detail']);
     $c_id = $_POST['c_id'];
-    $img = $_POST['p_img']; // รับเป็น URL (หากต้องการอัปโหลดไฟล์ต้องแก้ส่วนนี้เพิ่ม)
+    $img = $_POST['p_img'];
 
-    $sql = "INSERT INTO products (p_name, p_price, p_detail, p_img, c_id) 
-            VALUES ('$name', '$price', '$detail', '$img', '$c_id')";
+    // เพิ่ม p_type ลงในคำสั่ง SQL
+    $sql = "INSERT INTO products (p_name, p_price, p_type, p_detail, p_img, c_id) 
+            VALUES ('$name', '$price', '$type', '$detail', '$img', '$c_id')";
     
     if(mysqli_query($conn, $sql)){
         echo "<script>alert('เพิ่มสินค้าสำเร็จ!'); window.location='admin_product.php';</script>";
@@ -45,26 +50,34 @@ if(isset($_POST['save'])){
                                 <label>ชื่อสินค้า</label>
                                 <input type="text" name="p_name" class="form-control" required>
                             </div>
+                            
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label>ราคา (บาท)</label>
                                     <input type="number" name="p_price" class="form-control" required>
                                 </div>
+                                
                                 <div class="col-md-6 mb-3">
-                                    <label>หมวดหมู่</label>
-                                    <select name="c_id" class="form-select" required>
-                                        <option value="">-- เลือกหมวดหมู่ --</option>
-                                        <select id="position" name="position" class="form-select" required>
-                                            <option value="" selected disabled>--- กรุณาเลือกตำแหน่ง ---</option>
-                                            <option value="male">ผู้ชาย</option>
-                                            <option value="female">ผู้หญิง</option>
-                                        </select>
-                                        <?php while($c = mysqli_fetch_assoc($cat_query)){ ?>
-                                            <option value="<?= $c['c_id']; ?>"><?= $c['c_name']; ?></option>
-                                        <?php } ?>
+                                    <label>ประเภทสินค้า</label>
+                                    <select name="p_type" class="form-select" required>
+                                        <option value="" selected disabled>-- เลือกประเภท --</option>
+                                        <option value="male">ผู้ชาย</option>
+                                        <option value="female">ผู้หญิง</option>
+                                        <option value="unisex">Unisex</option>
                                     </select>
                                 </div>
                             </div>
+
+                            <div class="mb-3">
+                                <label>หมวดหมู่ (แบรนด์/ชนิด)</label>
+                                <select name="c_id" class="form-select" required>
+                                    <option value="">-- เลือกหมวดหมู่ --</option>
+                                    <?php while($c = mysqli_fetch_assoc($cat_query)){ ?>
+                                        <option value="<?= $c['c_id']; ?>"><?= $c['c_name']; ?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+
                             <div class="mb-3">
                                 <label>URL รูปภาพ</label>
                                 <input type="text" name="p_img" class="form-control" placeholder="https://...">

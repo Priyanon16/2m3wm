@@ -144,7 +144,7 @@
 
         <div class="col-md-4 col-sm-6">
             <a href="orderlist.php" class="menu-card">
-                <i class="bi bi-receipt card-icon" style="color: #111;"></i>
+                <i class="bi bi-receipt card-icon" style="color: #ff5722;"></i>
                 <h4 class="card-title">จัดการออเดอร์</h4>
                 <p class="card-desc">ตรวจสอบรายการสั่งซื้อและการแจ้งชำระเงินของลูกค้า</p>
             </a>
@@ -160,7 +160,7 @@
 
         <div class="col-md-4 col-sm-6">
             <a href="category_products.php" class="menu-card">
-                <i class="bi bi-tags card-icon" style="color: #111;"></i>
+                <i class="bi bi-tags card-icon" style="color: #ff5722;"></i>
                 <h4 class="card-title">จัดการหมวดหมู่</h4>
                 <p class="card-desc">แยกประเภทสินค้า เช่น รองเท้าวิ่ง, รองเท้าแฟชั่น</p>
             </a>
