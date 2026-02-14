@@ -1,0 +1,166 @@
+<?php
+if(!isset($_SESSION['cart'])) $_SESSION['cart'] = [];
+if(!isset($_SESSION['favorite'])) $_SESSION['favorite'] = [];
+
+$totalCart = array_sum($_SESSION['cart']);
+$totalFav  = count($_SESSION['favorite']);
+?>
+
+<style>
+/* ===== HEADER STYLE ===== */
+.main-header{
+  background:#111;
+  padding:16px 0;
+}
+
+.logo{
+  font-weight:700;
+  font-size:22px;
+  letter-spacing:1px;
+  color:#fff;
+}
+
+.logo span{
+  color:#ff7a00;
+}
+
+.nav-menu .nav-link{
+  color:#ddd;
+  font-weight:500;
+  transition:.3s;
+  position:relative;
+}
+
+.nav-menu .nav-link:hover{
+  color:#ff7a00;
+}
+
+.nav-menu .nav-link::after{
+  content:"";
+  position:absolute;
+  left:0;
+  bottom:-6px;
+  width:0%;
+  height:2px;
+  background:#ff7a00;
+  transition:.3s;
+}
+
+.nav-menu .nav-link:hover::after{
+  width:100%;
+}
+
+/* ICONS */
+.header-icons a{
+  color:#fff;
+  font-size:18px;
+  transition:.3s;
+  position:relative;
+}
+
+.header-icons a:hover{
+  color:#ff7a00;
+  transform:translateY(-2px);
+}
+
+/* BADGE */
+.icon-badge{
+  position:absolute;
+  top:-6px;
+  right:-8px;
+  font-size:11px;
+  padding:4px 6px;
+  border-radius:50%;
+}
+
+/* SEARCH */
+.search-box{
+  position:relative;
+  width:250px;
+}
+
+.search-box input{
+  background:#222;
+  border:none;
+  color:#fff;
+  border-radius:50px;
+  padding:8px 40px 8px 15px;
+}
+
+.search-box input::placeholder{
+  color:#aaa;
+}
+
+.search-box i{
+  position:absolute;
+  right:15px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#aaa;
+}
+</style>
+
+<header class="main-header">
+  <div class="container d-flex align-items-center justify-content-between">
+
+    <!-- LOGO -->
+    <div class="logo">
+      2M<span>3WM</span>
+    </div>
+
+    <!-- MENU -->
+    <ul class="nav nav-menu gap-4 d-none d-lg-flex">
+      <li class="nav-item">
+        <a class="nav-link" href="index.php">หน้าแรก</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="all_products.php">สินค้าทั้งหมด</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">แบรนด์</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">โปรโมชั่น</a>
+      </li>
+    </ul>
+
+    <!-- RIGHT SIDE -->
+    <div class="d-flex align-items-center gap-4">
+
+      <!-- SEARCH -->
+      <div class="search-box d-none d-lg-block">
+        <input type="text" placeholder="ค้นหาสินค้า...">
+        <i class="bi bi-search"></i>
+      </div>
+
+      <!-- ICONS -->
+      <div class="d-flex gap-3 header-icons">
+
+        <a href="login.php">
+          <i class="bi bi-person"></i>
+        </a>
+
+        <a href="favorite.php">
+          <i class="bi bi-heart"></i>
+          <?php if($totalFav>0){ ?>
+            <span class="badge bg-danger icon-badge">
+              <?= $totalFav ?>
+            </span>
+          <?php } ?>
+        </a>
+
+        <a href="cart.php">
+          <i class="bi bi-bag"></i>
+          <?php if($totalCart>0){ ?>
+            <span class="badge bg-warning text-dark icon-badge">
+              <?= $totalCart ?>
+            </span>
+          <?php } ?>
+        </a>
+
+      </div>
+
+    </div>
+
+  </div>
+</header>
