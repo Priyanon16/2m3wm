@@ -1,7 +1,21 @@
 <?php
 // admin_add.php
 session_start();
-include "data.php";
+
+// --- ส่วนเชื่อมต่อฐานข้อมูล (แทนไฟล์ data.php) ---
+// แก้ไข username และ password ให้ตรงกับ Server ของคุณนะครับ
+$servername = "localhost";
+$username = "admin_man";     // ใส่ username ของ database (ถ้าใช้ XAMPP ปกติคือ root)
+$password = "66010914015";         // ใส่ password ของ database (ถ้าใช้ XAMPP ปกติคือว่างไว้)
+$dbname = "2m3wm";      // ชื่อฐานข้อมูลของคุณ (ดูจากรูปที่คุณส่งมา)
+
+$conn = mysqli_connect($servername, $username, $password, $dbname);
+
+// เช็คการเชื่อมต่อ
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+// ------------------------------------------------
 
 if(isset($_POST['save'])){
     $name = mysqli_real_escape_string($conn, $_POST['p_name']);
@@ -13,9 +27,13 @@ if(isset($_POST['save'])){
     $detail = mysqli_real_escape_string($conn, $_POST['p_detail']);
     $img = $_POST['p_img'];
 
-    // SQL ตัด c_id ออกแล้ว เหลือแค่ p_type
-    $sql = "INSERT INTO products (p_name, p_price, p_type, p_detail, p_img) 
-            VALUES ('$name', '$price', '$type', '$detail', '$img')";
+    // --- จุดสำคัญ ---
+    // กำหนดค่า c_id เป็น 1 (เพื่อให้ Database ยอมบันทึก เพราะห้ามเป็นค่าว่าง)
+    $c_id = 1; 
+
+    // เพิ่ม c_id กลับเข้าไปในคำสั่ง SQL
+    $sql = "INSERT INTO products (p_name, p_price, p_type, p_detail, p_img, c_id) 
+            VALUES ('$name', '$price', '$type', '$detail', '$img', '$c_id')";
     
     if(mysqli_query($conn, $sql)){
         echo "<script>alert('เพิ่มสินค้าสำเร็จ!'); window.location='admin_product.php';</script>";
