@@ -1,107 +1,203 @@
-<?php 
-    include_once("check_login.php");
-    include_once("connectdb.php"); // ดึงไฟล์เชื่อมต่อฐานข้อมูล
+<?php
+session_start();
+include "data.php"; // เชื่อมต่อฐานข้อมูล
+
+// ---------------------------------------------------
+// 1. ส่วนจัดการข้อมูล (PHP Logic: Insert, Update, Delete)
+// ---------------------------------------------------
+
+// เช็คสถานะปัจจุบัน (ถ้าไม่มีให้เป็น 'index' คือหน้าตาราง)
+$act = isset($_GET['act']) ? $_GET['act'] : 'index';
+
+// --- ลบข้อมูล ---
+if(isset($_GET['delete_id'])){
+    $del_id = $_GET['delete_id'];
+    mysqli_query($conn, "DELETE FROM products WHERE p_id = '$del_id'");
+    echo "<script>alert('ลบข้อมูลเรียบร้อย'); window.location='admin_manage.php';</script>";
+}
+
+// --- บันทึกข้อมูลใหม่ (Insert) ---
+if(isset($_POST['save_product'])){
+    $name = mysqli_real_escape_string($conn, $_POST['p_name']);
+    $price = $_POST['p_price'];
+    $detail = mysqli_real_escape_string($conn, $_POST['p_detail']);
+    $c_id = $_POST['c_id'];
+    $img = $_POST['p_img'];
+
+    $sql = "INSERT INTO products (p_name, p_price, p_detail, p_img, c_id) 
+            VALUES ('$name', '$price', '$detail', '$img', '$c_id')";
+    
+    if(mysqli_query($conn, $sql)){
+        echo "<script>alert('เพิ่มสินค้าเรียบร้อย'); window.location='admin_manage.php';</script>";
+    }
+}
+
+// --- อัปเดตข้อมูล (Update) ---
+if(isset($_POST['update_product'])){
+    $id = $_POST['p_id'];
+    $name = mysqli_real_escape_string($conn, $_POST['p_name']);
+    $price = $_POST['p_price'];
+    $detail = mysqli_real_escape_string($conn, $_POST['p_detail']);
+    $c_id = $_POST['c_id'];
+    $img = $_POST['p_img'];
+
+    $sql = "UPDATE products SET 
+            p_name='$name', p_price='$price', p_detail='$detail', p_img='$img', c_id='$c_id' 
+            WHERE p_id='$id'";
+
+    if(mysqli_query($conn, $sql)){
+        echo "<script>alert('แก้ไขข้อมูลเรียบร้อย'); window.location='admin_manage.php';</script>";
+    }
+}
 ?>
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>จัดการสินค้า - จีรวัฒน์ ศักดิ์วงษ์</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #f8f9fa; }
-        .sidebar { min-height: 100vh; background: #212529; color: white; }
-        .nav-link { color: rgba(255,255,255,0.7); }
-        .nav-link:hover, .nav-link.active { color: #fff; background: rgba(255,255,255,0.1); }
-        .main-content { padding: 25px; }
-        .product-img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; }
-    </style>
+    <meta charset="UTF-8">
+    <title>ระบบจัดการสินค้า | Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-light">
 
-<div class="container-fluid">
-    <div class="row">
-        <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse p-3 shadow">
-            <div class="text-center my-4">
-                <h6 class="mb-0"><?php echo $_SESSION['aname']; ?></h6>
-                <small class="text-success fw-bold">Online</small>
-            </div>
-            <hr class="text-secondary">
-            <ul class="nav nav-pills flex-column mb-auto">
-                <li class="nav-item"><a href="index2.php" class="nav-link mb-2"><i class="bi bi-house-door me-2"></i> หน้าแรก</a></li>
-                <li><a href="products.php" class="nav-link active mb-2"><i class="bi bi-box-seam me-2"></i> จัดการสินค้า</a></li>
-                <li><a href="orders.php" class="nav-link mb-2"><i class="bi bi-cart-check me-2"></i> จัดการออเดอร์</a></li>
-                <li><a href="customers.php" class="nav-link mb-2"><i class="bi bi-people me-2"></i> จัดการลูกค้า</a></li>
-                <li class="mt-4"><a href="logout.php" class="nav-link text-danger border border-danger border-opacity-25 text-center rounded">ออกจากระบบ</a></li>
-            </ul>
-        </nav>
+<div class="container py-5">
 
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">จัดการข้อมูลสินค้า</h1>
-                <a href="product_add.php" class="btn btn-primary">
-                    <i class="bi bi-plus-circle me-1"></i> เพิ่มสินค้าใหม่
-                </a>
-            </div>
-
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="px-4">รหัสสินค้า</th>
-                                    <th>รูปภาพ</th>
-                                    <th>ชื่อสินค้า</th>
-                                    <th>ราคา</th>
-                                    <th>คงเหลือ</th>
-                                    <th class="text-center">จัดการ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                    $sql = "SELECT * FROM products ORDER BY p_id DESC"; // เปลี่ยนชื่อตารางตามจริง
-                                    $rs = mysqli_query($conn, $sql);
-                                    while ($data = mysqli_fetch_array($rs)) {
-                                ?>
-                                <tr class="align-middle">
-                                    <td class="px-4"><?php echo $data['p_id']; ?></td>
-                                    <td>
-                                        <img src="images/<?php echo $data['p_image']; ?>" class="product-img" onerror="this.src='https://placehold.co/50x50?text=No+Img'">
-                                    </td>
-                                    <td><?php echo $data['p_name']; ?></td>
-                                    <td><?php echo number_format($data['p_price'], 2); ?> ฿</td>
-                                    <td><?php echo $data['p_stock']; ?> ชิ้น</td>
-                                    <td class="text-center">
-                                        <div class="btn-group" role="group">
-                                            <a href="product_edit.php?id=<?php echo $data['p_id']; ?>" class="btn btn-outline-warning btn-sm">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </a>
-                                            <a href="product_delete.php?id=<?php echo $data['p_id']; ?>" 
-                                               class="btn btn-outline-danger btn-sm" 
-                                               onclick="return confirm('ยืนยันการลบสินค้าชิ้นนี้?')">
-                                                <i class="bi bi-trash"></i>
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <?php } ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            
-            <footer class="mt-5 text-center text-muted small">
-                &copy; 2026 ระบบจัดการหลังบ้าน 
-            </footer>
-        </main>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3><i class="bi bi-box-seam"></i> จัดการสินค้าหลังบ้าน</h3>
+        <?php if($act != 'index'){ ?>
+            <a href="admin_manage.php" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> ย้อนกลับ</a>
+        <?php } ?>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <?php 
+    // === VIEW 1: ฟอร์มเพิ่มสินค้า ===
+    if($act == 'add'){ 
+        // ดึงหมวดหมู่มาใส่ Select
+        $cats = mysqli_query($conn, "SELECT * FROM category");
+    ?>
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-success text-white">เพิ่มสินค้าใหม่</div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="mb-3">
+                        <label>ชื่อสินค้า</label>
+                        <input type="text" name="p_name" class="form-control" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label>ราคา</label>
+                            <input type="number" name="p_price" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>หมวดหมู่</label>
+                            <select name="c_id" class="form-select" required>
+                                <option value="">-- เลือก --</option>
+                                <?php while($c = mysqli_fetch_assoc($cats)){ ?>
+                                    <option value="<?=$c['c_id']?>"><?=$c['c_name']?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label>URL รูปภาพ</label>
+                        <input type="text" name="p_img" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label>รายละเอียด</label>
+                        <textarea name="p_detail" class="form-control" rows="3"></textarea>
+                    </div>
+                    <button type="submit" name="save_product" class="btn btn-success w-100">บันทึก</button>
+                </form>
+            </div>
+        </div>
+
+    <?php 
+    // === VIEW 2: ฟอร์มแก้ไขสินค้า ===
+    } elseif($act == 'edit'){ 
+        $id = $_GET['id'];
+        $res = mysqli_query($conn, "SELECT * FROM products WHERE p_id='$id'");
+        $row = mysqli_fetch_assoc($res);
+        $cats = mysqli_query($conn, "SELECT * FROM category");
+    ?>
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-warning text-dark">แก้ไขสินค้า ID: <?=$id?></div>
+            <div class="card-body">
+                <form method="post">
+                    <input type="hidden" name="p_id" value="<?=$row['p_id']?>">
+                    <div class="mb-3">
+                        <label>ชื่อสินค้า</label>
+                        <input type="text" name="p_name" class="form-control" value="<?=$row['p_name']?>" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label>ราคา</label>
+                            <input type="number" name="p_price" class="form-control" value="<?=$row['p_price']?>" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>หมวดหมู่</label>
+                            <select name="c_id" class="form-select" required>
+                                <?php while($c = mysqli_fetch_assoc($cats)){ ?>
+                                    <option value="<?=$c['c_id']?>" <?=($c['c_id']==$row['c_id'])?'selected':''?>>
+                                        <?=$c['c_name']?>
+                                    </option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label>URL รูปภาพ</label>
+                        <input type="text" name="p_img" class="form-control" value="<?=$row['p_img']?>">
+                        <?php if($row['p_img']){ echo "<img src='{$row['p_img']}' width='80' class='mt-2 rounded'>"; } ?>
+                    </div>
+                    <div class="mb-3">
+                        <label>รายละเอียด</label>
+                        <textarea name="p_detail" class="form-control" rows="3"><?=$row['p_detail']?></textarea>
+                    </div>
+                    <button type="submit" name="update_product" class="btn btn-warning w-100">อัปเดตข้อมูล</button>
+                </form>
+            </div>
+        </div>
+
+    <?php 
+    // === VIEW 3: ตารางแสดงข้อมูล (Default) ===
+    } else { 
+        $products = mysqli_query($conn, "SELECT p.*, c.c_name FROM products p LEFT JOIN category c ON p.c_id = c.c_id ORDER BY p.p_id DESC");
+    ?>
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-end mb-3">
+                    <a href="?act=add" class="btn btn-primary">+ เพิ่มสินค้าใหม่</a>
+                </div>
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>รูป</th>
+                            <th>ชื่อสินค้า</th>
+                            <th>ราคา</th>
+                            <th>หมวดหมู่</th>
+                            <th>จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while($p = mysqli_fetch_assoc($products)){ ?>
+                        <tr>
+                            <td><img src="<?=$p['p_img']?>" width="50" class="rounded"></td>
+                            <td><?=$p['p_name']?></td>
+                            <td class="text-success fw-bold">฿<?=number_format($p['p_price'])?></td>
+                            <td><span class="badge bg-secondary"><?=$p['c_name']?></span></td>
+                            <td>
+                                <a href="?act=edit&id=<?=$p['p_id']?>" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+                                <a href="?delete_id=<?=$p['p_id']?>" class="btn btn-sm btn-danger" onclick="return confirm('ยืนยันลบ?')"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        <?php } ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    <?php } ?>
+
+</div>
 </body>
 </html>
