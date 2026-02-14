@@ -1,31 +1,18 @@
 <?php
 session_start();
 include "data.php";
+include "functions.php";
 include "header.php";
 
-if(!isset($_SESSION['cart'])){
-    $_SESSION['cart'] = [];
-}
-
-if(!isset($_SESSION['favorite'])){
-    $_SESSION['favorite'] = [];
-}
-
 if(isset($_GET['add_to_cart'])){
-    $id = $_GET['add_to_cart'];
-    $_SESSION['cart'][] = $id;
-    header("Location: index.php");
-    exit;
+    addToCart($_GET['add_to_cart']);
 }
 
 if(isset($_GET['add_to_fav'])){
-    $id = $_GET['add_to_fav'];
-    $_SESSION['favorite'][] = $id;
-    header("Location: index.php");
-    exit;
+    addToFavorite($_GET['add_to_fav']);
 }
-
 ?>
+
 
 <!DOCTYPE html>
 <html lang="th">
@@ -48,8 +35,6 @@ body{
   font-family:'Kanit',sans-serif;
   background:#f8f9fa;
 }
-
-/* HEADER */
 
 
 #bannerSlider{
@@ -83,10 +68,7 @@ body{
 }
 
 
-/* HEADER SPACING */
-header .container{
-  gap:20px;
-}
+
 
 /* CARD BODY */
 .card-body{
@@ -142,36 +124,6 @@ header .container{
 
 <body>
 
-<!-- HEADER -->
-<header class="p-3">
-  <div class="container d-flex align-items-center justify-content-between">
-    <h4 class="text-white mb-0">2M3WM</h4>
-
-    <ul class="nav col-12 col-lg-auto ms-lg-auto mb-2 justify-content-center mb-md-0 gap-3">
-          <li><a href="#" class="nav-link px-2 text-white">สินค้าใหม่</a></li>
-          <li><a href="#" class="nav-link px-2 text-white">ชาย</a></li>
-          <li><a href="#" class="nav-link px-2 text-white">หญิง</a></li>
-        </ul>
-
-        <div class="search-box ms-lg-3">
-            <i class="bi bi-search"></i>
-            <input type="text" id="searchInput"
-                class="form-control"
-                placeholder="ค้นหาสินค้า...">
-        </div>
-
-
-    <div class="d-flex gap-3 header-icons">
-      <a href="login.php"><i class="bi bi-person"></i></a>
-      <a href="#"><i class="bi bi-heart"></i></a>
-      <a href="#" class="position-relative">
-        <i class="bi bi-bag"></i>
-        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark">2</span>
-      </a>
-    </div>
-  </div>
-</header>
-
 <!-- SLIDER -->
 <div id="bannerSlider" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
 
@@ -222,7 +174,7 @@ header .container{
       <img src="images/brands/nike.jpg" alt="Nike">
       <img src="images/brands/puma.jpg" alt="Puma">
       <img src="images/brands/adidas.jpg" alt="Adidas">
-      <img src="images/brands/jordan.jpg alt="Jordan">
+      <img src="images/brands/jordan.jpg" alt="Jordan">
     </div>
 
     <div class="mt-4">
@@ -251,7 +203,7 @@ header .container{
             </div>
         </a>
         </div>
-        <?php } ?>
+      <?php } ?> 
 
 
     </div>
