@@ -61,50 +61,52 @@
             color: #ff5722;
             font-weight: 600;
         }
+    /* MENU CARDS - ปรับปรุงให้ยืดหยุ่นและขนาดเท่ากัน */
+    .menu-card {
+        border: none;
+        border-radius: 20px;
+        background: #fff;
+        transition: all 0.3s ease;
+        text-align: center;
+        padding: 40px 20px;
+        height: 100%; /* บังคับให้สูงเท่ากับแถว */
+        display: flex; /* ใช้ Flexbox */
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-decoration: none;
+        color: #333;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    }
 
-        /* MENU CARDS */
-        .menu-card {
-            border: none;
-            border-radius: 20px;
-            background: #fff;
-            transition: all 0.3s ease;
-            text-align: center;
-            padding: 40px 20px;
-            height: 100%;
-            display: block;
-            text-decoration: none;
-            color: #333;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-        }
-        .menu-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 35px rgba(255, 87, 34, 0.15);
-            color: #ff5722;
-        }
-        .card-icon {
-            font-size: 3.5rem;
-            margin-bottom: 20px;
-            display: block;
-            transition: 0.3s;
-        }
-        .menu-card:hover .card-icon {
-            transform: scale(1.1);
-            color: #ff5722;
-        }
-        .card-title {
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-        .card-desc {
-            color: #888;
-            font-size: 0.9rem;
-        }
+    .menu-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(255, 87, 34, 0.15);
+        color: #ff5722;
+    }
 
-        footer {
-            color: #aaa;
-            margin-top: 80px;
-        }
-    </style>
+    .card-icon {
+        font-size: 3.5rem;
+        margin-bottom: 20px;
+        display: block;
+        transition: 0.3s;
+        color: #ff5722; /* กำหนดสีส้มมาตรฐาน */
+    }
+
+    .menu-card:hover .card-icon {
+        transform: scale(1.1);
+    }
+
+    .card-title {
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .card-desc {
+        color: #888;
+        font-size: 0.9rem;
+    }
+</style>
 </head>
 <body>
 

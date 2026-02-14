@@ -67,17 +67,6 @@ if(isset($_POST['save'])){
                                     </select>
                                 </div>
                             </div>
-
-                            <div class="mb-3">
-                                <label>หมวดหมู่ (แบรนด์/ชนิด)</label>
-                                <select name="c_id" class="form-select" required>
-                                    <option value="">-- เลือกหมวดหมู่ --</option>
-                                    <?php while($c = mysqli_fetch_assoc($cat_query)){ ?>
-                                        <option value="<?= $c['c_id']; ?>"><?= $c['c_name']; ?></option>
-                                    <?php } ?>
-                                </select>
-                            </div>
-
                             <div class="mb-3">
                                 <label>URL รูปภาพ</label>
                                 <input type="text" name="p_img" class="form-control" placeholder="https://...">
