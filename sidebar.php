@@ -127,7 +127,6 @@ body {
     <!-- Sidebar -->
     <div id="sidebar" class="sidebar p-3">
         <div class="d-flex align-items-center justify-content-between mb-3">
-            <i class="bi bi-heart brand-icon"></i>
             <span class="logo-text">
                 <span class="brand-accent">2m</span>3wm
             </span>

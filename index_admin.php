@@ -135,7 +135,7 @@
     
     <div class="row g-4 justify-content-center">
         <div class="col-md-4 col-sm-6">
-            <a href="adm.php" class="menu-card">
+            <a href="admin_product.php" class="menu-card">
                 <i class="bi bi-box-seam card-icon" style="color: #ff5722;"></i>
                 <h4 class="card-title">จัดการสินค้า</h4>
                 <p class="card-desc">เพิ่มรายการสินค้าใหม่ แก้ไขราคา หรือจำนวนสต็อก</p>

@@ -18,7 +18,7 @@ include_once("connectdb.php");
         .logo-text { font-size: 1.6rem; font-weight: 600; letter-spacing: 0.5px; }
         .brand-accent { color: #ff7a00; }
 
-        /* Sidebar สไตล์ใหม่ */
+        /* Sidebar Essential CSS (ควรเก็บไว้เพื่อให้ Layout ทำงานได้) */
         .sidebar {
             width: 280px; min-height: 100vh; background: #212529; color: #fff;
             transition: all 0.3s ease; display: flex; flex-direction: column; overflow-x: hidden;
@@ -26,13 +26,12 @@ include_once("connectdb.php");
         .sidebar.collapsed { width: 80px; }
         .sidebar.collapsed span, .sidebar.collapsed .logo-text, .sidebar.collapsed .user-text, .sidebar.collapsed .submenu-arrow { display: none; }
         .sidebar.collapsed .collapse { display: none !important; }
-
-        .sidebar .nav-link { color: #fff; display: flex; align-items: center; gap: 12px; padding: 12px; transition: 0.2s; }
+        .sidebar .nav-link { color: #fff; display: flex; align-items: center; gap: 12px; padding: 12px; transition: 0.2s; text-decoration: none; }
         .sidebar .nav-link:hover { background: rgba(255,255,255,0.15); }
         .sidebar .nav-link.active { background: #ff7a00; color: #fff; border-radius: 8px; }
         .sidebar-toggle i { color: #ff7a00; font-size: 1.8rem; }
 
-        /* ส่วนเนื้อหาหลัก */
+        /* Main Content Styling */
         .content { flex: 1; background: #f8f9fa; min-height: 100vh; padding: 30px; }
         .main-card { background: #fff; border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: none; }
         .badge-category { background-color: #fff3e0; color: #ff7a00; padding: 8px 15px; border-radius: 50px; font-weight: 500; }
@@ -43,61 +42,7 @@ include_once("connectdb.php");
 <body>
 
 <div class="d-flex">
-    <div id="sidebar" class="sidebar p-3 shadow">
-        <div class="d-flex align-items-center justify-content-between mb-3">
-            <span class="logo-text ms-2">
-                <span class="brand-accent">2M</span>3WM
-            </span>
-            <button class="btn btn-link text-white sidebar-toggle" id="toggleBtn">
-                <i class="bi bi-list"></i>
-            </button>
-        </div>
-        <hr>
-        <ul class="nav nav-pills flex-column mb-auto">
-            <li class="nav-item">
-                <a href="index.php" class="nav-link">
-                    <i class="bi bi-speedometer2"></i> <span>แดชบอร์ด</span>
-                </a>
-            </li>
-            <li>
-                <a href="orders.php" class="nav-link">
-                    <i class="bi bi-table"></i> <span>ออเดอร์</span>
-                </a>
-            </li>
-            <li>
-                <a class="nav-link d-flex justify-content-between align-items-center" 
-                   data-bs-toggle="collapse" href="#productMenu" role="button" aria-expanded="true">
-                    <div><i class="bi bi-box me-2"></i><span>สินค้า</span></div>
-                    <i class="bi bi-chevron-down submenu-arrow small"></i>
-                </a>
-                <div class="collapse show ps-4" id="productMenu">
-                    <ul class="nav flex-column mt-1">
-                        <li class="nav-item">
-                            <a href="products.php" class="nav-link small">จัดการสินค้า</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="category_products.php" class="nav-link active small">จัดการประเภทสินค้า</a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-            <li>
-                <a href="customers.php" class="nav-link">
-                    <i class="bi bi-people"></i> <span>ลูกค้า</span>
-                </a>
-            </li>
-        </ul>
-        <hr>
-        <div class="dropdown mt-auto">
-            <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
-                <i class="bi bi-person-circle me-2 fs-4"></i>
-                <strong class="user-text"><?= $_SESSION['username'] ?? 'Admin' ?></strong>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-dark shadow">
-                <li><a class="dropdown-item" href="logout.php">ออกจากระบบ</a></li>
-            </ul>
-        </div>
-    </div>
+    <?php include_once("sidebar.php"); ?>
 
     <div class="content">
         <?php if(isset($_GET['success'])) { ?>
@@ -148,7 +93,7 @@ include_once("connectdb.php");
                                 $count_sql = "SELECT COUNT(*) as total FROM products WHERE c_id = '$current_id'";
                                 $count_result = mysqli_query($conn, $count_sql);
                                 $count_data = mysqli_fetch_assoc($count_result);
-                                echo number_format($count_data['total']) . " รายการ";
+                                echo number_format($count_data['total'] ?? 0) . " รายการ";
                                 ?>
                             </td>
                             <td class="text-center pe-4">
@@ -157,7 +102,7 @@ include_once("connectdb.php");
                                 </a>
                                 <a href="delete_category.php?id=<?php echo $current_id; ?>" 
                                    class="btn btn-sm btn-outline-danger"
-                                   onclick="return confirm('คุณต้องการลบหมวดหมู่ [<?php echo $row['c_name']; ?>] หรือไม่?');">
+                                   onclick="return confirm('คุณต้องการลบหมวดหมู่ [<?php echo htmlspecialchars($row['c_name']); ?>] หรือไม่?');">
                                     <i class="bi bi-trash"></i> ลบ
                                 </a>
                             </td>
@@ -165,7 +110,7 @@ include_once("connectdb.php");
                     <?php 
                             } 
                         } else {
-                            echo '<tr><td colspan="4" class="text-center py-5">ยังไม่มีข้อมูลในระบบ</td></tr>';
+                            echo '<tr><td colspan="4" class="text-center py-5 text-muted">ยังไม่มีข้อมูลในระบบ</td></tr>';
                         }
                     ?>
                     </tbody>
@@ -185,7 +130,6 @@ include_once("connectdb.php");
         const sidebar = document.getElementById('sidebar');
         sidebar.classList.toggle('collapsed');
         
-        // ปิด collapse ทั้งหมดเมื่อพับ sidebar
         if(sidebar.classList.contains('collapsed')) {
             document.querySelectorAll('#sidebar .collapse.show').forEach(el => {
                 bootstrap.Collapse.getOrCreateInstance(el).hide();
