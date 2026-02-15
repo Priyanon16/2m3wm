@@ -1,10 +1,43 @@
 <?php
-if(!isset($_SESSION['cart'])) $_SESSION['cart'] = [];
-if(!isset($_SESSION['favorite'])) $_SESSION['favorite'] = [];
+if(session_status() === PHP_SESSION_NONE){
+    session_start();
+}
 
-$totalCart = array_sum($_SESSION['cart']);
-$totalFav  = count($_SESSION['favorite']);
+include_once("connectdb.php");
+
+$totalCart = 0;
+$totalFav  = 0;
+
+if(isset($_SESSION['user_id'])){
+
+    $uid = intval($_SESSION['user_id']);
+
+    // ===== นับตะกร้า =====
+    $cartQ = mysqli_query($conn,"
+        SELECT SUM(quantity) as total 
+        FROM cart 
+        WHERE user_id='$uid'
+    ");
+
+    if($cartQ && mysqli_num_rows($cartQ)>0){
+        $cartData = mysqli_fetch_assoc($cartQ);
+        $totalCart = $cartData['total'] ?? 0;
+    }
+
+    // ===== นับรายการโปรด =====
+    $favQ = mysqli_query($conn,"
+        SELECT COUNT(*) as total 
+        FROM favorites 
+        WHERE user_id='$uid'
+    ");
+
+    if($favQ && mysqli_num_rows($favQ)>0){
+        $favData = mysqli_fetch_assoc($favQ);
+        $totalFav = $favData['total'] ?? 0;
+    }
+}
 ?>
+
 
 <style>
 /* ===== HEADER STYLE ===== */
