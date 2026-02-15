@@ -9,9 +9,9 @@ if (!isset($_SESSION['user_id'])) {
 
 $uid = $_SESSION['user_id'];
 
-$sql = "SELECT * FROM address WHERE user_id = '$uid' LIMIT 1";
+$sql = "SELECT * FROM address WHERE user_id = '$uid' ORDER BY id DESC";
 $rs = mysqli_query($conn, $sql);
-$addr = mysqli_fetch_assoc($rs);
+
 ?>
 
 
@@ -58,7 +58,31 @@ $addr = mysqli_fetch_assoc($rs);
         </div>
 
         <div class="col-md-8 p-5">
-            <h4 class="mb-4 fw-bold"><i class="bi bi-house-door me-2 text-warning"></i>ที่อยู่จัดส่ง</h4>
+            <h4 class="mb-4 fw-bold"><i class="bi bi-house-door me-2 text-warning"></i>ที่อยู่จัดส่ง
+        </h4>
+
+        <h5 class="mb-3">เลือกที่อยู่จัดส่ง</h5>
+
+            <?php while($addr = mysqli_fetch_assoc($rs)): ?>
+            <div class="form-check border p-3 mb-3 rounded">
+                <input class="form-check-input" 
+                    type="radio" 
+                    name="address_id" 
+                    value="<?= $addr['id'] ?>" 
+                    required>
+
+                <label class="form-check-label">
+                    <strong><?= $addr['fullname'] ?></strong><br>
+                    <?= $addr['phone'] ?><br>
+                    <?= $addr['address'] ?> 
+                    <?= $addr['district'] ?> 
+                    <?= $addr['amphure'] ?> 
+                    <?= $addr['province'] ?> 
+                    <?= $addr['postal_code'] ?>
+                </label>
+            </div>
+            <?php endwhile; ?>
+
             
             <form action="save_address.php" method="POST">
                 <div class="row">
