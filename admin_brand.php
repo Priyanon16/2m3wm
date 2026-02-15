@@ -7,20 +7,39 @@ include_once("../connectdb.php");
 ========================= */
 if(isset($_POST['add_brand'])){
 
-    $brand_name = mysqli_real_escape_string($conn,$_POST['brand_name']);
+    if(empty($_POST['brand_name'])){
+        echo "<script>alert('กรุณากรอกชื่อแบรนด์');</script>";
+    }else{
 
-    if($_FILES['brand_img']['name'] != ""){
+        $brand_name = mysqli_real_escape_string($conn,$_POST['brand_name']);
 
-        $file_name = time()."_".$_FILES['brand_img']['name'];
-        $target = "../uploads/brands/".$file_name;
+        if(isset($_FILES['brand_img']) && $_FILES['brand_img']['error'] == 0){
 
-        move_uploaded_file($_FILES['brand_img']['tmp_name'],$target);
+            $file_tmp  = $_FILES['brand_img']['tmp_name'];
+            $file_name = time()."_".basename($_FILES['brand_img']['name']);
+            $target = "../uploads/brands/".$file_name;
 
-        $sql = "INSERT INTO brand (brand_name,brand_img)
-                VALUES ('$brand_name','$file_name')";
-        mysqli_query($conn,$sql);
+            if(move_uploaded_file($file_tmp,$target)){
+
+                $sql = "INSERT INTO brand (brand_name,brand_img)
+                        VALUES ('$brand_name','$file_name')";
+
+                if(mysqli_query($conn,$sql)){
+                    echo "<script>alert('เพิ่มแบรนด์สำเร็จ');window.location='admin_brand.php';</script>";
+                }else{
+                    echo "<script>alert('เกิดข้อผิดพลาด SQL');</script>";
+                }
+
+            }else{
+                echo "<script>alert('อัปโหลดรูปไม่สำเร็จ');</script>";
+            }
+
+        }else{
+            echo "<script>alert('กรุณาเลือกรูป');</script>";
+        }
     }
 }
+
 
 /* =========================
    ลบแบรนด์
