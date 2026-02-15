@@ -105,7 +105,47 @@ $rs = mysqli_query($conn,"SELECT * FROM brand ORDER BY brand_id DESC");
 
 <style>
 body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
-.header{background:#111;color:#fff;padding:20px 30px;}
+.page-header{
+    background:#f2f2f2;
+    border-radius:20px;
+    padding:22px 30px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:30px;
+    position:relative;
+}
+
+.page-header::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    height:100%;
+    width:6px;
+    background:#ff7a00;
+    border-top-left-radius:20px;
+    border-bottom-left-radius:20px;
+}
+
+.page-title{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    font-size:26px;
+    font-weight:600;
+    color:#ff7a00;
+}
+
+.page-title i{
+    font-size:28px;
+}
+
+.page-sub{
+    color:#6c757d;
+    font-weight:500;
+}
+
 .btn-orange{background:#ff7a00;color:#fff;border:none;}
 .btn-orange:hover{background:#e96f00;}
 .table thead{background:#111;color:#fff;}
@@ -138,9 +178,19 @@ body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
 
     <div class="main-content">
 
-        <div class="header">
-          <h3>🏷 จัดการแบรนด์</h3>
-        </div>
+        <div class="page-header">
+    
+          <div class="page-title">
+              <i class="bi bi-award"></i>
+              <span>จัดการแบรนด์</span>
+          </div>
+
+          <div class="page-sub">
+              Brand Management
+          </div>
+
+      </div>
+
 
         <div class="container py-5">
 
