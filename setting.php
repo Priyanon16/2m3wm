@@ -53,10 +53,10 @@ $user = mysqli_fetch_assoc($rs);
                     <input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($user['addr_phone'] ?? $user['phone']) ?>" required>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label fw-bold text-muted">วันที่สมัคร</label>
+                    <label for="birthDate" class="form-label">วันที่สมัคร</label>
                     <input type="date" class="form-control form-control-readonly" id="birthDate" 
-                      value="<?= date('Y-m-d', strtotime($user['created_at'])); ?>" readonly>
-                    </div>
+                    value="<?= date('Y-m-d', strtotime($user['created_at'])); ?>" readonly>
+                </div>
             </div>
 
             <h5 class="section-title mt-5">เปลี่ยนรหัสผ่านใหม่</h5>

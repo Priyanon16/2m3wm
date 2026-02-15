@@ -3,9 +3,9 @@ if(session_status() === PHP_SESSION_NONE){
     session_start();
 }
 
-include "data.php";
-include "functions.php";
-include "header.php";
+include_once("connectdb.php");
+include("header.php");
+include_once("bootstrap.php";)
 
 if(isset($_GET['add_to_cart'])){
     addToCart($_GET['add_to_cart']);
@@ -191,27 +191,55 @@ body{
 <!-- ALBUM -->
 <div class="album pb-5">
   <div class="container">
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" id="productList">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
 
-      <?php foreach($products as $p){ ?>
-      <div class="col product-item">
-        <a href="product_detail.php?id=<?= $p['id']; ?>" class="text-decoration-none text-dark">
-            <div class="card h-100">
-            <img src="<?= $p['img']; ?>" class="card-img-top">
-            <div class="card-body">
-                <h6 class="product-name"><?= $p['name']; ?></h6>
-                <small class="text-muted product-type"><?= $p['type']; ?></small>
-                <p class="price mt-2">฿<?= number_format($p['price']); ?></p>
-            </div>
-            </div>
-        </a>
-        </div>
-      <?php } ?> 
+<?php
+$sql = "SELECT * FROM products ORDER BY p_id DESC";
+$rs  = mysqli_query($conn,$sql);
 
+if(mysqli_num_rows($rs) > 0):
+while($row = mysqli_fetch_assoc($rs)):
+?>
+
+<div class="col">
+  <a href="product_detail.php?id=<?= $row['p_id']; ?>" 
+     class="text-decoration-none text-dark">
+
+    <div class="card h-100">
+
+      <img src="<?= htmlspecialchars($row['p_img']); ?>" 
+           class="card-img-top">
+
+      <div class="card-body">
+        <h6><?= htmlspecialchars($row['p_name']); ?></h6>
+
+        <small class="text-muted">
+          <?= htmlspecialchars($row['p_type']); ?>
+          <?php if(!empty($row['p_size'])): ?>
+            | Size: <?= htmlspecialchars($row['p_size']); ?>
+          <?php endif; ?>
+        </small>
+
+        <p class="price mt-2">
+          ฿<?= number_format($row['p_price'],2); ?>
+        </p>
+      </div>
+
+    </div>
+  </a>
+</div>
+
+<?php
+endwhile;
+else:
+echo '<div class="text-center">ยังไม่มีสินค้าในระบบ</div>';
+endif;
+?>
 
     </div>
   </div>
 </div>
+
 
 
 
