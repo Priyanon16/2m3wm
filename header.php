@@ -12,30 +12,31 @@ if(isset($_SESSION['user_id'])){
 
     $uid = intval($_SESSION['user_id']);
 
-    // ===== นับตะกร้า =====
+    // ===== CART =====
     $cartQ = mysqli_query($conn,"
-        SELECT SUM(quantity) as total 
+        SELECT IFNULL(SUM(quantity),0) as total 
         FROM cart 
         WHERE user_id='$uid'
     ");
 
-    if($cartQ && mysqli_num_rows($cartQ)>0){
+    if($cartQ){
         $cartData = mysqli_fetch_assoc($cartQ);
-        $totalCart = $cartData['total'] ?? 0;
+        $totalCart = intval($cartData['total']);
     }
 
-    // ===== นับรายการโปรด =====
+    // ===== FAVORITE =====
     $favQ = mysqli_query($conn,"
-        SELECT COUNT(*) as total 
+        SELECT IFNULL(COUNT(*),0) as total 
         FROM favorites 
         WHERE user_id='$uid'
     ");
 
-    if($favQ && mysqli_num_rows($favQ)>0){
+    if($favQ){
         $favData = mysqli_fetch_assoc($favQ);
-        $totalFav = $favData['total'] ?? 0;
+        $totalFav = intval($favData['total']);
     }
 }
+
 ?>
 
 
