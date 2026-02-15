@@ -174,7 +174,7 @@ body {
             <p>ค่าจัดส่ง: ฿50</p>
             <h3>ยอดสุทธิ: ฿3,430</h3>
 
-            <form action="orderhistory.php" method="post">
+            <form action="orderdetail.php" method="post">
                 <button type="submit" class="checkout-btn">
                     ดำเนินการสั่งซื้อ
                 </button>

@@ -24,15 +24,6 @@ if(isset($_GET['add_to_fav'])){
 <title>2M3WM Sneaker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Bootstrap -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-
-<!-- Kanit -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
 <style>
 body{
   font-family:'Kanit',sans-serif;
@@ -240,24 +231,5 @@ endif;
   </div>
 </div>
 
-
-
-
-<!-- SEARCH SCRIPT -->
-<script>
-document.getElementById("searchInput").addEventListener("keyup", function(){
-  let keyword = this.value.toLowerCase();
-  let items = document.querySelectorAll(".product-item");
-
-  items.forEach(item => {
-    let name = item.querySelector(".product-name").innerText.toLowerCase();
-    let type = item.querySelector(".product-type").innerText.toLowerCase();
-
-    item.style.display = (name.includes(keyword) || type.includes(keyword)) ? "" : "none";
-  });
-});
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

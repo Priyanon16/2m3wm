@@ -24,22 +24,61 @@ if (isset($_POST['save'])) {
         $p_size = implode(",", $_POST['p_size']);
     }
 
-    // 2. จัดการรูปภาพ
+    // 2. จัดการรูปภาพ (หลายรูป)
     $p_img = "";
-    if (isset($_FILES['p_img']) && $_FILES['p_img']['name'] != "") {
-        $ext = pathinfo($_FILES['p_img']['name'], PATHINFO_EXTENSION);
-        $new_name = "product_" . uniqid() . "." . $ext;
-        $upload_path = "FileUpload/" . $new_name;
-        $allowed = array('jpg', 'jpeg', 'png', 'gif');
+    $uploaded_files = array(); // เก็บ path ของไฟล์ที่อัปโหลดสำเร็จ
+    $error_messages = array(); // เก็บข้อความแจ้งเตือนถ้าไฟล์มีปัญหา
 
-        if (in_array(strtolower($ext), $allowed)) {
-            if (move_uploaded_file($_FILES['p_img']['tmp_name'], $upload_path)) {
-                $p_img = $upload_path;
+    if (isset($_FILES['p_img'])) {
+        $countfiles = count($_FILES['p_img']['name']); // นับจำนวนไฟล์ที่เลือกมา
+
+        for ($i = 0; $i < $countfiles; $i++) {
+            // ตรวจสอบว่ามีการเลือกไฟล์มาจริงหรือไม่
+            if ($_FILES['p_img']['name'][$i] != "") {
+                
+                $file_name = $_FILES['p_img']['name'][$i];
+                $file_size = $_FILES['p_img']['size'][$i];
+                $file_tmp = $_FILES['p_img']['tmp_name'][$i];
+                $file_type = $_FILES['p_img']['type'][$i];
+                
+                // --- ตรวจสอบขนาดไฟล์ ---
+                // 10MB = 10 * 1024 * 1024 = 10,485,760 bytes
+                if ($file_size > 10485760) {
+                    $error_messages[] = "ไฟล์ '$file_name' มีขนาดใหญ่เกิน 10MB (ข้ามไฟล์นี้)";
+                    continue; // ข้ามไปทำไฟล์ถัดไป
+                }
+
+                $ext = pathinfo($file_name, PATHINFO_EXTENSION);
+                // สร้างชื่อไฟล์ใหม่: product_เวลา_ลำดับ_รหัสสุ่ม.นามสกุล
+                $new_name = "product_" . time() . "_" . $i . "_" . uniqid() . "." . $ext;
+                $upload_path = "FileUpload/" . $new_name;
+                
+                // ตรวจสอบนามสกุลไฟล์
+                $allowed = array('jpg', 'jpeg', 'png', 'gif', 'webp');
+                if (in_array(strtolower($ext), $allowed)) {
+                    if (move_uploaded_file($file_tmp, $upload_path)) {
+                        $uploaded_files[] = $upload_path; // เก็บ path ไว้
+                    }
+                } else {
+                    $error_messages[] = "ไฟล์ '$file_name' นามสกุลไม่ถูกต้อง";
+                }
             }
         }
     }
 
-    // 3. บันทึกข้อมูล
+    // รวม path รูปภาพทั้งหมดคั่นด้วยเครื่องหมายจุลภาค (,) เพื่อเก็บใน field เดียว (Type: TEXT)
+    if (!empty($uploaded_files)) {
+        $p_img = implode(",", $uploaded_files);
+    }
+
+    // แจ้งเตือนหากมีบางไฟล์ไม่ผ่าน
+    if (!empty($error_messages)) {
+        $err_str = implode("\\n", $error_messages);
+        echo "<script>alert('แจ้งเตือนการอัปโหลด:\\n$err_str');</script>";
+    }
+
+    // 3. บันทึกข้อมูลลงฐานข้อมูล
+    // หมายเหตุ: ต้องมั่นใจว่าคอลัมน์ p_img เป็นชนิด TEXT แล้ว
     $sql = "INSERT INTO products (p_name, p_price, p_size, p_type, p_img, p_detail, c_id) 
             VALUES ('$name', '$price', '$p_size', '$type', '$p_img', '$detail', '$c_id')";
 
@@ -120,7 +159,7 @@ if (isset($_POST['save'])) {
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             border-top: 5px solid var(--theme-orange);
             margin-bottom: 2rem;
-            max-width: 800px; /* จำกัดความกว้างฟอร์มไม่ให้ยาวเกินไป */
+            max-width: 800px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -193,11 +232,11 @@ if (isset($_POST['save'])) {
             <div class="text-center mb-5">
                 <div class="mb-3">
                     <span style="background: rgba(255,87,34,0.1); color: var(--theme-orange); padding: 15px; border-radius: 50%; width: 70px; height: 70px; display: inline-flex; align-items: center; justify-content: center;">
-                        <i class="bi bi-box-seam-fill fs-2"></i>
+                        <i class="bi bi-images fs-2"></i>
                     </span>
                 </div>
                 <h2 class="card-title-custom">เพิ่มสินค้าใหม่</h2>
-                <p class="text-muted">กรอกรายละเอียดสินค้าที่ต้องการนำลงขาย</p>
+                <p class="text-muted">กรอกรายละเอียดและอัปโหลดรูปภาพสินค้า (รองรับหลายรูป)</p>
             </div>
 
             <form method="post" enctype="multipart/form-data">
@@ -218,7 +257,6 @@ if (isset($_POST['save'])) {
                         <select name="c_id" class="form-select" required>
                             <option value="" selected disabled>-- เลือกหมวดหมู่ --</option>
                             <?php 
-                            // รีเซ็ต pointer ของ query ถ้าจำเป็น หรือดึงใหม่ (แต่โค้ดบนสุดดึงไว้แล้ว)
                             if(mysqli_num_rows($result_category) > 0){
                                 mysqli_data_seek($result_category, 0);
                                 while ($row_c = mysqli_fetch_assoc($result_category)) { ?>
@@ -270,9 +308,12 @@ if (isset($_POST['save'])) {
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label"><i class="bi bi-image me-2"></i>รูปภาพสินค้า</label>
-                    <input type="file" name="p_img" class="form-control" accept="image/*" required>
-                    <div class="form-text text-muted">รองรับไฟล์ .jpg, .jpeg, .png, .gif</div>
+                    <label class="form-label"><i class="bi bi-image me-2"></i>รูปภาพสินค้า (เลือกได้หลายรูป)</label>
+                    <input type="file" name="p_img[]" class="form-control" accept="image/*" multiple required>
+                    <div class="form-text text-muted">
+                        <i class="bi bi-info-circle"></i> เลือกรูปได้หลายรูปพร้อมกัน (กด Ctrl ค้างไว้ขณะเลือก) <br>
+                        <i class="bi bi-exclamation-circle"></i> ขนาดไฟล์ต้องไม่เกิน 10MB ต่อรูป
+                    </div>
                 </div>
 
                 <div class="mb-5">
