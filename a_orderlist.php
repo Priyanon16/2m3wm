@@ -19,19 +19,19 @@ $keyword  = $_GET['keyword'] ?? '';
 ======================= */
 $sql = "
 SELECT 
-    o.id,
-    o.created_at,
+    o.o_id,
+    o.o_date,
     o.total_price,
-    o.payment_method,
-    o.payment_status,
     o.status,
     u.name,
     COALESCE(SUM(od.q_ty),0) as total_qty
 FROM orders o
-LEFT JOIN users u ON o.user_id = u.id
-LEFT JOIN order_details od ON od.o_id = o.id
-WHERE 1
+LEFT JOIN users u ON o.u_id = u.id
+LEFT JOIN order_details od ON od.o_id = o.o_id
+GROUP BY o.o_id
+ORDER BY o.o_date DESC
 ";
+
 
 
 
