@@ -112,7 +112,7 @@ body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
     display:flex;
     align-items:center;
     justify-content:space-between;
-    margin-bottom:30px;
+    margin-bottom:15px;
     position:relative;
 }
 
