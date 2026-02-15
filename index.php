@@ -1,56 +1,29 @@
 <?php
-if(session_status() === PHP_SESSION_NONE){
-    session_start();
-}
+session_start();
 
 include_once("connectdb.php");
-
-/* ==========================
-   1. ส่วนตรวจสอบการคลิก (GET) 
-   ต้องอยู่ก่อนการ include หรือแสดงผล HTML ใดๆ
-========================== */
-
-// เพิ่มลงตะกร้า
-if(isset($_GET['add_to_cart'])){
-    $p_id = (int)$_GET['add_to_cart'];
-    
-    if(!isset($_SESSION['cart'])) {
-        $_SESSION['cart'] = [];
-    }
-    
-    if(isset($_SESSION['cart'][$p_id])) {
-        $_SESSION['cart'][$p_id]++;
-    } else {
-        $_SESSION['cart'][$p_id] = 1;
-    }
-    
-    session_write_close(); 
-    header("Location: cart.php");
-    exit();
-}
-
-// เพิ่มลงรายการโปรด
-if(isset($_GET['add_to_fav'])){
-    $p_id = (int)$_GET['add_to_fav'];
-    
-    if(!isset($_SESSION['favorite'])) {
-        $_SESSION['favorite'] = [];
-    }
-    
-    if(!in_array($p_id, $_SESSION['favorite'])) {
-        $_SESSION['favorite'][] = $p_id;
-    }
-    
-    session_write_close(); 
-    header("Location: favorite.php");
-    exit();
-}
-
-// หลังจากจัดการ Logic เสร็จค่อยเรียกไฟล์แสดงผล
-include("header.php");
+include_once("functions.php");
 include_once("bootstrap.php");
-?>
 
+/* =========================
+   กดเพิ่มตะกร้า / โปรด
+========================= */
+if(isset($_GET['add_to_cart'])){
+    addToCart($_GET['add_to_cart']);
+}
+
+if(isset($_GET['add_to_fav'])){
+    addToFavorite($_GET['add_to_fav']);
+}
+
+/* =========================
+   ดึงสินค้าจากฐานข้อมูลจริง
+========================= */
+$sql = "SELECT * FROM products ORDER BY p_id DESC";
+$rs  = mysqli_query($conn,$sql);
+
+include("header.php");
+?>
 
 
 <!DOCTYPE html>

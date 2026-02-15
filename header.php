@@ -12,26 +12,32 @@ if(isset($_SESSION['user_id'])){
 
     $uid = intval($_SESSION['user_id']);
 
+    // ===== CART =====
     $cartQ = mysqli_query($conn,"
-        SELECT SUM(quantity) as total
-        FROM cart
+        SELECT IFNULL(SUM(quantity),0) as total 
+        FROM cart 
         WHERE user_id='$uid'
     ");
 
-    $cartData = mysqli_fetch_assoc($cartQ);
-    $totalCart = $cartData['total'] ?? 0;
+    if($cartQ){
+        $cartData = mysqli_fetch_assoc($cartQ);
+        $totalCart = intval($cartData['total']);
+    }
 
+    // ===== FAVORITE =====
     $favQ = mysqli_query($conn,"
-        SELECT COUNT(*) as total
-        FROM favorites
+        SELECT IFNULL(COUNT(*),0) as total 
+        FROM favorites 
         WHERE user_id='$uid'
     ");
 
-    $favData = mysqli_fetch_assoc($favQ);
-    $totalFav = $favData['total'] ?? 0;
+    if($favQ){
+        $favData = mysqli_fetch_assoc($favQ);
+        $totalFav = intval($favData['total']);
+    }
 }
-?>
 
+?>
 
 
 <style>
@@ -82,21 +88,18 @@ if(isset($_SESSION['user_id'])){
 .header-icons{
   display:flex;
   align-items:center;
-  gap:20px;
+  gap:18px;
 }
-
 
 .header-icons a{
   position:relative;
   color:#fff;
   font-size:22px;
-  display:inline-flex;
+  display:flex;
   align-items:center;
   justify-content:center;
-  width:40px;
-  height:40px;
+  transition:.3s;
 }
-
 
 .header-icons a:hover{
   color:#ff7a00;
@@ -106,20 +109,20 @@ if(isset($_SESSION['user_id'])){
 /* ===== BADGE ===== */
 .icon-badge{
   position:absolute;
-  top:-6px;
+  top:-5px;
   right:-6px;
-  min-width:18px;
-  height:18px;
-  padding:0 5px;
-  font-size:11px;
+  min-width:16px;
+  height:16px;
+  font-size:10px;
   font-weight:600;
-  border-radius:50px;
-  background:#ff3b3b;
-  color:#fff;
   display:flex;
   align-items:center;
   justify-content:center;
-  border:2px solid #111; /* กันซ้อนกับไอคอน */
+  border-radius:50%;
+  background:#e53935;
+  color:#fff;
+  box-shadow:0 2px 6px rgba(0,0,0,.4);
+  padding:0 4px;
 }
 
 
@@ -228,7 +231,7 @@ if(isset($_SESSION['user_id'])){
       </div>
 
       <!-- ICONS -->
-      <div class="header-icons">
+      <div class="d-flex gap-3 header-icons">
 
         <?php if(isset($_SESSION['user_id'])): ?>
           <a href="setting.php" title="โปรไฟล์">
