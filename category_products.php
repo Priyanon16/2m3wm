@@ -122,17 +122,5 @@ include("bootstrap.php")
     </div>
 </div>
 
-<script>
-    document.getElementById('toggleBtn').addEventListener('click', function () {
-        const sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('collapsed');
-        
-        if(sidebar.classList.contains('collapsed')) {
-            document.querySelectorAll('#sidebar .collapse.show').forEach(el => {
-                bootstrap.Collapse.getOrCreateInstance(el).hide();
-            });
-        }
-    });
-</script>
 </body>
 </html>
