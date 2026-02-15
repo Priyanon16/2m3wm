@@ -106,7 +106,7 @@ $rs = mysqli_query($conn,"SELECT * FROM brand ORDER BY brand_id DESC");
 <style>
 body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
 .page-header{
-    background:#f2f2f2;
+    background:#FFFFFF;
     border-radius:20px;
     padding:22px 30px;
     display:flex;
