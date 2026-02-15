@@ -9,14 +9,29 @@ include "header.php";
 
 $sql = "SELECT * FROM products ORDER BY p_id DESC";
 $result = mysqli_query($conn, $sql);
+?>
 
-if(isset($_GET['add_to_cart'])){
-    addToCart($_GET['add_to_cart']);
-}
+<div class="row">
+<?php if(mysqli_num_rows($result) > 0): ?>
+<?php while($p = mysqli_fetch_assoc($result)): ?>
 
-if(isset($_GET['add_to_fav'])){
-    addToFavorite($_GET['add_to_fav']);
-}
+<div class="col-md-4">
+  <div class="card">
+    <img src="images/<?= $p['p_img']; ?>" class="card-img-top">
+    <div class="card-body">
+      <h5><?= $p['p_name']; ?></h5>
+      <p><?= $p['p_type']; ?></p>
+      <p>฿<?= number_format($p['p_price']); ?></p>
+    </div>
+  </div>
+</div>
+
+<?php endwhile; ?>
+<?php else: ?>
+<p class="text-center">ยังไม่มีสินค้า</p>
+<?php endif; ?>
+</div>
+
 ?>
 
 
