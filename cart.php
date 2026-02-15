@@ -2,6 +2,7 @@
 session_start();
 include_once("connectdb.php");
 include_once("header.php");   // ✅ เรียก header แยก
+include_once("bootstrap.php");
 
 $cart = $_SESSION['cart'] ?? [];
 
