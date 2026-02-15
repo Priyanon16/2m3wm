@@ -167,7 +167,7 @@ body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
 
 .main-content{
     flex:1;
-    background:#f4f6f9;
+    background:#FFFFFF;
 }
 
 </style>
