@@ -1,11 +1,11 @@
 <?php
 session_start();
-include_once("connectdb.php");
+require_once("connectdb.php");
 
 if(isset($_POST['email'])){
 
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+    $email = mysqli_real_escape_string($conn, $_POST['email']);
+    $password = mysqli_real_escape_string($conn, $_POST['password']);
 
     $sql = "SELECT * FROM users 
             WHERE email='$email' 
@@ -16,21 +16,25 @@ if(isset($_POST['email'])){
 
     if(mysqli_num_rows($rs) == 1){
 
-        $data = mysqli_fetch_array($rs);
+        $data = mysqli_fetch_assoc($rs);
 
-        $_SESSION['uid'] = $data['id'];
-        $_SESSION['uname'] = $data['name'];
+        // ตั้งค่า session ให้ตรงกับ header
+        $_SESSION['user_id'] = $data['id'];
+        $_SESSION['user_name'] = $data['name'];
         $_SESSION['role'] = $data['role'];
 
-        // 👑 แยกสิทธิ์
         if($data['role'] == 'admin'){
             header("Location: index_admin.php");
         } else {
             header("Location: index.php");
         }
+        exit;
+    } else {
+        echo "<script>alert('อีเมลหรือรหัสผ่านไม่ถูกต้อง');</script>";
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="th">
