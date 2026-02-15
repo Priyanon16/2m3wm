@@ -25,12 +25,13 @@ SELECT
     o.payment_method,
     o.status,
     u.name,
-    COALESCE(SUM(oi.quantity),0) as total_qty
+    COALESCE(SUM(od.q_ty),0) as total_qty
 FROM orders o
 LEFT JOIN users u ON o.user_id = u.id
-LEFT JOIN order_items oi ON oi.order_id = o.id
+LEFT JOIN order_details od ON od.o_id = o.id
 WHERE 1
 ";
+
 
 /* Filter */
 if (!empty($status)) {
