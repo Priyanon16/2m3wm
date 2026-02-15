@@ -7,13 +7,39 @@ include_once("connectdb.php");
 include("header.php");
 include_once("bootstrap.php");
 
-if(isset($_GET['add_to_cart'])){
-    addToCart($_GET['add_to_cart']);
+function addToCart($p_id) {
+    // หากยังไม่มีตะกร้า ให้สร้างอาเรย์ว่างขึ้นมา
+    if(!isset($_SESSION['cart'])) {
+        $_SESSION['cart'] = array();
+    }
+    
+    // เพิ่มจำนวนสินค้าในตะกร้าตาม ID สินค้า
+    if(isset($_SESSION['cart'][$p_id])) {
+        $_SESSION['cart'][$p_id]++;
+    } else {
+        $_SESSION['cart'][$p_id] = 1;
+    }
+    
+    // เมื่อเพิ่มเสร็จ ให้กระโดดไปที่หน้า cart.php
+    echo "<script>window.location.href='cart.php';</script>";
+    exit();
 }
 
-if(isset($_GET['add_to_fav'])){
-    addToFavorite($_GET['add_to_fav']);
-}
+// ฟังก์ชันสำหรับเพิ่มสินค้าลงรายการโปรด (Favorite)
+function addToFavorite($p_id) {
+    // หากยังไม่มีรายการโปรด ให้สร้างอาเรย์ว่างขึ้นมา
+    if(!isset($_SESSION['favorite'])) {
+        $_SESSION['favorite'] = array();
+    }
+    
+    // ตรวจสอบว่ามีสินค้านี้ในรายการโปรดหรือยัง เพื่อไม่ให้เพิ่มซ้ำ
+    if(!in_array($p_id, $_SESSION['favorite'])) {
+        $_SESSION['favorite'][] = $p_id;
+    }
+    
+    // เมื่อเพิ่มเสร็จ ให้กระโดดไปที่หน้า favorite.php
+    echo "<script>window.location.href='favorite.php';</script>";
+    exit();
 ?>
 
 
@@ -161,13 +187,6 @@ body{
   color:#ff7a00;
   font-weight:700;
   font-size:18px;
-}
-.product-actions{
-  display:flex;
-  justify-content:flex-end; /* ดันทั้งหมดไปขวา */
-  align-items:center;
-  gap:10px; /* เว้นระยะระหว่างปุ่ม */
-  margin-top:15px;
 }
 
 .btn-cart{

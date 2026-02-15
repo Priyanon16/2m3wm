@@ -9,28 +9,38 @@ include_once("connectdb.php");
 if (!$conn) { die("Connection failed: " . mysqli_connect_error()); }
 mysqli_set_charset($conn, "utf8");
 
-// 2. ส่วนคำสั่งลบสินค้า (Logic เดิม)
+// 2. ส่วนคำสั่งลบสินค้า
 if(isset($_GET['delete_id'])){
     $id = mysqli_real_escape_string($conn, $_GET['delete_id']);
     
-    // ดึงรูปมาเช็คก่อนลบ
+    // ดึง path รูปมาเช็คก่อนลบ
     $sql_img = "SELECT p_img FROM products WHERE p_id = '$id'";
     $res_img = mysqli_query($conn, $sql_img);
     $row_img = mysqli_fetch_assoc($res_img);
     
-    // ลบใน DB
+    // ลบข้อมูลใน DB
     if(mysqli_query($conn, "DELETE FROM products WHERE p_id = '$id'")){
-        // ลบไฟล์รูป
-        if(!empty($row_img['p_img']) && file_exists($row_img['p_img'])){
-            unlink($row_img['p_img']); 
+        
+        // --- ส่วนแก้ไข: ลบไฟล์รูปภาพทั้งหมด ---
+        if(!empty($row_img['p_img'])){
+            $files = explode(',', $row_img['p_img']); // แยกชื่อไฟล์ด้วยเครื่องหมายคอมม่า
+            foreach ($files as $file) {
+                // ตัดช่องว่างและเช็คว่ามีไฟล์จริงไหม
+                $file = trim($file);
+                if(!empty($file) && file_exists($file)){
+                    unlink($file); // ลบไฟล์ออกจาก Server
+                }
+            }
         }
+        // ------------------------------------
+
         echo "<script>alert('ลบสินค้าเรียบร้อย'); window.location='admin_product.php';</script>";
     } else {
         echo "<script>alert('Error: " . mysqli_error($conn) . "');</script>";
     }
 }
 
-// 3. ดึงข้อมูล (Logic เดิม)
+// 3. ดึงข้อมูล
 $sql = "SELECT p.*, c.c_name FROM products p LEFT JOIN category c ON p.c_id = c.c_id ORDER BY p.p_id DESC";
 $result = mysqli_query($conn, $sql);
 ?>
@@ -44,7 +54,6 @@ $result = mysqli_query($conn, $sql);
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -197,13 +206,20 @@ $result = mysqli_query($conn, $sql);
                         <?php 
                         if (mysqli_num_rows($result) > 0) {
                             while($row = mysqli_fetch_assoc($result)){ 
+                                // --- ส่วนแก้ไข: จัดการรูปภาพ (เอาแค่รูปแรกมาโชว์) ---
+                                $img_src = "";
+                                if(!empty($row['p_img'])){
+                                    $img_arr = explode(',', $row['p_img']); // แปลงเป็น array
+                                    $img_src = $img_arr[0]; // เลือกรูปแรก
+                                }
+                                // ---------------------------------------------
                         ?>
                         <tr>
                             <td class="text-center text-muted fw-bold">#<?= $row['p_id']; ?></td>
                             
                             <td>
-                                <?php if(!empty($row['p_img'])): ?>
-                                    <img src="<?= $row['p_img']; ?>" class="img-thumb">
+                                <?php if(!empty($img_src) && file_exists($img_src)): ?> <img src="<?= $img_src; ?>" class="img-thumb">
+                                <?php elseif(!empty($img_src)): ?> <img src="<?= $img_src; ?>" class="img-thumb">
                                 <?php else: ?>
                                     <div class="img-thumb bg-light d-flex align-items-center justify-content-center text-muted small border rounded-3">
                                         No Pic
