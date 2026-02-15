@@ -11,13 +11,24 @@ if (!isset($_SESSION['user_id'])) {
 $uid = $_SESSION['user_id'];
 
 /* ==========================
-   ดึงรายการออเดอร์ของ user
+   รับค่า filter status
 ========================== */
+$filter = $_GET['status'] ?? 'ทั้งหมด';
 
+$where = "WHERE u_id = '$uid'";
+
+if($filter != 'ทั้งหมด'){
+    $filter_safe = mysqli_real_escape_string($conn,$filter);
+    $where .= " AND status = '$filter_safe'";
+}
+
+/* ==========================
+   ดึงออเดอร์
+========================== */
 $sql = "
 SELECT *
 FROM orders
-WHERE u_id = '$uid'
+$where
 ORDER BY o_id DESC
 ";
 
@@ -41,20 +52,51 @@ body{
     border-radius:50px;
     font-size:14px;
 }
-.status-pack{ background:#ff9800; color:#fff; }
-.status-ship{ background:#2196f3; color:#fff; }
+.status-pay{ background:#ff5252; color:#fff; }
+.status-ship{ background:#ff9800; color:#fff; }
+.status-wait{ background:#2196f3; color:#fff; }
 .status-done{ background:#4caf50; color:#fff; }
+.status-return{ background:#9c27b0; color:#fff; }
+.nav-tabs .nav-link.active{
+    background:#ff7a00 !important;
+    color:#fff !important;
+}
 </style>
 
 <div class="container mt-5 mb-5">
 
 <h3 class="mb-4">
 <i class="bi bi-clock-history text-warning"></i>
-ประวัติการสั่งซื้อ
+รายการสั่งซื้อของฉัน
 </h3>
 
-<?php if(mysqli_num_rows($rs) > 0): ?>
+<!-- ==========================
+     TAB STATUS
+========================== -->
+<ul class="nav nav-tabs mb-4">
+<?php
+$statuses = [
+    "ทั้งหมด",
+    "รอชำระเงิน",
+    "ที่ต้องจัดส่ง",
+    "รอรับ",
+    "จัดส่งสำเร็จ",
+    "คืนสินค้า"
+];
 
+foreach($statuses as $st):
+?>
+<li class="nav-item">
+    <a class="nav-link <?= ($filter==$st)?'active':'' ?>"
+       href="?status=<?= urlencode($st) ?>">
+       <?= $st ?>
+    </a>
+</li>
+<?php endforeach; ?>
+</ul>
+
+
+<?php if(mysqli_num_rows($rs) > 0): ?>
 <?php while($order = mysqli_fetch_assoc($rs)): ?>
 
 <div class="card mb-4 p-4">
@@ -72,12 +114,16 @@ body{
 <?php
 $status = $order['status'];
 
-if($status=="รอแพ็ค"){
-    echo '<span class="status-badge status-pack">รอแพ็ค</span>';
-}elseif($status=="รอจัดส่ง"){
-    echo '<span class="status-badge status-ship">รอจัดส่ง</span>';
-}elseif($status=="จัดส่งแล้ว"){
-    echo '<span class="status-badge status-done">จัดส่งแล้ว</span>';
+if($status=="รอชำระเงิน"){
+    echo '<span class="status-badge status-pay">รอชำระเงิน</span>';
+}elseif($status=="ที่ต้องจัดส่ง"){
+    echo '<span class="status-badge status-ship">ที่ต้องจัดส่ง</span>';
+}elseif($status=="รอรับ"){
+    echo '<span class="status-badge status-wait">รอรับ</span>';
+}elseif($status=="จัดส่งสำเร็จ"){
+    echo '<span class="status-badge status-done">จัดส่งสำเร็จ</span>';
+}elseif($status=="คืนสินค้า"){
+    echo '<span class="status-badge status-return">คืนสินค้า</span>';
 }else{
     echo '<span class="badge bg-secondary">'.$status.'</span>';
 }
@@ -89,7 +135,6 @@ if($status=="รอแพ็ค"){
 <hr>
 
 <?php
-/* ดึงสินค้าในออเดอร์นี้ */
 $oid = $order['o_id'];
 
 $detail_sql = "
@@ -141,7 +186,7 @@ class="img-fluid rounded">
 <?php else: ?>
 
 <div class="alert alert-light text-center">
-ยังไม่มีประวัติการสั่งซื้อ
+ไม่พบรายการในหมวดนี้
 </div>
 
 <?php endif; ?>

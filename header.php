@@ -200,7 +200,7 @@ $totalFav  = count($_SESSION['favorite']);
       <div class="d-flex gap-3 header-icons">
 
         <?php if(isset($_SESSION['user_id'])): ?>
-          <a href="customer_profile.php" title="โปรไฟล์">
+          <a href="setting.php" title="โปรไฟล์">
               <i class="bi bi-person-fill text-warning"></i>
           </a>
       <?php else: ?>
