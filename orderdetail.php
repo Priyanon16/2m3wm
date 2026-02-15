@@ -1,140 +1,148 @@
 <?php
-include "connectdb.php";
+session_start();
+include_once("connectdb.php");
 
-$order = null;
-
-if(isset($_GET['order_id'])){
-    $order_id = $_GET['order_id'];
-
-    $sql = "SELECT * FROM orders WHERE order_id='$order_id'";
-    $result = mysqli_query($conn,$sql);
-
-    if(mysqli_num_rows($result) > 0){
-        $order = mysqli_fetch_assoc($result);
-    }
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
 }
 
-/* กำหนดข้อความ + สีสถานะ */
-function getStatus($status){
-    switch($status){
-        case "pending_payment":
-            return ["ที่ต้องชำระเงิน","secondary"];
-        case "to_ship":
-            return ["ที่ต้องจัดส่ง","warning"];
-        case "shipping":
-            return ["ที่ต้องได้รับ","info"];
-        case "completed":
-            return ["สำเร็จแล้ว","success"];
-        case "cancelled":
-            return ["ยกเลิก","danger"];
-        default:
-            return ["ไม่ทราบสถานะ","dark"];
-    }
-}
+$uid = $_SESSION['user_id'];
+
+/* ==========================
+   ดึงรายการออเดอร์ของ user
+========================== */
+
+$sql = "
+SELECT *
+FROM orders
+WHERE u_id = '$uid'
+ORDER BY o_id DESC
+";
+
+$rs = mysqli_query($conn,$sql);
 ?>
 
-<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>รายละเอียดคำสั่งซื้อ</title>
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<?php include("header.php"); ?>
 
 <style>
 body{
-    background:#f5f5f5;
-    margin:0;
+    background:#f4f6f9;
+    font-family:'Kanit',sans-serif;
 }
-.header{
-    background:#000;
-    padding:15px 40px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+.card{
+    border:none;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.08);
 }
-.logo{
-    color:#ff6600;
-    font-weight:bold;
-    font-size:22px;
+.status-badge{
+    padding:6px 12px;
+    border-radius:50px;
+    font-size:14px;
 }
-.container-box{
-    max-width:850px;
-    margin:50px auto;
-}
-.order-card{
-    background:#fff;
-    padding:30px;
-    border-radius:12px;
-    box-shadow:0 5px 20px rgba(0,0,0,0.08);
-}
-.product-img{
-    width:120px;
-    border-radius:10px;
-}
+.status-pack{ background:#ff9800; color:#fff; }
+.status-ship{ background:#2196f3; color:#fff; }
+.status-done{ background:#4caf50; color:#fff; }
 </style>
-</head>
 
-<body>
+<div class="container mt-5 mb-5">
 
-<div class="header">
-    <div class="logo">2M3WM SNEAKER</div>
-    <a href="orderhistory.php" class="text-white text-decoration-none">← กลับ</a>
+<h3 class="mb-4">
+<i class="bi bi-clock-history text-warning"></i>
+ประวัติการสั่งซื้อ
+</h3>
+
+<?php if(mysqli_num_rows($rs) > 0): ?>
+
+<?php while($order = mysqli_fetch_assoc($rs)): ?>
+
+<div class="card mb-4 p-4">
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+<div>
+<strong>เลขที่ออเดอร์ #<?= $order['o_id'] ?></strong><br>
+<small class="text-muted">
+<?= date("d/m/Y H:i", strtotime($order['o_date'])) ?>
+</small>
 </div>
 
-<div class="container-box">
+<div>
+<?php
+$status = $order['status'];
 
-<?php if($order){ 
-    $statusInfo = getStatus($order['order_status']);
+if($status=="รอแพ็ค"){
+    echo '<span class="status-badge status-pack">รอแพ็ค</span>';
+}elseif($status=="รอจัดส่ง"){
+    echo '<span class="status-badge status-ship">รอจัดส่ง</span>';
+}elseif($status=="จัดส่งแล้ว"){
+    echo '<span class="status-badge status-done">จัดส่งแล้ว</span>';
+}else{
+    echo '<span class="badge bg-secondary">'.$status.'</span>';
+}
+?>
+</div>
+
+</div>
+
+<hr>
+
+<?php
+/* ดึงสินค้าในออเดอร์นี้ */
+$oid = $order['o_id'];
+
+$detail_sql = "
+SELECT p.p_name, p.p_price, p.p_img, od.q_ty
+FROM order_details od
+JOIN products p ON od.p_id = p.p_id
+WHERE od.o_id = '$oid'
+";
+
+$detail_rs = mysqli_query($conn,$detail_sql);
+
+while($item = mysqli_fetch_assoc($detail_rs)):
 ?>
 
-<div class="order-card">
+<div class="row align-items-center mb-3">
 
-    <!-- ข้อมูลออเดอร์ -->
-    <div class="d-flex justify-content-between align-items-center">
-        <div>
-            <h5>เลขที่คำสั่งซื้อ: <?php echo $order['order_id']; ?></h5>
-            <p class="text-muted">วันที่สั่งซื้อ: <?php echo $order['order_date']; ?></p>
-            <p><strong>ร้านค้า:</strong> 2M3WM SNEAKER</p>
-        </div>
+<div class="col-md-2">
+<img src="<?= $item['p_img'] ?>" 
+class="img-fluid rounded">
+</div>
 
-        <span class="badge bg-<?php echo $statusInfo[1]; ?> fs-6">
-            <?php echo $statusInfo[0]; ?>
-        </span>
-    </div>
+<div class="col-md-6">
+<?= htmlspecialchars($item['p_name']) ?><br>
+<small class="text-muted">
+จำนวน <?= $item['q_ty'] ?> ชิ้น
+</small>
+</div>
 
-    <hr>
-
-    <!-- รายการสินค้า -->
-    <div class="d-flex align-items-center">
-        <img src="<?php echo $order['product_image']; ?>" class="product-img me-4">
-
-        <div>
-            <h6><?php echo $order['product_name']; ?></h6>
-            <p class="mb-1">จำนวน: <?php echo $order['quantity']; ?></p>
-            <p class="mb-0 text-muted">ราคา: ฿<?php echo number_format($order['total_price']); ?></p>
-        </div>
-    </div>
-
-    <hr>
-
-    <!-- ยอดรวม -->
-    <div class="text-end">
-        <h5>ยอดชำระรวม: <strong>฿<?php echo number_format($order['total_price']); ?></strong></h5>
-    </div>
+<div class="col-md-4 text-end">
+<?= number_format($item['p_price'],2) ?> บาท
+</div>
 
 </div>
 
-<?php } else { ?>
+<?php endwhile; ?>
 
-<div class="alert alert-danger text-center">
-    ไม่พบคำสั่งซื้อ
+<hr>
+
+<div class="text-end">
+<strong>
+ยอดรวม: <?= number_format($order['total_price'],2) ?> บาท
+</strong>
 </div>
 
-<?php } ?>
-
 </div>
 
-</body>
-</html>
+<?php endwhile; ?>
+
+<?php else: ?>
+
+<div class="alert alert-light text-center">
+ยังไม่มีประวัติการสั่งซื้อ
+</div>
+
+<?php endif; ?>
+
+</div>

@@ -172,13 +172,6 @@ $totalFav  = count($_SESSION['favorite']);
                     <i class="bi bi-person me-2 text-warning"></i>โปรไฟล์
                 </a>
             </li>
-
-            <li>
-                <a class="dropdown-item" href="ordersatatus.php">
-                    <i class="bi bi-truck me-2 text-primary"></i>เช็คสถานะออเดอร์
-                </a>
-            </li>
-
             <li>
                 <a class="dropdown-item" href="orderdetail.php">
                     <i class="bi bi-clock-history me-2 text-success"></i>ประวัติการสั่งซื้อ
