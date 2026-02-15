@@ -102,8 +102,6 @@ $rs = mysqli_query($conn,"SELECT * FROM brand ORDER BY brand_id DESC");
 <head>
 <meta charset="UTF-8">
 <title>จัดการแบรนด์</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
 body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
@@ -239,8 +237,6 @@ body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
 </div>
 
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
         </div> <!-- container -->
     </div> <!-- main-content -->
