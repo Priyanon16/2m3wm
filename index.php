@@ -5,7 +5,7 @@ if(session_status() === PHP_SESSION_NONE){
 
 include_once("connectdb.php");
 include("header.php");
-include_once("bootstrap.php";)
+include_once("bootstrap.php");
 
 if(isset($_GET['add_to_cart'])){
     addToCart($_GET['add_to_cart']);
