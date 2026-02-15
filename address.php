@@ -18,26 +18,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $phone       = mysqli_real_escape_string($conn,$_POST['phone']);
     $address     = mysqli_real_escape_string($conn,$_POST['address']);
     $district    = mysqli_real_escape_string($conn,$_POST['district']);
-    $amphure     = mysqli_real_escape_string($conn,$_POST['amphure']);
     $province    = mysqli_real_escape_string($conn,$_POST['province']);
     $postal_code = mysqli_real_escape_string($conn,$_POST['postal_code']);
 
-    mysqli_query($conn,"INSERT INTO address 
-        (user_id, fullname, phone, address, district, amphure, province, postal_code)
+    $sql_insert = "INSERT INTO addresses 
+        (user_id, fullname, phone, address, district, province, postal_code)
         VALUES
-        ('$uid','$fullname','$phone','$address','$district','$amphure','$province','$postal_code')
-    ");
+        ('$uid','$fullname','$phone','$address','$district','$province','$postal_code')
+    ";
+
+    mysqli_query($conn,$sql_insert) or die(mysqli_error($conn));
 
     header("Location: address.php");
     exit;
 }
 
 /* =========================
-   ดึงข้อมูลที่อยู่ทั้งหมด
+   ดึงข้อมูลทั้งหมด
 ========================= */
-$sql = "SELECT * FROM address WHERE user_id='$uid' ORDER BY id DESC";
+$sql = "SELECT * FROM addresses 
+        WHERE user_id='$uid' 
+        ORDER BY address_id DESC";
+
 $rs  = mysqli_query($conn,$sql);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="th">
@@ -151,26 +156,19 @@ body{
 
 <?php if(mysqli_num_rows($rs) > 0): ?>
     <?php while($row = mysqli_fetch_assoc($rs)): ?>
-        <div class="address-card mb-3">
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="address_id" value="<?= $row['id'] ?>">
-                <label class="form-check-label">
-
-                    <strong><?= htmlspecialchars($row['fullname']) ?></strong><br>
-                    <?= htmlspecialchars($row['phone']) ?><br>
-                    <?= htmlspecialchars($row['address']) ?><br>
-                    <?= htmlspecialchars($row['district']) ?>
-                    <?= htmlspecialchars($row['amphure']) ?>
-                    <?= htmlspecialchars($row['province']) ?>
-                    <?= htmlspecialchars($row['postal_code']) ?>
-
-                </label>
-            </div>
+        <div class="card mb-3 p-3">
+            <strong><?= htmlspecialchars($row['fullname']) ?></strong><br>
+            <?= htmlspecialchars($row['phone']) ?><br>
+            <?= htmlspecialchars($row['address']) ?><br>
+            <?= htmlspecialchars($row['district']) ?>
+            <?= htmlspecialchars($row['province']) ?>
+            <?= htmlspecialchars($row['postal_code']) ?>
         </div>
     <?php endwhile; ?>
 <?php else: ?>
     <p class="text-muted">ยังไม่มีที่อยู่</p>
 <?php endif; ?>
+
 
 </div>
 </div>
