@@ -152,7 +152,12 @@ $totalFav  = count($_SESSION['favorite']);
         <a class="nav-link" href="all_products.php">สินค้าทั้งหมด</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">ติดต่อเรา</a>
+        <a class="nav-link" 
+          href="https://lin.ee/ktGP4ZD" 
+          target="_blank">
+          ติดต่อเรา
+        </a>
+
       </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" role="button" 

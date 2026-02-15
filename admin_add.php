@@ -93,13 +93,15 @@ if (isset($_POST['save'])) {
         /* Form Inputs */
         .form-label {
             font-weight: 500;
-            color: #444;
+            color: #444; /* บังคับหัวข้อให้เข้ม */
         }
         
         .form-control, .form-select {
             border: 1px solid #ddd;
             padding: 0.7rem;
             border-radius: 8px;
+            background-color: #fff;
+            color: #333;
         }
 
         /* Focus State (สีส้ม) */
@@ -108,16 +110,23 @@ if (isset($_POST['save'])) {
             box-shadow: 0 0 0 0.25rem rgba(255, 102, 0, 0.25);
         }
 
-        /* Size Box Area */
+        /* Size Box Area - แก้ไขตรงนี้ */
         .size-selection-area {
             background-color: #f8f9fa;
             border: 1px dashed #ccc;
             border-radius: 10px;
+            color: #333 !important; /* !!! เพิ่มบรรทัดนี้: บังคับตัวเลขไซส์เป็นสีดำ !!! */
         }
 
         .form-check-input:checked {
             background-color: var(--theme-orange);
             border-color: var(--theme-orange);
+        }
+        
+        /* แก้ไข Label ของ checkbox ให้สีเข้มด้วย */
+        .form-check-label {
+            color: #333;
+            cursor: pointer;
         }
 
         /* Buttons */
@@ -189,14 +198,14 @@ if (isset($_POST['save'])) {
                                                 <div class="col-4 col-sm-3 col-md-2">
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="checkbox" name="p_size[]" value="<?= $i; ?>" id="size<?= $i; ?>">
-                                                        <label class="form-check-label small" for="size<?= $i; ?>">
+                                                        <label class="form-check-label small fw-bold" for="size<?= $i; ?>">
                                                             EU <?= $i; ?>
                                                         </label>
                                                     </div>
                                                 </div>
                                             <?php } ?>
                                         </div>
-                                        <div class="mt-2 text-muted" style="font-size: 0.75rem;">* ติ๊กถูกหน้าไซส์ที่มีสินค้า</div>
+                                        <div class="mt-2 text-danger small" style="font-size: 0.75rem;">* ติ๊กถูกหน้าไซส์ที่มีสินค้า</div>
                                     </div>
                                 </div>
 
@@ -224,7 +233,7 @@ if (isset($_POST['save'])) {
                             <div class="mb-4">
                                 <label class="form-label">รูปภาพสินค้า</label>
                                 <input type="file" name="p_img" class="form-control" accept="image/*" required>
-                                <div class="form-text">รองรับไฟล์ jpg, jpeg, png, gif</div>
+                                <div class="form-text text-muted">รองรับไฟล์ jpg, jpeg, png, gif</div>
                             </div>
 
                             <div class="mb-4">

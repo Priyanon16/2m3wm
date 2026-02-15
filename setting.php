@@ -1,10 +1,16 @@
 <?php
 session_start();
-include_once("connectdb.php");
+include_once("connectdb.php"); // มั่นใจว่าในไฟล์นี้เชื่อมต่อฐานข้อมูลชื่อ 2m3wm
 
+// ตรวจสอบว่าผู้ใช้ล็อกอินหรือยัง
+if (!isset($_SESSION['uid'])) {
+    echo "<script>alert('กรุณาเข้าสู่ระบบก่อนใช้งาน'); window.location='login.php';</script>";
+    exit();
+}
 
+$uid = $_SESSION['uid'];
 
-// ดึงข้อมูลจากตาราง users เชื่อมกับตาราง address
+// ดึงข้อมูลจากตาราง users เชื่อมกับตาราง address โดยใช้ LEFT JOIN
 $sql = "SELECT u.*, a.phone as addr_phone, a.address, a.district, a.province, a.postal_code 
         FROM users u 
         LEFT JOIN address a ON u.id = a.user_id 
@@ -23,9 +29,9 @@ $user = mysqli_fetch_assoc($rs);
     <style>
         body { background: #f5f5f5; font-family: 'Kanit', sans-serif; }
         .profile-card { max-width: 800px; margin: 50px auto; background: #fff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .profile-img { width: 140px; height: 140px; border-radius: 50%; border: 4px solid #ff7a00; object-fit: cover; }
         .section-title { color: #ff7a00; font-weight: 600; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
-        .form-control-readonly { background-color: #f8f9fa !important; color: #6c757d; }
+        /* สไตล์สำหรับฟิลด์ที่อ่านได้อย่างเดียว (Email) */
+        .form-control-readonly { background-color: #e9ecef !important; color: #6c757d; cursor: not-allowed; border: 1px solid #ced4da; }
     </style>
 </head>
 <body>
@@ -38,7 +44,6 @@ $user = mysqli_fetch_assoc($rs);
         
         <form action="update_profile_db.php" method="POST" enctype="multipart/form-data">
 
-
             <h5 class="section-title">ข้อมูลบัญชี</h5>
             <div class="row g-3">
                 <div class="col-md-6">
@@ -46,32 +51,12 @@ $user = mysqli_fetch_assoc($rs);
                     <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($user['name']) ?>" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-bold text-muted">Email</label>
+                    <label class="form-label fw-bold text-muted">Email (ไม่สามารถแก้ไขได้)</label>
                     <input type="email" class="form-control form-control-readonly" value="<?= htmlspecialchars($user['email']) ?>" readonly>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-bold">เบอร์โทรศัพท์ <span class="text-danger">*</span></label>
                     <input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($user['addr_phone'] ?? $user['phone']) ?>" required>
-                </div>
-            </div>
-
-            <h5 class="section-title mt-5">ที่อยู่จัดส่ง</h5>
-            <div class="mb-3">
-                <label class="form-label fw-bold">ที่อยู่โดยละเอียด <span class="text-danger">*</span></label>
-                <textarea name="address" class="form-control" rows="3" required><?= htmlspecialchars($user['address'] ?? '') ?></textarea>
-            </div>
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">ตำบล/เขต</label>
-                    <input type="text" name="district" class="form-control" value="<?= htmlspecialchars($user['district'] ?? '') ?>">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">จังหวัด</label>
-                    <input type="text" name="province" class="form-control" value="<?= htmlspecialchars($user['province'] ?? '') ?>">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">รหัสไปรษณีย์</label>
-                    <input type="text" name="postal_code" class="form-control" value="<?= htmlspecialchars($user['postal_code'] ?? '') ?>">
                 </div>
             </div>
 
@@ -96,12 +81,5 @@ $user = mysqli_fetch_assoc($rs);
     </div>
 </div>
 
-<script>
-    // แสดงตัวอย่างรูปภาพก่อนอัปโหลด
-    imgInput.onchange = evt => {
-        const [file] = imgInput.files;
-        if (file) preview.src = URL.createObjectURL(file);
-    }
-</script>
 </body>
 </html>
