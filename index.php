@@ -171,7 +171,7 @@ body { font-family: 'Kanit', sans-serif; background: #f8f9fa; }
         </div>
 
         <div class="carousel-item">
-            <img src="images/3.jpg" class="d-block w-100 slider-img">
+            <img src="images/1.jpg" class="d-block w-100 slider-img">
         </div>
 
     </div>

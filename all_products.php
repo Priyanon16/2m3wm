@@ -70,15 +70,16 @@ SELECT
     (
         SELECT img_path 
         FROM product_images 
-        WHERE p_id = p.p_id 
+        WHERE product_images.p_id = p.p_id 
         LIMIT 1
-    ) AS first_image
+    ) AS main_img
 FROM products p
 LEFT JOIN brand b ON p.brand_id = b.brand_id
 LEFT JOIN category c ON p.c_id = c.c_id
 $where
 $order
 ";
+
 
 
 $rs = mysqli_query($conn,$sql);
@@ -191,66 +192,93 @@ body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
 </form>
 
 <!-- PRODUCT GRID -->
-<div class="row g-4">
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
 
-<?php if(mysqli_num_rows($rs)>0): ?>
-<?php while($p=mysqli_fetch_assoc($rs)): ?>
+<?php if(mysqli_num_rows($rs) > 0): ?>
+<?php while($p = mysqli_fetch_assoc($rs)): ?>
 
-<div class="col-md-4">
-  <div class="card h-100">
+<?php
+$img = !empty($p['main_img']) 
+       ? $p['main_img'] 
+       : 'images/no-image.png';
+?>
 
-    <a href="product_detail.php?id=<?= $p['p_id']; ?>"
-       class="text-decoration-none text-dark">
+<div class="col">
+<div class="product-card">
 
-      <?php
-      $image = !empty($p['first_image'])
-          ? $p['first_image']
-          : 'images/no-image.png'; // fallback ถ้าไม่มีรูป
-      ?>
+<a href="product_detail.php?id=<?= $p['p_id']; ?>" 
+   class="text-decoration-none text-dark">
 
-      <img src="<?= htmlspecialchars($image); ?>" class="w-100">
+<img src="<?= htmlspecialchars($img); ?>" 
+     class="w-100 product-img">
 
+<div class="product-body">
 
-      <div class="card-body">
-        <span class="badge badge-brand mb-2">
-          <?= htmlspecialchars($p['brand_name']); ?>
-        </span>
+<span class="brand-tag">
+<?= htmlspecialchars($p['brand_name'] ?? 'General'); ?>
+</span>
 
-        <h6><?= htmlspecialchars($p['p_name']); ?></h6>
+<div class="product-title">
+<?= htmlspecialchars($p['p_name']); ?>
+</div>
 
-        <small class="text-muted">
-          <?= htmlspecialchars($p['c_name']); ?> |
-          <?= ucfirst($p['p_type']); ?>
-        </small>
+<div class="text-muted small mb-1">
+<?= ucfirst($p['p_type']); ?>
+</div>
 
-        <p class="price mt-2">
-          ฿<?= number_format($p['p_price'],0); ?>
-        </p>
-      </div>
-    </a>
+<div class="mb-2">
+<?php if($p['p_qty'] > 0): ?>
+<small class="text-success">
+คงเหลือ <?= number_format($p['p_qty']); ?> คู่
+</small>
+<?php else: ?>
+<small class="text-danger fw-bold">
+สินค้าหมด
+</small>
+<?php endif; ?>
+</div>
 
-    <div class="d-flex justify-content-end gap-2 p-3 pt-0">
-      <a href="?add_to_cart=<?= $p['p_id']; ?>" 
-         class="btn btn-warning px-4">
-         เพิ่มลงตะกร้า
-      </a>
-      <a href="?add_to_fav=<?= $p['p_id']; ?>" 
-         class="btn btn-outline-danger px-3">
-         <i class="bi bi-heart"></i>
-      </a>
-    </div>
+<div class="product-price">
+฿<?= number_format($p['p_price'], 0); ?>
+</div>
 
-  </div>
+</div>
+</a>
+
+<div class="product-actions">
+
+<?php if($p['p_qty'] > 0): ?>
+<a href="?add_to_cart=<?= $p['p_id']; ?>" 
+   class="btn btn-cart">
+เพิ่มลงตะกร้า
+</a>
+<?php else: ?>
+<button class="btn btn-secondary w-100 disabled">
+สินค้าหมด
+</button>
+<?php endif; ?>
+
+<a href="?add_to_fav=<?= $p['p_id']; ?>" 
+   class="btn btn-fav">
+<i class="bi bi-heart"></i>
+</a>
+
+</div>
+
+</div>
 </div>
 
 <?php endwhile; ?>
 <?php else: ?>
+
 <div class="col-12 text-center">
-  <h5 class="text-muted">ไม่พบสินค้า</h5>
+<h5 class="text-muted">ไม่พบสินค้า</h5>
 </div>
+
 <?php endif; ?>
 
 </div>
+
 </div>
 
 </body>
