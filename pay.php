@@ -60,18 +60,15 @@ if(isset($_POST['confirm_order'])){
    ดึงข้อมูลสินค้าในตะกร้า
 ================================ */
 $stmt_products = $conn->prepare("
-    SELECT cart.*, 
-           products.product_name,
-           products.price,
-           products.image,
-           products.size,
-           products.color,
-           products.shop_name
-    FROM cart
-    JOIN products ON cart.product_id = products.product_id
-    WHERE cart.user_id=?
+    SELECT c.*, 
+           p.p_name, 
+           p.p_price, 
+           p.p_img 
+    FROM cart c
+    JOIN products p ON c.product_id = p.p_id
+    WHERE c.user_id = ?
 ");
-$stmt_products->bind_param("i",$user_id);
+$stmt_products->bind_param("i",$u_id);
 $stmt_products->execute();
 $cart_result = $stmt_products->get_result();
 
