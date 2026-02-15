@@ -14,6 +14,9 @@ if(isset($_POST['add_brand'])){
         $brand_name = mysqli_real_escape_string($conn,$_POST['brand_name']);
 
         if(isset($_FILES['brand_img']) && $_FILES['brand_img']['error'] == 0){
+          echo $_FILES['brand_img']['error'];
+          exit();
+
 
             $file_tmp  = $_FILES['brand_img']['tmp_name'];   // ✅ เพิ่มบรรทัดนี้
             $file_name = time()."_".$_FILES['brand_img']['name'];
