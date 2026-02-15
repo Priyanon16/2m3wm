@@ -82,18 +82,21 @@ if(isset($_SESSION['user_id'])){
 .header-icons{
   display:flex;
   align-items:center;
-  gap:18px;
+  gap:20px;
 }
+
 
 .header-icons a{
   position:relative;
   color:#fff;
   font-size:22px;
-  display:flex;
+  display:inline-flex;
   align-items:center;
   justify-content:center;
-  transition:.3s;
+  width:40px;
+  height:40px;
 }
+
 
 .header-icons a:hover{
   color:#ff7a00;
@@ -103,20 +106,20 @@ if(isset($_SESSION['user_id'])){
 /* ===== BADGE ===== */
 .icon-badge{
   position:absolute;
-  top:-5px;
+  top:-6px;
   right:-6px;
-  min-width:16px;
-  height:16px;
-  font-size:10px;
+  min-width:18px;
+  height:18px;
+  padding:0 5px;
+  font-size:11px;
   font-weight:600;
+  border-radius:50px;
+  background:#ff3b3b;
+  color:#fff;
   display:flex;
   align-items:center;
   justify-content:center;
-  border-radius:50%;
-  background:#e53935;
-  color:#fff;
-  box-shadow:0 2px 6px rgba(0,0,0,.4);
-  padding:0 4px;
+  border:2px solid #111; /* กันซ้อนกับไอคอน */
 }
 
 
@@ -225,7 +228,7 @@ if(isset($_SESSION['user_id'])){
       </div>
 
       <!-- ICONS -->
-      <div class="d-flex gap-3 header-icons">
+      <div class="header-icons">
 
         <?php if(isset($_SESSION['user_id'])): ?>
           <a href="setting.php" title="โปรไฟล์">
