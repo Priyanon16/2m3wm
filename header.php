@@ -179,7 +179,7 @@ $totalFav  = count($_SESSION['favorite']);
                 </a>
             </li>
             <li>
-                <a class="dropdown-item" href="customer_address.php">
+                <a class="dropdown-item" href="address.php">
                     <i class="bi bi-geo-alt me-2 text-danger"></i>ที่อยู่จัดส่ง
                 </a>
             </li>
