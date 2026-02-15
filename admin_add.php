@@ -55,205 +55,244 @@ if (isset($_POST['save'])) {
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>เพิ่มสินค้าใหม่</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เพิ่มสินค้าใหม่ - 2M3WM Admin</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
+        /* --- 2M3WM Theme Variables --- */
         :root {
-            --theme-black: #121212;
-            --theme-white: #ffffff;
-            --theme-orange: #ff6600;
-            --theme-orange-hover: #e65c00;
+            --theme-orange: #ff5722;
+            --theme-orange-hover: #e64a19;
+            --theme-dark: #1a1a1a;
+            --theme-bg: linear-gradient(135deg, #f8f9fa, #eef1f4);
         }
 
         body {
             font-family: 'Kanit', sans-serif;
-            background-color: #f4f6f9; /* !!! แก้ไข: เปลี่ยนพื้นหลังเป็นสีขาวควันบุหรี่ (ไม่ให้กลืนกับการ์ด) */
-            color: #333; /* !!! แก้ไข: เปลี่ยนสีตัวหนังสือหลักเป็นสีเข้ม */
-        }
-
-        /* Card Styles */
-        .custom-card {
-            background-color: var(--theme-white);
+            background: var(--theme-bg);
+            min-height: 100vh;
             color: #333;
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0, 0.1); /* ปรับเงาให้นุ่มลงสำหรับพื้นหลังขาว */
-            overflow: hidden;
         }
 
-        .custom-card-header {
-            background-color: #000; /* หัวการ์ดยังคงสีดำเพื่อให้ตัดกับสีส้ม */
-            color: var(--theme-orange);
-            padding: 1.5rem;
-            border-bottom: 3px solid var(--theme-orange);
-        }
-
-        /* Form Inputs */
-        .form-label {
-            font-weight: 500;
-            color: #444;
+        /* --- Header --- */
+        header {
+            background: linear-gradient(90deg, #111, var(--theme-dark));
+            padding: 1rem 0;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            margin-bottom: 2rem;
         }
         
+        .navbar-brand {
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #fff !important;
+        }
+
+        /* --- Buttons --- */
+        .btn-theme {
+            background: var(--theme-orange);
+            color: white !important;
+            border: none;
+            border-radius: 50px;
+            padding: 10px 30px;
+            transition: .3s;
+            font-weight: 500;
+        }
+
+        .btn-theme:hover {
+            background: var(--theme-orange-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(255, 87, 34, 0.3);
+        }
+
+        /* --- Content Card --- */
+        .content-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--theme-orange);
+            margin-bottom: 2rem;
+            max-width: 800px; /* จำกัดความกว้างฟอร์มไม่ให้ยาวเกินไป */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .card-title-custom {
+            color: var(--theme-dark);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        /* --- Form Styles --- */
+        .form-label {
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
         .form-control, .form-select {
             border: 1px solid #ddd;
-            padding: 0.7rem;
-            border-radius: 8px;
-            background-color: #fff;
-            color: #333;
+            padding: 0.75rem;
+            border-radius: 10px;
+            transition: all 0.3s;
         }
 
-        /* Focus State (สีส้ม) */
         .form-control:focus, .form-select:focus {
             border-color: var(--theme-orange);
-            box-shadow: 0 0 0 0.25rem rgba(255, 102, 0, 0.25);
+            box-shadow: 0 0 0 0.25rem rgba(255, 87, 34, 0.25);
         }
 
-        /* Size Box Area */
-        .size-selection-area {
-            background-color: #f8f9fa;
+        /* --- Size Box --- */
+        .size-box {
+            background: #f8f9fa;
             border: 1px dashed #ccc;
-            border-radius: 10px;
-            color: #333 !important;
+            border-radius: 12px;
+            padding: 20px;
         }
-
+        
         .form-check-input:checked {
             background-color: var(--theme-orange);
             border-color: var(--theme-orange);
         }
-        
-        .form-check-label {
-            color: #333;
-            cursor: pointer;
-        }
-
-        /* Buttons */
-        .btn-theme-orange {
-            background-color: var(--theme-orange);
-            color: #fff;
-            border: none;
-            font-weight: 500;
-            padding: 10px;
-            border-radius: 50px;
-            transition: all 0.3s;
-        }
-        
-        .btn-theme-orange:hover {
-            background-color: var(--theme-orange-hover);
-            transform: translateY(-2px);
-            color: #fff;
-        }
-
-        .btn-theme-cancel {
-            background-color: #6c757d; /* ปรับสีปุ่มยกเลิกให้อ่อนลงเล็กน้อยให้เข้ากับธีมขาว */
-            color: #fff;
-            border: none;
-            border-radius: 50px;
-            padding: 10px;
-        }
-        .btn-theme-cancel:hover {
-            background-color: #5a6268;
-            color: #fff;
-        }
     </style>
 </head>
-
 <body>
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-7">
-                
-                <div class="custom-card">
-                    <div class="custom-card-header text-center">
-                        <h3 class="mb-0 fw-bold">✨ เพิ่มสินค้าใหม่</h3>
-                        <small class="opacity-75">กรอกรายละเอียดสินค้าด้านล่าง</small>
-                    </div>
 
-                    <div class="card-body p-4 p-md-5">
-
-                        <form method="post" enctype="multipart/form-data">
-
-                            <div class="mb-4">
-                                <label class="form-label">ชื่อสินค้า</label>
-                                <input type="text" name="p_name" class="form-control" placeholder="เช่น Nike Air Jordan..." required>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6 mb-4">
-                                    <label class="form-label">ราคา (บาท)</label>
-                                    <input type="number" name="p_price" class="form-control" placeholder="0.00" required>
-                                </div>
-
-                                <div class="col-md-12 mb-4">
-                                    <label class="form-label fw-bold text-uppercase" style="color: var(--theme-orange);">
-                                        👟 เลือกไซส์ที่พร้อมส่ง
-                                    </label>
-                                    <div class="size-selection-area p-3">
-                                        <div class="row g-2">
-                                            <?php
-                                            for ($i = 36; $i <= 45; $i++) {
-                                            ?>
-                                                <div class="col-4 col-sm-3 col-md-2">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" name="p_size[]" value="<?= $i; ?>" id="size<?= $i; ?>">
-                                                        <label class="form-check-label small fw-bold" for="size<?= $i; ?>">
-                                                            EU <?= $i; ?>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            <?php } ?>
-                                        </div>
-                                        <div class="mt-2 text-danger small" style="font-size: 0.75rem;">* ติ๊กถูกหน้าไซส์ที่มีสินค้า</div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6 mb-4">
-                                    <label class="form-label">ประเภท (เพศ)</label>
-                                    <select name="p_type" class="form-select" required>
-                                        <option value="" selected disabled>-- กรุณาเลือก --</option>
-                                        <option value="male">ผู้ชาย (Men)</option>
-                                        <option value="female">ผู้หญิง (Women)</option>
-                                        <option value="unisex">Unisex</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-6 mb-4">
-                                    <label class="form-label">หมวดหมู่สินค้า</label>
-                                    <select name="c_id" class="form-select" required>
-                                        <option value="" selected disabled>-- เลือกหมวดหมู่ --</option>
-                                        <?php while ($row_c = mysqli_fetch_assoc($result_category)) { ?>
-                                            <option value="<?= $row_c['c_id']; ?>"><?= $row_c['c_name']; ?></option>
-                                        <?php } ?>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="form-label">รูปภาพสินค้า</label>
-                                <input type="file" name="p_img" class="form-control" accept="image/*" required>
-                                <div class="form-text text-muted">รองรับไฟล์ jpg, jpeg, png, gif</div>
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="form-label">รายละเอียดสินค้า</label>
-                                <textarea name="p_detail" class="form-control" rows="4" placeholder="ระบุรายละเอียดสินค้า..."></textarea>
-                            </div>
-
-                            <div class="d-grid gap-2 mt-5">
-                                <button type="submit" name="save" class="btn btn-theme-orange btn-lg shadow-sm">
-                                    💾 บันทึกข้อมูล
-                                </button>
-                                <a href="admin_product.php" class="btn btn-theme-cancel">
-                                    ยกเลิก
-                                </a>
-                            </div>
-                        </form>
-
-                    </div>
-                </div> 
+    <header>
+        <div class="container d-flex align-items-center justify-content-between">
+            <a class="navbar-brand" href="index_admin.php">
+                <i class="bi bi-shield-check me-2"></i>2M3WM ADMIN
+            </a>
+            <div class="d-flex align-items-center gap-4">
+                <span class="text-white-50 d-none d-md-block">Admin Panel</span>
+                <a href="logout.php" class="btn btn-theme text-decoration-none" style="padding: 8px 22px; font-size: 1rem;">
+                    <i class="bi bi-box-arrow-right me-2"></i>ออกจากระบบ
+                </a>
             </div>
         </div>
+    </header>
+
+    <div class="container">
+        
+        <div class="mb-4 text-center">
+            <a href="admin_product.php" class="text-secondary text-decoration-none mb-3 d-inline-block">
+                <i class="bi bi-arrow-left me-1"></i> กลับไปหน้ารายการสินค้า
+            </a>
+        </div>
+
+        <div class="content-card">
+            
+            <div class="text-center mb-5">
+                <div class="mb-3">
+                    <span style="background: rgba(255,87,34,0.1); color: var(--theme-orange); padding: 15px; border-radius: 50%; width: 70px; height: 70px; display: inline-flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-box-seam-fill fs-2"></i>
+                    </span>
+                </div>
+                <h2 class="card-title-custom">เพิ่มสินค้าใหม่</h2>
+                <p class="text-muted">กรอกรายละเอียดสินค้าที่ต้องการนำลงขาย</p>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                
+                <div class="mb-4">
+                    <label class="form-label"><i class="bi bi-tag me-2"></i>ชื่อสินค้า</label>
+                    <input type="text" name="p_name" class="form-control" placeholder="เช่น Nike Air Jordan 1 Low" required>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label"><i class="bi bi-currency-bitcoin me-2"></i>ราคา (บาท)</label>
+                        <input type="number" name="p_price" class="form-control" placeholder="0.00" required>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label"><i class="bi bi-folder me-2"></i>หมวดหมู่สินค้า</label>
+                        <select name="c_id" class="form-select" required>
+                            <option value="" selected disabled>-- เลือกหมวดหมู่ --</option>
+                            <?php 
+                            // รีเซ็ต pointer ของ query ถ้าจำเป็น หรือดึงใหม่ (แต่โค้ดบนสุดดึงไว้แล้ว)
+                            if(mysqli_num_rows($result_category) > 0){
+                                mysqli_data_seek($result_category, 0);
+                                while ($row_c = mysqli_fetch_assoc($result_category)) { ?>
+                                    <option value="<?= $row_c['c_id']; ?>"><?= $row_c['c_name']; ?></option>
+                            <?php 
+                                } 
+                            }
+                            ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label"><i class="bi bi-gender-ambiguous me-2"></i>ประเภท / เพศ</label>
+                    <div class="d-flex gap-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="p_type" id="type_male" value="male" required>
+                            <label class="form-check-label" for="type_male">ผู้ชาย (Men)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="p_type" id="type_female" value="female">
+                            <label class="form-check-label" for="type_female">ผู้หญิง (Women)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="p_type" id="type_unisex" value="unisex">
+                            <label class="form-check-label" for="type_unisex">Unisex</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-dark">
+                        <i class="bi bi-rulers me-2"></i>เลือกไซส์ที่พร้อมส่ง
+                    </label>
+                    <div class="size-box">
+                        <div class="row g-2">
+                            <?php for ($i = 36; $i <= 45; $i++) { ?>
+                            <div class="col-4 col-md-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="p_size[]" value="<?= $i; ?>" id="size<?= $i; ?>">
+                                    <label class="form-check-label small fw-bold" for="size<?= $i; ?>">
+                                        EU <?= $i; ?>
+                                    </label>
+                                </div>
+                            </div>
+                            <?php } ?>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label"><i class="bi bi-image me-2"></i>รูปภาพสินค้า</label>
+                    <input type="file" name="p_img" class="form-control" accept="image/*" required>
+                    <div class="form-text text-muted">รองรับไฟล์ .jpg, .jpeg, .png, .gif</div>
+                </div>
+
+                <div class="mb-5">
+                    <label class="form-label"><i class="bi bi-file-text me-2"></i>รายละเอียดเพิ่มเติม</label>
+                    <textarea name="p_detail" class="form-control" rows="4" placeholder="ระบุรายละเอียดสินค้า..."></textarea>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" name="save" class="btn btn-theme btn-lg shadow">
+                        <i class="bi bi-check-circle me-2"></i>บันทึกข้อมูลสินค้า
+                    </button>
+                    <a href="admin_product.php" class="btn btn-outline-secondary btn-lg" style="border-radius: 50px;">
+                        ยกเลิก
+                    </a>
+                </div>
+
+            </form>
+        </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

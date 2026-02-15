@@ -1,7 +1,8 @@
 <?php
 session_start();
 include_once("connectdb.php"); // มั่นใจว่าในไฟล์นี้เชื่อมต่อฐานข้อมูลชื่อ 2m3wm
-
+include_once("header.php");
+include_once("bootstrap.php");
 
 // ดึงข้อมูลจากตาราง users เชื่อมกับตาราง address โดยใช้ LEFT JOIN
 $sql = "SELECT u.*, a.phone as addr_phone, a.address, a.district, a.province, a.postal_code 
