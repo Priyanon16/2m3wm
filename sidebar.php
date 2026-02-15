@@ -162,22 +162,22 @@ body {
                         <i class="bi bi-chevron-down submenu-arrow small"></i>
                 </a>
 
-    <!-- Submenu -->
-    <div class="collapse ps-4" id="productMenu">
-        <ul class="nav flex-column mt-1">
-            <li class="nav-item">
-                <a href="admin_product.php" class="nav-link text-white small">
-                    จัดการสินค้า
-                </a>
+                <!-- Submenu -->
+                <div class="collapse ps-4" id="productMenu">
+                    <ul class="nav flex-column mt-1">
+                        <li class="nav-item">
+                            <a href="admin_product.php" class="nav-link text-white small">
+                                จัดการสินค้า
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="category_products.php" class="nav-link text-white small">
+                                จัดการหมวดหมู่สินค้า
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </li>
-            <li class="nav-item">
-                <a href="category_products.php" class="nav-link text-white small">
-                    จัดการหมวดหมู่สินค้า
-                </a>
-            </li>
-        </ul>
-    </div>
-</li>
 
             <li>
                 <a href="customer_data.php" class="nav-link text-white">
@@ -185,6 +185,14 @@ body {
                     <span>ลูกค้า</span>
                 </a>
             </li>
+
+            <li>
+                <a href="admin_brand.php" class="nav-link text-white">
+                    <i class="bi bi-award"></i>
+                    <span>จัดการแบรนด์</span>
+                </a>
+            </li>
+
         </ul>
 
         <hr>
