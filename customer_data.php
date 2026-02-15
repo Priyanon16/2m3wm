@@ -96,7 +96,7 @@ include_once("connectdb.php");
                             </td>
                             <td class="text-center pe-4">
                                 <div class="btn-group">
-                                    <a href="edit_customer_data.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-dark">
+                                    <a href="edit_customer.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-dark">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
                                     <a href="delete_data.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-danger" 

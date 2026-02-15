@@ -28,13 +28,8 @@ SELECT
 FROM orders o
 LEFT JOIN users u ON o.u_id = u.id
 LEFT JOIN order_details od ON od.o_id = o.o_id
-GROUP BY o.o_id
-ORDER BY o.o_date DESC
+WHERE 1
 ";
-
-
-
-
 
 /* Filter */
 if (!empty($status)) {
@@ -44,15 +39,19 @@ if (!empty($status)) {
 
 if (!empty($date)) {
     $date = mysqli_real_escape_string($conn,$date);
-    $sql .= " AND DATE(o.created_at) = '$date' ";
+    $sql .= " AND DATE(o.o_date) = '$date' ";
 }
 
 if (!empty($keyword)) {
     $kw = mysqli_real_escape_string($conn,$keyword);
-    $sql .= " AND (o.id LIKE '%$kw%' OR u.name LIKE '%$kw%') ";
+    $sql .= " AND (o.o_id LIKE '%$kw%' OR u.name LIKE '%$kw%') ";
 }
 
-$sql .= " GROUP BY o.id ORDER BY o.created_at DESC ";
+$sql .= "
+GROUP BY o.o_id
+ORDER BY o.o_date DESC
+";
+
 
 $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
 ?>
