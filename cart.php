@@ -168,7 +168,7 @@ while($item = mysqli_fetch_assoc($rs)):
     <p>ค่าจัดส่ง: ฿50</p>
     <h4>ยอดสุทธิ: ฿<?= number_format($total+50,0); ?></h4>
 
-    <form action="checkout.php" method="post">
+    <form action="c.php" method="post">
         <button type="submit" class="checkout-btn">
             ดำเนินการสั่งซื้อ
         </button>
