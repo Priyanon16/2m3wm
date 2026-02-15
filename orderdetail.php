@@ -61,6 +61,48 @@ body{
     background:#ff7a00 !important;
     color:#fff !important;
 }
+/* =========================
+   ORDER STATUS TABS (NEW)
+========================= */
+
+.order-tabs-wrapper{
+    overflow-x:auto;
+    padding-bottom:10px;
+    border-bottom:1px solid #eee;
+}
+
+.order-tabs{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.order-tab{
+    padding:10px 22px;
+    border-radius:50px;
+    text-decoration:none;
+    font-weight:500;
+    color:#555;
+    background:#fff;
+    border:1px solid #e0e0e0;
+    transition:0.3s;
+    white-space:nowrap;
+}
+
+.order-tab:hover{
+    background:#fff3e6;
+    color:#ff7a00;
+    border-color:#ff7a00;
+    transform:translateY(-2px);
+}
+
+.order-tab.active{
+    background:#ff7a00;
+    color:#fff;
+    border-color:#ff7a00;
+    box-shadow:0 5px 15px rgba(255,122,0,0.3);
+}
+
 </style>
 
 <div class="container mt-5 mb-5">
