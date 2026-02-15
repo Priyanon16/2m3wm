@@ -1,14 +1,31 @@
 <?php
 session_start();
-include "data.php";
+include_once("connectdb.php");
 
 $cart = $_SESSION['cart'] ?? [];
 
+/* ลบสินค้า */
 if(isset($_GET['remove'])){
-  unset($_SESSION['cart'][$_GET['remove']]);
-  header("Location: cart.php");
+    $remove_id = intval($_GET['remove']);
+    unset($_SESSION['cart'][$remove_id]);
+    header("Location: cart.php");
+    exit;
+}
+
+/* ถ้าตะกร้าว่าง */
+if(empty($cart)){
+    $cart_items = [];
+} else {
+    $ids = implode(",", array_keys($cart));
+    $sql = "SELECT * FROM products WHERE p_id IN ($ids)";
+    $rs  = mysqli_query($conn,$sql);
+    $cart_items = [];
+    while($row = mysqli_fetch_assoc($rs)){
+        $cart_items[] = $row;
+    }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="th">
@@ -148,41 +165,51 @@ body {
 <div class="container">
     <div class="cart-box">
 
-        <!-- รายการที่ 1 -->
-        <div class="cart-item">
-            <img src="image/5.jpg" alt="รองเท้า Classic">
-            <div class="item-info">
-                <h4>รองเท้าผ้าใบ รุ่น Classic</h4>
-                <p>สี: ขาว | ไซซ์: 42</p>
-                <p class="price">฿1,290</p>
-            </div>
-        </div>
+    <?php if(empty($cart_items)): ?>
+        <h3>ยังไม่มีสินค้าในตะกร้า</h3>
+    <?php else: ?>
 
-        <!-- รายการที่ 2 -->
-        <div class="cart-item">
-            <img src="image/4.jpg" alt="รองเท้า Sport">
-            <div class="item-info">
-                <h4>รองเท้าวิ่ง รุ่น Sport Pro</h4>
-                <p>สี: ดำ | ไซซ์: 40</p>
-                <p class="price">฿2,090</p>
-            </div>
-        </div>
+    <?php 
+    $total = 0;
+    foreach($cart_items as $item): 
+        $qty = $cart[$item['p_id']];
+        $subtotal = $item['p_price'] * $qty;
+        $total += $subtotal;
+    ?>
 
-        <!-- สรุปยอด -->
-        <div class="summary">
-            <p>ยอดรวมสินค้า: ฿3,380</p>
-            <p>ค่าจัดส่ง: ฿50</p>
-            <h3>ยอดสุทธิ: ฿3,430</h3>
-
-            <form action="orderdetail.php" method="post">
-                <button type="submit" class="checkout-btn">
-                    ดำเนินการสั่งซื้อ
-                </button>
-            </form>
+    <div class="cart-item">
+        <img src="<?= $item['p_img']; ?>">
+        <div class="item-info">
+            <h4><?= htmlspecialchars($item['p_name']); ?></h4>
+            <p>จำนวน: <?= $qty; ?></p>
+            <p class="price">
+                ฿<?= number_format($subtotal,0); ?>
+            </p>
+            <a href="?remove=<?= $item['p_id']; ?>" style="color:red;">
+                ลบสินค้า
+            </a>
         </div>
+    </div>
+
+    <?php endforeach; ?>
+
+    <div class="summary">
+        <p>ยอดรวมสินค้า: ฿<?= number_format($total,0); ?></p>
+        <p>ค่าจัดส่ง: ฿50</p>
+        <h3>ยอดสุทธิ: ฿<?= number_format($total+50,0); ?></h3>
+
+        <form action="checkout.php" method="post">
+            <button type="submit" class="checkout-btn">
+                ดำเนินการสั่งซื้อ
+            </button>
+        </form>
+    </div>
+
+    <?php endif; ?>
 
     </div>
-</div>
+    </div>
+
 
 </body>
 </html>
