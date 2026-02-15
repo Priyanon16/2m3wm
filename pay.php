@@ -2,8 +2,15 @@
 session_start();
 include 'connectdb.php';
 
+ini_set('display_errors',1);
+error_reporting(E_ALL);
 
-$user_id = $_SESSION['user_id'];
+if(!isset($_SESSION['user_id'])){
+    header("Location: login.php");
+    exit();
+}
+
+$user_id = intval($_SESSION['user_id']);
 
 /* ===============================
    เมื่อกดชำระสินค้า
