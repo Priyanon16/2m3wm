@@ -9,130 +9,173 @@ if (!isset($_SESSION['user_id'])) {
 
 $uid = $_SESSION['user_id'];
 
-$sql = "SELECT * FROM address WHERE user_id = '$uid' ORDER BY id DESC";
-$rs = mysqli_query($conn, $sql);
+/* =========================
+   บันทึกที่อยู่ใหม่
+========================= */
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
+    $fullname    = mysqli_real_escape_string($conn,$_POST['fullname']);
+    $phone       = mysqli_real_escape_string($conn,$_POST['phone']);
+    $address     = mysqli_real_escape_string($conn,$_POST['address']);
+    $district    = mysqli_real_escape_string($conn,$_POST['district']);
+    $amphure     = mysqli_real_escape_string($conn,$_POST['amphure']);
+    $province    = mysqli_real_escape_string($conn,$_POST['province']);
+    $postal_code = mysqli_real_escape_string($conn,$_POST['postal_code']);
+
+    mysqli_query($conn,"INSERT INTO address 
+        (user_id, fullname, phone, address, district, amphure, province, postal_code)
+        VALUES
+        ('$uid','$fullname','$phone','$address','$district','$amphure','$province','$postal_code')
+    ");
+
+    header("Location: address.php");
+    exit;
+}
+
+/* =========================
+   ดึงข้อมูลที่อยู่ทั้งหมด
+========================= */
+$sql = "SELECT * FROM address WHERE user_id='$uid' ORDER BY id DESC";
+$rs  = mysqli_query($conn,$sql);
 ?>
-
 
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <title>ที่อยู่จัดส่ง - 2M3WM</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f4f4f4; }
-        .setting-container { max-width: 900px; margin: 50px auto; }
-        .profile-card { background: #fff; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: none; }
-        .side-menu { background: #111; color: #fff; padding: 20px; min-height: 500px; }
-        .side-menu .nav-link { color: #aaa; padding: 12px 15px; border-radius: 8px; margin-bottom: 5px; transition: 0.3s; }
-        .side-menu .nav-link:hover, .side-menu .nav-link.active { background: #ff7a00; color: #fff; }
-        .form-label { font-weight: 500; color: #555; font-size: 0.9rem; }
-        .form-control, .form-select { border-radius: 8px; background-color: #f9f9f9; border: 1px solid #eee; padding: 10px 15px; }
-        .form-control:focus { border-color: #ff7a00; box-shadow: none; background-color: #fff; }
-        .btn-orange { background: #ff7a00; border: none; color: #fff; padding: 12px 30px; border-radius: 50px; font-weight: 500; transition: 0.3s; }
-        .btn-orange:hover { background: #e66e00; transform: translateY(-2px); }
-    </style>
+<meta charset="UTF-8">
+<title>ที่อยู่จัดส่ง - 2M3WM</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+body{
+    font-family:'Kanit',sans-serif;
+    background:#f4f6f9;
+}
+.card-custom{
+    border-radius:15px;
+    border:none;
+    box-shadow:0 5px 15px rgba(0,0,0,0.08);
+}
+.btn-orange{
+    background:#ff7a00;
+    border:none;
+    color:#fff;
+}
+.btn-orange:hover{
+    background:#e66e00;
+}
+.address-card{
+    border:1px solid #eee;
+    border-radius:10px;
+    padding:15px;
+    transition:.2s;
+}
+.address-card:hover{
+    background:#fff3e6;
+}
+</style>
 </head>
+
 <body>
 
 <?php include("header.php"); ?>
 
-<div class="container setting-container">
-    <div class="row profile-card">
-        <div class="col-md-4 side-menu">
-            <div class="text-center mb-4">
-                <i class="bi bi-geo-alt-fill" style="font-size: 60px; color: #ff7a00;"></i>
-                <h5 class="mt-2">ตั้งค่าที่อยู่</h5>
-                <p class="small text-secondary">จัดการที่อยู่สำหรับการจัดส่ง</p>
-            </div>
-            <nav class="nav flex-column">
-                <a class="nav-link" href="setting.php"><i class="bi bi-person me-2"></i> ข้อมูลส่วนตัว</a>
-                <a class="nav-link active" href="address.php"><i class="bi bi-geo-alt me-2"></i> ที่อยู่จัดส่ง</a>
-                <a class="nav-link" href="ordersatatus.php"><i class="bi bi-truck me-2"></i> เช็คสถานะออเดอร์</a>
-                <a class="nav-link text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i> ออกจากระบบ</a>
-            </nav>
-        </div>
+<div class="container mt-5 mb-5">
+<div class="row">
 
-        <div class="col-md-8 p-5">
-            <h4 class="mb-4 fw-bold"><i class="bi bi-house-door me-2 text-warning"></i>ที่อยู่จัดส่ง
-        </h4>
+<!-- ================== เพิ่มที่อยู่ใหม่ ================== -->
+<div class="col-md-6">
 
-        <h5 class="mb-3">เลือกที่อยู่จัดส่ง</h5>
+<div class="card card-custom p-4">
+<h4 class="mb-4 text-warning">
+<i class="bi bi-plus-circle"></i> เพิ่มที่อยู่ใหม่
+</h4>
 
-            <?php while($addr = mysqli_fetch_assoc($rs)): ?>
-            <div class="form-check border p-3 mb-3 rounded">
-                <input class="form-check-input" 
-                    type="radio" 
-                    name="address_id" 
-                    value="<?= $addr['id'] ?>" 
-                    required>
+<form method="POST">
 
+<div class="mb-3">
+<label>ชื่อผู้รับ</label>
+<input type="text" name="fullname" class="form-control" required>
+</div>
+
+<div class="mb-3">
+<label>เบอร์โทร</label>
+<input type="text" name="phone" class="form-control" required>
+</div>
+
+<div class="mb-3">
+<label>ที่อยู่</label>
+<textarea name="address" class="form-control" rows="2" required></textarea>
+</div>
+
+<div class="row">
+<div class="col-md-6 mb-3">
+<label>ตำบล</label>
+<input type="text" name="district" class="form-control" required>
+</div>
+
+<div class="col-md-6 mb-3">
+<label>อำเภอ</label>
+<input type="text" name="amphure" class="form-control" required>
+</div>
+
+<div class="col-md-6 mb-3">
+<label>จังหวัด</label>
+<input type="text" name="province" class="form-control" required>
+</div>
+
+<div class="col-md-6 mb-3">
+<label>รหัสไปรษณีย์</label>
+<input type="text" name="postal_code" maxlength="5" class="form-control" required>
+</div>
+</div>
+
+<button type="submit" class="btn btn-orange w-100">
+บันทึกที่อยู่
+</button>
+
+</form>
+</div>
+</div>
+
+<!-- ================== รายการที่อยู่ทั้งหมด ================== -->
+<div class="col-md-6">
+
+<div class="card card-custom p-4">
+<h4 class="mb-4">
+<i class="bi bi-geo-alt"></i> รายการที่อยู่ของฉัน
+</h4>
+
+<?php if(mysqli_num_rows($rs) > 0): ?>
+    <?php while($row = mysqli_fetch_assoc($rs)): ?>
+        <div class="address-card mb-3">
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="address_id" value="<?= $row['id'] ?>">
                 <label class="form-check-label">
-                    <strong><?= $addr['fullname'] ?></strong><br>
-                    <?= $addr['phone'] ?><br>
-                    <?= $addr['address'] ?> 
-                    <?= $addr['district'] ?> 
-                    <?= $addr['amphure'] ?> 
-                    <?= $addr['province'] ?> 
-                    <?= $addr['postal_code'] ?>
+
+                    <strong><?= htmlspecialchars($row['fullname']) ?></strong><br>
+                    <?= htmlspecialchars($row['phone']) ?><br>
+                    <?= htmlspecialchars($row['address']) ?><br>
+                    <?= htmlspecialchars($row['district']) ?>
+                    <?= htmlspecialchars($row['amphure']) ?>
+                    <?= htmlspecialchars($row['province']) ?>
+                    <?= htmlspecialchars($row['postal_code']) ?>
+
                 </label>
             </div>
-            <?php endwhile; ?>
-
-            
-            <form action="save_address.php" method="POST">
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <label class="form-label">ชื่อ-นามสกุล (ผู้รับสินค้า)</label>
-                        <input type="text" name="fullname" class="form-control" 
-                               value="<?= htmlspecialchars($addr['fullname'] ?? '') ?>" placeholder="ระบุชื่อจริง-นามสกุล" required>
-                    </div>
-
-                    <div class="col-md-12 mb-3">
-                        <label class="form-label">เบอร์โทรศัพท์ติดต่อ</label>
-                        <input type="tel" name="phone" class="form-control" 
-                               value="<?= htmlspecialchars($addr['phone'] ?? '') ?>" placeholder="08X-XXX-XXXX" required>
-                    </div>
-
-                    <div class="col-md-12 mb-3">
-                        <label class="form-label">ที่อยู่ (บ้านเลขที่, หมู่บ้าน, ถนน)</label>
-                        <textarea name="address" class="form-control" rows="3" 
-                                  placeholder="ระบุที่อยู่โดยละเอียด" required><?= htmlspecialchars($addr['address'] ?? '') ?></textarea>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">ตำบล / แขวง</label>
-                        <input type="text" name="district" class="form-control" 
-                               value="<?= htmlspecialchars($addr['district'] ?? '') ?>" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">อำเภอ / เขต</label>
-                        <input type="text" name="amphure" class="form-control" 
-                               value="<?= htmlspecialchars($addr['amphure'] ?? '') ?>" required>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">จังหวัด</label>
-                        <input type="text" name="province" class="form-control" 
-                               value="<?= htmlspecialchars($addr['province'] ?? '') ?>" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">รหัสไปรษณีย์</label>
-                        <input type="text" name="postal_code" class="form-control" 
-                               value="<?= htmlspecialchars($addr['postal_code'] ?? '') ?>" maxlength="5" required>
-                    </div>
-                </div>
-
-                <div class="text-end mt-4">
-                    <button type="submit" class="btn btn-orange shadow-sm px-5">บันทึกที่อยู่</button>
-                </div>
-            </form>
         </div>
-    </div>
+    <?php endwhile; ?>
+<?php else: ?>
+    <p class="text-muted">ยังไม่มีที่อยู่</p>
+<?php endif; ?>
+
+</div>
+</div>
+
+</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
