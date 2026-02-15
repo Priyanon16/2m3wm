@@ -2,13 +2,6 @@
 session_start();
 include_once("connectdb.php"); // มั่นใจว่าในไฟล์นี้เชื่อมต่อฐานข้อมูลชื่อ 2m3wm
 
-// ตรวจสอบว่าผู้ใช้ล็อกอินหรือยัง
-if (!isset($_SESSION['uid'])) {
-    echo "<script>alert('กรุณาเข้าสู่ระบบก่อนใช้งาน'); window.location='login.php';</script>";
-    exit();
-}
-
-$uid = $_SESSION['uid'];
 
 // ดึงข้อมูลจากตาราง users เชื่อมกับตาราง address โดยใช้ LEFT JOIN
 $sql = "SELECT u.*, a.phone as addr_phone, a.address, a.district, a.province, a.postal_code 

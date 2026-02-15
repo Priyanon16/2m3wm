@@ -143,6 +143,7 @@ $totalFav  = count($_SESSION['favorite']);
       2M<span>3WM</span>
     </div>
 
+    
     <!-- MENU -->
     <ul class="nav nav-menu gap-4 d-none d-lg-flex">
       <li class="nav-item">
