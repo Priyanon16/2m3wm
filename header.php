@@ -162,19 +162,19 @@ $totalFav  = count($_SESSION['favorite']);
 
         <ul class="dropdown-menu shadow border-0 rounded-3">
             <li>
-                <a class="dropdown-item" href="customer_profile.php">
+                <a class="dropdown-item" href="setting.php">
                     <i class="bi bi-person me-2 text-warning"></i>โปรไฟล์
                 </a>
             </li>
 
             <li>
-                <a class="dropdown-item" href="customer_checkorders.php">
+                <a class="dropdown-item" href="ordersatatus.php">
                     <i class="bi bi-truck me-2 text-primary"></i>เช็คสถานะออเดอร์
                 </a>
             </li>
 
             <li>
-                <a class="dropdown-item" href="customer_history.php">
+                <a class="dropdown-item" href="orderdetail.php">
                     <i class="bi bi-clock-history me-2 text-success"></i>ประวัติการสั่งซื้อ
                 </a>
             </li>
