@@ -14,40 +14,32 @@ if(isset($_POST['add_brand'])){
         $brand_name = mysqli_real_escape_string($conn,$_POST['brand_name']);
 
         if(isset($_FILES['brand_img']) && $_FILES['brand_img']['error'] == 0){
-          echo $_FILES['brand_img']['error'];
-          exit();
+          
+        $file_tmp  = $_FILES['brand_img']['tmp_name'];
+        $file_name = time()."_".basename($_FILES['brand_img']['name']);
 
+        $upload_dir = __DIR__ . "/uploads/brands/";
 
-            $file_tmp  = $_FILES['brand_img']['tmp_name'];
-            $file_name = time()."_".basename($_FILES['brand_img']['name']);
-
-            /* ใช้ path แบบชัวร์ 100% */
-            $upload_dir = __DIR__ . "/uploads/brands/";
-
-            if(!is_dir($upload_dir)){
-                mkdir($upload_dir,0777,true);
-            }
-
-            $target = $upload_dir . $file_name;
-
-            if(move_uploaded_file($file_tmp,$target)){
-
-                $sql = "INSERT INTO brand (brand_name,brand_img)
-                        VALUES ('$brand_name','$file_name')";
-
-                if(mysqli_query($conn,$sql)){
-                    echo "<script>alert('เพิ่มแบรนด์สำเร็จ');window.location='admin_brand.php';</script>";
-                }else{
-                    echo "SQL Error: " . mysqli_error($conn);
-                }
-
-            }else{
-                echo "Upload failed<br>";
-                echo "TMP: ".$file_tmp."<br>";
-                echo "TARGET: ".$target;
-            }
-
+        if(!is_dir($upload_dir)){
+            mkdir($upload_dir,0777,true);
         }
+
+        $target = $upload_dir . $file_name;
+
+        if(move_uploaded_file($file_tmp,$target)){
+            $sql = "INSERT INTO brand (brand_name,brand_img)
+                    VALUES ('$brand_name','$file_name')";
+
+            if(mysqli_query($conn,$sql)){
+                echo "<script>alert('เพิ่มแบรนด์สำเร็จ');window.location='admin_brand.php';</script>";
+            }else{
+                echo "SQL Error: " . mysqli_error($conn);
+            }
+        }else{
+            echo "Upload failed";
+        }
+    }
+
 
     }
 }
