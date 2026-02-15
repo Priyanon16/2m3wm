@@ -61,6 +61,48 @@ body{
     background:#ff7a00 !important;
     color:#fff !important;
 }
+/* =========================
+   ORDER STATUS TABS (NEW)
+========================= */
+
+.order-tabs-wrapper{
+    overflow-x:auto;
+    padding-bottom:10px;
+    border-bottom:1px solid #eee;
+}
+
+.order-tabs{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.order-tab{
+    padding:10px 22px;
+    border-radius:50px;
+    text-decoration:none;
+    font-weight:500;
+    color:#555;
+    background:#fff;
+    border:1px solid #e0e0e0;
+    transition:0.3s;
+    white-space:nowrap;
+}
+
+.order-tab:hover{
+    background:#fff3e6;
+    color:#ff7a00;
+    border-color:#ff7a00;
+    transform:translateY(-2px);
+}
+
+.order-tab.active{
+    background:#ff7a00;
+    color:#fff;
+    border-color:#ff7a00;
+    box-shadow:0 5px 15px rgba(255,122,0,0.3);
+}
+
 </style>
 
 <div class="container mt-5 mb-5">
@@ -73,27 +115,29 @@ body{
 <!-- ==========================
      TAB STATUS
 ========================== -->
-<ul class="nav nav-tabs mb-4">
-<?php
-$statuses = [
-    "ทั้งหมด",
-    "รอชำระเงิน",
-    "ที่ต้องจัดส่ง",
-    "รอรับ",
-    "จัดส่งสำเร็จ",
-    "คืนสินค้า"
-];
+<!-- STATUS MENU -->
+<div class="order-tabs-wrapper mb-4">
+    <div class="order-tabs">
+        <?php
+        $statuses = [
+            "ทั้งหมด",
+            "รอชำระเงิน",
+            "ที่ต้องจัดส่ง",
+            "รอรับ",
+            "จัดส่งสำเร็จ",
+            "คืนสินค้า"
+        ];
 
-foreach($statuses as $st):
-?>
-<li class="nav-item">
-    <a class="nav-link <?= ($filter==$st)?'active':'' ?>"
-       href="?status=<?= urlencode($st) ?>">
-       <?= $st ?>
-    </a>
-</li>
-<?php endforeach; ?>
-</ul>
+        foreach($statuses as $st):
+        ?>
+            <a class="order-tab <?= ($filter==$st)?'active':'' ?>"
+               href="?status=<?= urlencode($st) ?>">
+                <?= $st ?>
+            </a>
+        <?php endforeach; ?>
+    </div>
+</div>
+
 
 
 <?php if(mysqli_num_rows($rs) > 0): ?>
