@@ -10,9 +10,44 @@ if (!isset($_SESSION['user_id'])) {
 $uid = $_SESSION['user_id'];
 
 /* =========================
-   บันทึกที่อยู่ใหม่
+   ลบที่อยู่
 ========================= */
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+if(isset($_GET['delete'])){
+
+    $id = intval($_GET['delete']);
+
+    mysqli_query($conn,"
+        DELETE FROM addresses 
+        WHERE address_id='$id' 
+        AND user_id='$uid'
+    ");
+
+    header("Location: address.php");
+    exit;
+}
+
+/* =========================
+   ดึงข้อมูลแก้ไข
+========================= */
+$editData = null;
+
+if(isset($_GET['edit'])){
+
+    $id = intval($_GET['edit']);
+
+    $result = mysqli_query($conn,"
+        SELECT * FROM addresses
+        WHERE address_id='$id'
+        AND user_id='$uid'
+    ");
+
+    $editData = mysqli_fetch_assoc($result);
+}
+
+/* =========================
+   บันทึก (เพิ่ม / แก้ไข)
+========================= */
+if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     $fullname    = mysqli_real_escape_string($conn,$_POST['fullname']);
     $phone       = mysqli_real_escape_string($conn,$_POST['phone']);
@@ -21,13 +56,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $province    = mysqli_real_escape_string($conn,$_POST['province']);
     $postal_code = mysqli_real_escape_string($conn,$_POST['postal_code']);
 
-    $sql_insert = "INSERT INTO addresses 
-        (user_id, fullname, phone, address, district, province, postal_code)
-        VALUES
-        ('$uid','$fullname','$phone','$address','$district','$province','$postal_code')
-    ";
+    /* ถ้ามี address_id แสดงว่าแก้ไข */
+    if(!empty($_POST['address_id'])){
 
-    mysqli_query($conn,$sql_insert) or die(mysqli_error($conn));
+        $id = intval($_POST['address_id']);
+
+        mysqli_query($conn,"
+            UPDATE addresses SET
+                fullname='$fullname',
+                phone='$phone',
+                address='$address',
+                district='$district',
+                province='$province',
+                postal_code='$postal_code'
+            WHERE address_id='$id'
+            AND user_id='$uid'
+        ");
+
+    }else{
+
+        mysqli_query($conn,"
+            INSERT INTO addresses
+            (user_id, fullname, phone, address, district, province, postal_code)
+            VALUES
+            ('$uid','$fullname','$phone','$address','$district','$province','$postal_code')
+        ");
+    }
 
     header("Location: address.php");
     exit;
@@ -37,11 +91,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
    ดึงข้อมูลทั้งหมด
 ========================= */
 $sql = "SELECT * FROM addresses 
-        WHERE user_id='$uid' 
+        WHERE user_id='$uid'
         ORDER BY address_id DESC";
 
-$rs  = mysqli_query($conn,$sql);
+$rs = mysqli_query($conn,$sql);
 ?>
+
 
 
 <!DOCTYPE html>
@@ -101,48 +156,50 @@ body{
 
 <form method="POST">
 
+<input type="hidden" name="address_id" 
+       value="<?= $editData['address_id'] ?? '' ?>">
+
 <div class="mb-3">
 <label>ชื่อผู้รับ</label>
-<input type="text" name="fullname" class="form-control" required>
+<input type="text" name="fullname" class="form-control"
+value="<?= $editData['fullname'] ?? '' ?>" required>
 </div>
 
 <div class="mb-3">
 <label>เบอร์โทร</label>
-<input type="text" name="phone" class="form-control" required>
+<input type="text" name="phone" class="form-control"
+value="<?= $editData['phone'] ?? '' ?>" required>
 </div>
 
 <div class="mb-3">
 <label>ที่อยู่</label>
-<textarea name="address" class="form-control" rows="2" required></textarea>
+<textarea name="address" class="form-control" required><?= $editData['address'] ?? '' ?></textarea>
 </div>
 
-<div class="row">
-<div class="col-md-6 mb-3">
+<div class="mb-3">
 <label>ตำบล</label>
-<input type="text" name="district" class="form-control" required>
+<input type="text" name="district" class="form-control"
+value="<?= $editData['district'] ?? '' ?>" required>
 </div>
 
-<div class="col-md-6 mb-3">
-<label>อำเภอ</label>
-<input type="text" name="amphure" class="form-control" required>
-</div>
-
-<div class="col-md-6 mb-3">
+<div class="mb-3">
 <label>จังหวัด</label>
-<input type="text" name="province" class="form-control" required>
+<input type="text" name="province" class="form-control"
+value="<?= $editData['province'] ?? '' ?>" required>
 </div>
 
-<div class="col-md-6 mb-3">
+<div class="mb-3">
 <label>รหัสไปรษณีย์</label>
-<input type="text" name="postal_code" maxlength="5" class="form-control" required>
-</div>
+<input type="text" name="postal_code" class="form-control"
+value="<?= $editData['postal_code'] ?? '' ?>" required>
 </div>
 
-<button type="submit" class="btn btn-orange w-100">
-บันทึกที่อยู่
+<button class="btn btn-orange w-100">
+<?= $editData ? 'อัปเดตที่อยู่' : 'บันทึกที่อยู่' ?>
 </button>
 
 </form>
+
 </div>
 </div>
 
@@ -155,19 +212,35 @@ body{
 </h4>
 
 <?php if(mysqli_num_rows($rs) > 0): ?>
-    <?php while($row = mysqli_fetch_assoc($rs)): ?>
-        <div class="card mb-3 p-3">
-            <strong><?= htmlspecialchars($row['fullname']) ?></strong><br>
-            <?= htmlspecialchars($row['phone']) ?><br>
-            <?= htmlspecialchars($row['address']) ?><br>
-            <?= htmlspecialchars($row['district']) ?>
-            <?= htmlspecialchars($row['province']) ?>
-            <?= htmlspecialchars($row['postal_code']) ?>
-        </div>
-    <?php endwhile; ?>
+<?php while($row = mysqli_fetch_assoc($rs)): ?>
+<div class="address-card mb-3">
+
+<strong><?= htmlspecialchars($row['fullname']) ?></strong><br>
+<?= htmlspecialchars($row['phone']) ?><br>
+<?= htmlspecialchars($row['address']) ?><br>
+<?= htmlspecialchars($row['district']) ?>
+<?= htmlspecialchars($row['province']) ?>
+<?= htmlspecialchars($row['postal_code']) ?>
+
+<div class="mt-3">
+<a href="address.php?edit=<?= $row['address_id'] ?>"
+   class="btn btn-sm btn-warning">
+   แก้ไข
+</a>
+
+<a href="address.php?delete=<?= $row['address_id'] ?>"
+   class="btn btn-sm btn-danger"
+   onclick="return confirm('ยืนยันการลบ?')">
+   ลบ
+</a>
+</div>
+
+</div>
+<?php endwhile; ?>
 <?php else: ?>
-    <p class="text-muted">ยังไม่มีที่อยู่</p>
+<p class="text-muted">ยังไม่มีที่อยู่</p>
 <?php endif; ?>
+
 
 
 </div>
