@@ -2,13 +2,7 @@
 session_start();
 include_once("connectdb.php");
 
-// ตรวจสอบการเข้าสู่ระบบ
-if (!isset($_SESSION['uid'])) {
-    header("Location: login.php");
-    exit;
-}
 
-$uid = $_SESSION['uid'];
 
 // ดึงข้อมูลจากตาราง users เชื่อมกับตาราง address
 $sql = "SELECT u.*, a.phone, a.address 
