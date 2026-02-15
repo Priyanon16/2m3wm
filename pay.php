@@ -1,17 +1,24 @@
 <?php
 include 'connectdb.php';
 
-
+if(!isset($_SESSION['user_id'])){
+    header("Location: login.php");
+    exit();
+}
 
 $user_id = $_SESSION['user_id'];
 
-/* ==============================
+/* ===============================
    เมื่อกดชำระสินค้า
-============================== */
+================================ */
 if(isset($_POST['confirm_order'])){
 
+    if(empty($_POST['payment_method'])){
+        die("กรุณาเลือกช่องทางการชำระเงิน");
+    }
+
     $payment_method = $_POST['payment_method'];
-    $total_price    = $_POST['total_price'];
+    $total_price    = floatval($_POST['total_price']);
 
     // สร้างคำสั่งซื้อ
     $stmt = $conn->prepare("INSERT INTO orders 
@@ -21,10 +28,14 @@ if(isset($_POST['confirm_order'])){
     $stmt->execute();
     $order_id = $stmt->insert_id;
 
-    // ย้ายสินค้า cart → order_items
-    $cart = $conn->query("SELECT * FROM cart WHERE user_id='$user_id'");
-    while($row = $cart->fetch_assoc()){
+    // ดึงสินค้าใน cart
+    $stmt_cart = $conn->prepare("SELECT product_id, quantity 
+                                 FROM cart WHERE user_id=?");
+    $stmt_cart->bind_param("i",$user_id);
+    $stmt_cart->execute();
+    $cart = $stmt_cart->get_result();
 
+    while($row = $cart->fetch_assoc()){
         $stmt2 = $conn->prepare("INSERT INTO order_items
             (order_id,product_id,quantity)
             VALUES (?,?,?)");
@@ -33,30 +44,35 @@ if(isset($_POST['confirm_order'])){
     }
 
     // ลบตะกร้า
-    $conn->query("DELETE FROM cart WHERE user_id='$user_id'");
+    $stmt_del = $conn->prepare("DELETE FROM cart WHERE user_id=?");
+    $stmt_del->bind_param("i",$user_id);
+    $stmt_del->execute();
 
     header("Location: orderhistory.php?success=1");
     exit();
 }
 
-/* ==============================
+/* ===============================
    ดึงข้อมูลสินค้าในตะกร้า
-============================== */
-$cart_sql = "SELECT cart.*, 
-                    products.product_name,
-                    products.price,
-                    products.image,
-                    products.size,
-                    products.color,
-                    products.shop_name
-             FROM cart
-             JOIN products ON cart.product_id = products.product_id
-             WHERE cart.user_id='$user_id'";
-
-$cart_result = $conn->query($cart_sql);
+================================ */
+$stmt_products = $conn->prepare("
+    SELECT cart.*, 
+           products.product_name,
+           products.price,
+           products.image,
+           products.size,
+           products.color,
+           products.shop_name
+    FROM cart
+    JOIN products ON cart.product_id = products.product_id
+    WHERE cart.user_id=?
+");
+$stmt_products->bind_param("i",$user_id);
+$stmt_products->execute();
+$cart_result = $stmt_products->get_result();
 
 $total = 0;
-$shipping = 75;
+$shipping = 60;
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -66,51 +82,99 @@ $shipping = 75;
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
-body{background:#f5f5f5;}
-.header{background:#ee4d2d;color:white;padding:15px;text-align:center;font-size:22px;}
-.box{background:white;padding:20px;margin-top:15px;border-radius:8px;}
-.product-img{width:80px;height:80px;object-fit:cover;}
-.total{font-size:26px;font-weight:bold;color:#ee4d2d;}
-.btn-order{background:#ee4d2d;color:white;font-size:18px;padding:10px 40px;}
-.btn-order:hover{background:#d73211;color:white;}
+body{
+    background:#f4f4f4;
+    font-family: 'Segoe UI', sans-serif;
+}
+.header{
+    background:#111;
+    color:#fff;
+    padding:18px;
+    text-align:center;
+    font-size:22px;
+    letter-spacing:1px;
+}
+.box{
+    background:#fff;
+    padding:25px;
+    margin-top:20px;
+    border-radius:10px;
+    box-shadow:0 3px 10px rgba(0,0,0,0.05);
+}
+.product-img{
+    width:80px;
+    height:80px;
+    object-fit:cover;
+    border-radius:6px;
+}
+.total{
+    font-size:28px;
+    font-weight:bold;
+    color:#ff6a00;
+}
+.btn-order{
+    background:#ff6a00;
+    color:#fff;
+    padding:12px 45px;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+}
+.btn-order:hover{
+    background:#e55d00;
+}
 
 .payment-box{
-    border:1px solid #ddd;
-    border-radius:8px;
+    border:1px solid #ccc;
+    border-radius:10px;
     padding:15px;
-    margin-bottom:10px;
+    margin-bottom:12px;
     cursor:pointer;
     transition:0.2s;
 }
 .payment-box:hover{
-    border:1px solid #ee4d2d;
+    border-color:#ff6a00;
 }
 .payment-active{
-    border:2px solid #ee4d2d !important;
-    background:#fff7f5;
+    border:2px solid #ff6a00 !important;
+    background:#fff6ef;
+}
+.shop-name{
+    font-weight:600;
+    color:#111;
+}
+.option-text{
+    font-size:14px;
+    color:#666;
 }
 </style>
 </head>
 
 <body>
-<div class="header">ตรวจสอบและชำระสินค้า</div>
+
+<div class="header">CHECKOUT</div>
+
 <div class="container">
 
 <form method="POST">
 
 <!-- ================= สินค้า ================= -->
 <div class="box">
-<h5>🛒 สินค้าที่สั่งซื้อ</h5>
+<h5 class="mb-4">รายการสินค้า</h5>
+
+<?php if($cart_result->num_rows == 0): ?>
+<div class="text-danger">ไม่มีสินค้าในตะกร้า</div>
+<?php else: ?>
 
 <?php while($row = $cart_result->fetch_assoc()):
-    $subtotal = $row['price'] * $row['quantity'];
-    $total += $subtotal;
+$subtotal = $row['price'] * $row['quantity'];
+$total += $subtotal;
 ?>
 
 <div class="border-bottom pb-3 mb-3">
 
-<div class="fw-bold mb-2">
-🏬 <?= htmlspecialchars($row['shop_name']) ?>
+<div class="shop-name mb-2">
+<?= htmlspecialchars($row['shop_name']) ?>
 </div>
 
 <div class="row align-items-center">
@@ -121,10 +185,10 @@ body{background:#f5f5f5;}
 
 <div class="col-md-4">
 <div><?= htmlspecialchars($row['product_name']) ?></div>
-<small class="text-muted">
-ตัวเลือก: สี <?= htmlspecialchars($row['color']) ?>
-| ไซซ์ <?= htmlspecialchars($row['size']) ?>
-</small>
+<div class="option-text">
+สี: <?= htmlspecialchars($row['color']) ?> | 
+ไซซ์: <?= htmlspecialchars($row['size']) ?>
+</div>
 </div>
 
 <div class="col-md-2">
@@ -143,37 +207,32 @@ x <?= $row['quantity'] ?>
 </div>
 
 <?php endwhile; ?>
+<?php endif; ?>
 </div>
 
 
 <!-- ================= ช่องทางการชำระเงิน ================= -->
 <div class="box">
-<h5>💳 เลือกช่องทางการชำระเงิน</h5>
+<h5 class="mb-4">ช่องทางการชำระเงิน</h5>
 
 <label class="payment-box payment-active">
 <input type="radio" name="payment_method" value="QR พร้อมเพย์" checked>
-<strong>QR พร้อมเพย์</strong><br>
-<small>สแกนผ่าน Mobile Banking</small>
-</label>
-
-<label class="payment-box">
-<input type="radio" name="payment_method" value="ShopeePay">
-<strong>ShopeePay / Wallet</strong>
+QR พร้อมเพย์
 </label>
 
 <label class="payment-box">
 <input type="radio" name="payment_method" value="บัตรเครดิต/เดบิต">
-<strong>บัตรเครดิต / เดบิต</strong>
+บัตรเครดิต / เดบิต
 </label>
 
 <label class="payment-box">
 <input type="radio" name="payment_method" value="โอนผ่านธนาคาร">
-<strong>โอนผ่านธนาคาร</strong>
+โอนผ่านธนาคาร
 </label>
 
 <label class="payment-box">
 <input type="radio" name="payment_method" value="เก็บเงินปลายทาง">
-<strong>เก็บเงินปลายทาง (COD)</strong>
+เก็บเงินปลายทาง (COD)
 </label>
 
 </div>
@@ -200,12 +259,12 @@ $grand_total = $total + $shipping;
 
 <div class="d-flex justify-content-between align-items-center">
 <div class="total">
-ยอดชำระทั้งหมด ฿<?= number_format($grand_total,2) ?>
+฿<?= number_format($grand_total,2) ?>
 </div>
 
 <div>
 <input type="hidden" name="total_price" value="<?= $grand_total ?>">
-<button type="submit" name="confirm_order" class="btn btn-order">
+<button type="submit" name="confirm_order" class="btn-order">
 ชำระสินค้า
 </button>
 </div>
