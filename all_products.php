@@ -182,8 +182,7 @@ body{
     </div>
 
     <!-- GENDER -->
-    <div class="col-lg-2">
-       <div class="col-lg-2">
+      <div class="col-lg-2">
         <select name="brand" class="form-select">
           <option value="">ทุกเพศ</option>
           <?php while($b = mysqli_fetch_assoc($brandRS)): ?>
@@ -193,8 +192,7 @@ body{
             </option>
           <?php endwhile; ?>
         </select>
-    </div>
-    </div>
+      </div>
 
     <!-- SORT -->
     <div class="col-lg-2">
