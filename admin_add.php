@@ -11,7 +11,7 @@ if (!$conn) {
 mysqli_set_charset($conn, "utf8");
 
 // --------------------------------------------------------
-// 2. ดึงข้อมูลหมวดหมู่ (Category) มารอไว้ก่อน
+// ดึงข้อมูลหมวดหมู่ (Category) มารอไว้ก่อน
 // --------------------------------------------------------
 $sql_category = "SELECT * FROM category";
 $result_category = mysqli_query($conn, $sql_category);
@@ -22,13 +22,45 @@ if (isset($_POST['save'])) {
     $price = $_POST['p_price'];
     $type = mysqli_real_escape_string($conn, $_POST['p_type']);
     $detail = mysqli_real_escape_string($conn, $_POST['p_detail']);
-    $img = mysqli_real_escape_string($conn, $_POST['p_img']);
-    
-    // รับค่า c_id จากที่เลือกใน Dropdown
     $c_id = $_POST['c_id']; 
 
+    // ==================================================================
+    // 📷 ส่วนจัดการอัพโหลดรูปภาพ (แก้ไขใหม่)
+    // ==================================================================
+    $p_img = ""; // ตัวแปรสำหรับเก็บชื่อไฟล์ลงฐานข้อมูล
+
+    // ตรวจสอบว่ามีการเลือกไฟล์เข้ามาไหม
+    if (isset($_FILES['p_img']) && $_FILES['p_img']['name'] != "") {
+        
+        // 1. ตั้งชื่อไฟล์ใหม่ (ป้องกันชื่อซ้ำ)
+        // ใช้เวลาปัจจุบัน (time) + เลขสุ่ม (uniqid) + นามสกุลไฟล์เดิม
+        $ext = pathinfo($_FILES['p_img']['name'], PATHINFO_EXTENSION); 
+        $new_name = "product_" . uniqid() . "." . $ext; 
+        
+        // 2. กำหนดโฟลเดอร์ปลายทาง
+        $target_dir = "FileUpload/";
+        $upload_path = $target_dir . $new_name;
+
+        // 3. เช็คนามสกุลไฟล์ (กันคนอัพไฟล์ไวรัส)
+        $allowed_ext = array('jpg', 'jpeg', 'png', 'gif');
+        
+        if(in_array(strtolower($ext), $allowed_ext)) {
+            // 4. ย้ายไฟล์จาก Temp ไปโฟลเดอร์จริง
+            if(move_uploaded_file($_FILES['p_img']['tmp_name'], $upload_path)) {
+                // ย้ายสำเร็จ! ให้เก็บ Path นี้ลงตัวแปรเพื่อรอ INSERT
+                $p_img = $upload_path; 
+            } else {
+                echo "<script>alert('เกิดข้อผิดพลาดในการอัพโหลดรูปภาพ');</script>";
+            }
+        } else {
+            echo "<script>alert('อนุญาตเฉพาะไฟล์รูปภาพ (jpg, png, gif) เท่านั้น');</script>";
+        }
+    } 
+    // ==================================================================
+
+    // INSERT ข้อมูลลงตาราง (บันทึก Path รูปภาพลงไป)
     $sql = "INSERT INTO products (p_name, p_price, p_type, p_img, p_detail, c_id) 
-            VALUES ('$name', '$price', '$type', '$img', '$detail', '$c_id')";
+            VALUES ('$name', '$price', '$type', '$p_img', '$detail', '$c_id')";
     
     if (mysqli_query($conn, $sql)) {
         echo "<script>alert('บันทึกข้อมูลสำเร็จ!'); window.location='admin_product.php';</script>";
@@ -54,7 +86,8 @@ if (isset($_POST['save'])) {
                         <h4 class="mb-0">เพิ่มสินค้าใหม่</h4>
                     </div>
                     <div class="card-body">
-                        <form method="post">
+                        
+                        <form method="post" enctype="multipart/form-data">
                             
                             <div class="mb-3">
                                 <label>ชื่อสินค้า</label>
@@ -82,7 +115,6 @@ if (isset($_POST['save'])) {
                                     <select name="c_id" class="form-select" required>
                                         <option value="" selected disabled>-- เลือกหมวดหมู่ --</option>
                                         <?php 
-                                        // วนลูปดึงข้อมูล category มาสร้างเป็นตัวเลือก
                                         if (mysqli_num_rows($result_category) > 0) {
                                             while($row_c = mysqli_fetch_assoc($result_category)) { 
                                         ?>
@@ -98,8 +130,9 @@ if (isset($_POST['save'])) {
                             </div>
 
                             <div class="mb-3">
-                                <label>URL รูปภาพ</label>
-                                <input type="text" name="p_img" class="form-control" placeholder="https://...">
+                                <label>รูปภาพสินค้า</label>
+                                <input type="file" name="p_img" class="form-control" accept="image/png, image/jpeg, image/jpg" required>
+                                <div class="form-text text-muted">รองรับไฟล์ .jpg, .png, .jpeg</div>
                             </div>
                             
                             <div class="mb-3">
