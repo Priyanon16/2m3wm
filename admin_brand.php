@@ -104,16 +104,30 @@ $rs = mysqli_query($conn,"SELECT * FROM brand ORDER BY brand_id DESC");
 <title>จัดการแบรนด์</title>
 
 <style>
-body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
+body{
+    font-family:'Kanit',sans-serif;
+    background:#f4f6f9;   /* พื้นหลังขาวอมเทา */
+    color:#1f1f1f;
+}
+
+/* Main Content */
+.main-content{
+    flex:1;
+    background:#ffffff;
+    padding-bottom:40px;
+}
+
+/* Header */
 .page-header{
-    background:#FFFFFF;
-    border-radius:20px;
-    padding:22px 30px;
+    background:#ffffff;
+    border-radius:18px;
+    padding:20px 30px;
     display:flex;
     align-items:center;
     justify-content:space-between;
-    margin-bottom:15px;
+    margin-bottom:20px;
     position:relative;
+    box-shadow:0 8px 25px rgba(0,0,0,.06);
 }
 
 .page-header::before{
@@ -124,23 +138,21 @@ body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
     height:100%;
     width:6px;
     background:#ff7a00;
-    border-top-left-radius:20px;
-    border-bottom-left-radius:20px;
-    box-shadow:0 6px 18px rgba(0,0,0,.06);
-
+    border-top-left-radius:18px;
+    border-bottom-left-radius:18px;
 }
 
 .page-title{
     display:flex;
     align-items:center;
     gap:15px;
-    font-size:26px;
+    font-size:24px;
     font-weight:600;
     color:#ff7a00;
 }
 
 .page-title i{
-    font-size:28px;
+    font-size:26px;
 }
 
 .page-sub{
@@ -148,27 +160,85 @@ body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
     font-weight:500;
 }
 
-.btn-orange{background:#ff7a00;color:#fff;border:none;}
-.btn-orange:hover{background:#e96f00;}
-.table thead{background:#111;color:#fff;}
-.brand-img{width:70px;height:70px;object-fit:cover;border-radius:10px;}
-.card{border:none;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.05);}
-
-.layout{
-    display:flex;
-    min-height:100vh;
+/* Cards */
+.card{
+    background:#ffffff;
+    border:none;
+    border-radius:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,.05);
+    transition:.3s;
 }
 
-.sidebar{
-    width:250px;
+.card:hover{
+    transform:translateY(-3px);
+}
+
+.card h5{
+    color:#111;
+    font-weight:600;
+}
+
+/* Table */
+.table{
+    color:#1f1f1f;
+}
+
+.table thead{
+    background:#111;
+    color:#ffffff;
+}
+
+.table tbody tr{
+    transition:.3s;
+}
+
+.table tbody tr:hover{
+    background:#f8f8f8;
+}
+
+/* Buttons */
+.btn-orange{
+    background:#ff7a00;
+    color:#fff;
+    border:none;
+    font-weight:500;
+    border-radius:8px;
+}
+
+.btn-orange:hover{
+    background:#ff9a3c;
+}
+
+/* Inputs */
+.form-control{
+    border-radius:8px;
+    border:1px solid #ddd;
+}
+
+.form-control:focus{
+    border-color:#ff7a00;
+    box-shadow:0 0 0 0.2rem rgba(255,122,0,.15);
+}
+
+/* Image */
+.brand-img{
+    width:70px;
+    height:70px;
+    object-fit:cover;
+    border-radius:10px;
+    border:1px solid #eee;
+}
+
+/* Modal */
+.modal-content{
+    border-radius:15px;
+}
+
+.modal-header{
     background:#111;
     color:#fff;
 }
 
-.main-content{
-    flex:1;
-    background:#FFFFFF;
-}
 
 </style>
 </head>
