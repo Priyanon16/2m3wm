@@ -193,7 +193,7 @@ while($row = mysqli_fetch_assoc($rs)):
 ?>
 
 <div class="col">
-  <a href="admin_product.php?id=<?= $row['p_id']; ?>" 
+  <a href="product_detail.php?id=<?= $row['p_id']; ?>" 
      class="text-decoration-none text-dark">
 
     <div class="card h-100">
