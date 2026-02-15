@@ -162,11 +162,11 @@ body{
   font-weight:700;
   font-size:18px;
 }
-
 .product-actions{
   display:flex;
-  justify-content:space-between;
+  justify-content:flex-end; /* ดันทั้งหมดไปขวา */
   align-items:center;
+  gap:10px; /* เว้นระยะระหว่างปุ่ม */
   margin-top:15px;
 }
 

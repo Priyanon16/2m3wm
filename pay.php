@@ -1,8 +1,7 @@
 <?php
-$host = "localhost";
-$user = "root";
-$pass = "";
-$db   = "connectdb";
+session_start();
+include_once("connectdb.php");
+include_once("bootstrap.php");
 
 $conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
