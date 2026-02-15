@@ -183,18 +183,17 @@ body{
 
     <!-- GENDER -->
     <div class="col-lg-2">
-      <select name="gender" class="form-select">
-        <option value="">ทุกเพศ</option>
-        <option value="male" <?= ($gender=="male")?'selected':''; ?>>
-          ชาย
-        </option>
-        <option value="female" <?= ($gender=="female")?'selected':''; ?>>
-          หญิง
-        </option>
-        <option value="unisex" <?= ($gender=="unisex")?'selected':''; ?>>
-          ยูนิเซ็กส์
-        </option>
-      </select>
+       <div class="col-lg-2">
+        <select name="brand" class="form-select">
+          <option value="">ทุกเพศ</option>
+          <?php while($b = mysqli_fetch_assoc($brandRS)): ?>
+            <option value="<?= $b['p_type']; ?>"
+            <?= ($brand == $b['p_type']) ? 'selected' : ''; ?>>
+              <?= $b['p_type']; ?>
+            </option>
+          <?php endwhile; ?>
+        </select>
+    </div>
     </div>
 
     <!-- SORT -->
