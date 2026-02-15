@@ -4,14 +4,6 @@ include_once("connectdb.php");
 include_once("bootstrap.php");
 
 
-/* ==========================
-   ต้องล็อกอินก่อน
-========================== */
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit;
-}
-
 $uid = $_SESSION['user_id'];
 
 /* ==========================

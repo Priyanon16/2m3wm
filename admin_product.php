@@ -20,27 +20,22 @@ if(isset($_GET['delete_id'])){
     
     // ลบข้อมูลใน DB
     if(mysqli_query($conn, "DELETE FROM products WHERE p_id = '$id'")){
-        
-        // --- ส่วนแก้ไข: ลบไฟล์รูปภาพทั้งหมด ---
         if(!empty($row_img['p_img'])){
-            $files = explode(',', $row_img['p_img']); // แยกชื่อไฟล์ด้วยเครื่องหมายคอมม่า
+            $files = explode(',', $row_img['p_img']); 
             foreach ($files as $file) {
-                // ตัดช่องว่างและเช็คว่ามีไฟล์จริงไหม
                 $file = trim($file);
                 if(!empty($file) && file_exists($file)){
-                    unlink($file); // ลบไฟล์ออกจาก Server
+                    unlink($file); 
                 }
             }
         }
-        // ------------------------------------
-
         echo "<script>alert('ลบสินค้าเรียบร้อย'); window.location='admin_product.php';</script>";
     } else {
         echo "<script>alert('Error: " . mysqli_error($conn) . "');</script>";
     }
 }
 
-// 3. ดึงข้อมูล
+// 3. ดึงข้อมูล (มั่นใจว่ามี p_qty ใน database แล้ว)
 $sql = "SELECT p.*, c.c_name FROM products p LEFT JOIN category c ON p.c_id = c.c_id ORDER BY p.p_id DESC";
 $result = mysqli_query($conn, $sql);
 ?>
@@ -60,7 +55,6 @@ $result = mysqli_query($conn, $sql);
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- 2M3WM Theme Variables --- */
         :root {
             --theme-orange: #ff5722;
             --theme-orange-hover: #e64a19;
@@ -74,7 +68,6 @@ $result = mysqli_query($conn, $sql);
             min-height: 100vh;
         }
 
-        /* --- Header --- */
         header {
             background: linear-gradient(90deg, #111, var(--theme-dark));
             padding: 1rem 0;
@@ -88,7 +81,6 @@ $result = mysqli_query($conn, $sql);
             color: #fff !important;
         }
 
-        /* --- Buttons --- */
         .btn-theme {
             background: var(--theme-orange);
             color: white !important;
@@ -104,7 +96,6 @@ $result = mysqli_query($conn, $sql);
             box-shadow: 0 4px 10px rgba(255, 87, 34, 0.3);
         }
 
-        /* --- Content Card --- */
         .content-card {
             background: #fff;
             border-radius: 20px;
@@ -117,42 +108,35 @@ $result = mysqli_query($conn, $sql);
         .card-title-custom {
             color: var(--theme-dark);
             font-weight: 700;
-            margin-bottom: 0;
         }
 
-        /* --- Custom Table --- */
         .table img.img-thumb {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             object-fit: cover;
             border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         
-        .table thead th {
-            background-color: #fff;
-            color: #555;
-            font-weight: 600;
-            border-bottom: 2px solid #eee;
-            vertical-align: middle;
-        }
-
-        .table tbody td {
-            vertical-align: middle;
-        }
-
         .price-tag {
             color: var(--theme-orange);
             font-weight: 700;
-            font-size: 1.1rem;
         }
 
         .badge-size {
             background: #f1f1f1;
             color: #333;
             border: 1px solid #ddd;
-            margin: 2px;
+            margin: 1px;
+            font-size: 0.7rem;
         }
+
+        /* ตกแต่งตัวเลขจำนวนสินค้า */
+        .qty-text {
+            font-weight: 600;
+        }
+        .qty-out { color: #dc3545; } /* หมด */
+        .qty-low { color: #fd7e14; } /* ใกล้หมด */
+        .qty-ok { color: #198754; }  /* มีของ */
     </style>
 </head>
 <body>
@@ -163,7 +147,6 @@ $result = mysqli_query($conn, $sql);
                 <i class="bi bi-shield-check me-2"></i>2M3WM ADMIN
             </a>
             <div class="d-flex align-items-center gap-4">
-                <span class="text-white-50 d-none d-md-block">Admin Panel</span>
                 <a href="logout.php" class="btn btn-theme text-decoration-none">
                     <i class="bi bi-box-arrow-right me-2"></i>ออกจากระบบ
                 </a>
@@ -195,10 +178,10 @@ $result = mysqli_query($conn, $sql);
                     <thead>
                         <tr>
                             <th class="text-center" width="5%">ID</th>
-                            <th width="12%">รูปภาพ</th>
-                            <th width="25%">ชื่อสินค้า</th>
-                            <th width="20%">หมวดหมู่/สเปค</th>
-                            <th class="text-end" width="15%">ราคา</th>
+                            <th width="10%">รูปภาพ</th>
+                            <th width="20%">ชื่อสินค้า</th>
+                            <th width="15%">หมวดหมู่/สเปค</th>
+                            <th class="text-center" width="12%">สต็อก (คู่)</th> <th class="text-end" width="13%">ราคา</th>
                             <th class="text-center" width="15%">จัดการ</th>
                         </tr>
                     </thead>
@@ -206,57 +189,61 @@ $result = mysqli_query($conn, $sql);
                         <?php 
                         if (mysqli_num_rows($result) > 0) {
                             while($row = mysqli_fetch_assoc($result)){ 
-                                // --- ส่วนแก้ไข: จัดการรูปภาพ (เอาแค่รูปแรกมาโชว์) ---
                                 $img_src = "";
                                 if(!empty($row['p_img'])){
-                                    $img_arr = explode(',', $row['p_img']); // แปลงเป็น array
-                                    $img_src = $img_arr[0]; // เลือกรูปแรก
+                                    $img_arr = explode(',', $row['p_img']);
+                                    $img_src = $img_arr[0];
                                 }
-                                // ---------------------------------------------
+
+                                // --- ส่วนคำนวณสีของสต็อก ---
+                                $qty = $row['p_qty'];
+                                if($qty <= 0) {
+                                    $qty_display = '<span class="qty-text qty-out"><i class="bi bi-exclamation-octagon me-1"></i>หมด</span>';
+                                } elseif($qty < 5) {
+                                    $qty_display = '<span class="qty-text qty-low">'.$qty.' <small>(ใกล้หมด)</small></span>';
+                                } else {
+                                    $qty_display = '<span class="qty-text qty-ok">'.$qty.'</span>';
+                                }
                         ?>
                         <tr>
                             <td class="text-center text-muted fw-bold">#<?= $row['p_id']; ?></td>
-                            
                             <td>
-                                <?php if(!empty($img_src) && file_exists($img_src)): ?> <img src="<?= $img_src; ?>" class="img-thumb">
-                                <?php elseif(!empty($img_src)): ?> <img src="<?= $img_src; ?>" class="img-thumb">
+                                <?php if(!empty($img_src)): ?> 
+                                    <img src="<?= $img_src; ?>" class="img-thumb shadow-sm">
                                 <?php else: ?>
-                                    <div class="img-thumb bg-light d-flex align-items-center justify-content-center text-muted small border rounded-3">
-                                        No Pic
-                                    </div>
+                                    <div class="img-thumb bg-light d-flex align-items-center justify-content-center text-muted small border">No Pic</div>
                                 <?php endif; ?>
                             </td>
-                            
                             <td>
-                                <h6 class="fw-bold mb-1 text-dark"><?= $row['p_name']; ?></h6>
-                                <small class="text-muted text-truncate d-block" style="max-width: 200px;">
-                                    <?= $row['p_detail']; ?>
-                                </small>
+                                <h6 class="fw-bold mb-0 text-dark"><?= $row['p_name']; ?></h6>
+                                <small class="text-muted text-truncate d-block" style="max-width: 180px;"><?= $row['p_detail']; ?></small>
                             </td>
-
                             <td>
                                 <div class="mb-1">
-                                    <span class="badge bg-dark fw-light">
+                                    <span class="badge bg-dark fw-light" style="font-size: 0.7rem;">
                                         <?= $row['c_name'] ?? 'ไม่มีหมวด'; ?>
                                     </span>
                                     <?php 
                                         $badge_cls = ($row['p_type'] == 'male') ? 'bg-primary' : (($row['p_type'] == 'female') ? 'bg-danger' : 'bg-success');
-                                        $type_txt = ($row['p_type'] == 'male') ? 'Men' : (($row['p_type'] == 'female') ? 'Women' : 'Unisex');
+                                        $type_txt = ($row['p_type'] == 'male') ? 'M' : (($row['p_type'] == 'female') ? 'W' : 'U');
                                     ?>
-                                    <span class="badge <?= $badge_cls; ?> bg-opacity-75"><?= $type_txt; ?></span>
+                                    <span class="badge <?= $badge_cls; ?> bg-opacity-75" style="font-size: 0.7rem;"><?= $type_txt; ?></span>
                                 </div>
-                                <div class="d-flex flex-wrap" style="max-width: 200px;">
+                                <div class="d-flex flex-wrap">
                                     <?php 
                                     if(!empty($row['p_size'])) {
                                         $sizes = explode(',', $row['p_size']);
-                                        foreach($sizes as $s) {
+                                        foreach(array_slice($sizes, 0, 3) as $s) { // โชว์แค่ 3 ไซส์แรกเพื่อความสะอาด
                                             echo '<span class="badge badge-size rounded-pill">'.$s.'</span>';
                                         }
-                                    } else {
-                                        echo '<span class="text-muted small">-</span>';
+                                        if(count($sizes) > 3) echo '<span class="text-muted small">...</span>';
                                     }
                                     ?>
                                 </div>
+                            </td>
+
+                            <td class="text-center">
+                                <?= $qty_display; ?>
                             </td>
 
                             <td class="text-end">
@@ -264,11 +251,11 @@ $result = mysqli_query($conn, $sql);
                             </td>
                             
                             <td class="text-center">
-                                <div class="btn-group shadow-sm" role="group">
-                                    <a href="admin_edit.php?id=<?= $row['p_id']; ?>" class="btn btn-outline-secondary btn-sm" title="แก้ไข">
+                                <div class="btn-group shadow-sm">
+                                    <a href="admin_edit.php?id=<?= $row['p_id']; ?>" class="btn btn-outline-secondary btn-sm">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <a href="?delete_id=<?= $row['p_id']; ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('ยืนยันที่จะลบสินค้านี้? ข้อมูลจะหายไปถาวร!');" title="ลบ">
+                                    <a href="?delete_id=<?= $row['p_id']; ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('ยืนยันที่จะลบสินค้า?');">
                                         <i class="bi bi-trash"></i>
                                     </a>
                                 </div>
@@ -279,10 +266,7 @@ $result = mysqli_query($conn, $sql);
                         } else {
                         ?>
                         <tr>
-                            <td colspan="6" class="text-center py-5">
-                                <div class="text-muted opacity-50 mb-3">
-                                    <i class="bi bi-box-seam" style="font-size: 3rem;"></i>
-                                </div>
+                            <td colspan="7" class="text-center py-5">
                                 <h5 class="fw-light text-secondary">ยังไม่มีสินค้าในระบบ</h5>
                             </td>
                         </tr>
@@ -290,10 +274,8 @@ $result = mysqli_query($conn, $sql);
                     </tbody>
                 </table>
             </div>
-            
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
