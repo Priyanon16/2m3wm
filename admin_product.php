@@ -5,7 +5,6 @@ session_start();
 // 1. เชื่อมต่อฐานข้อมูล
 include_once("check_login.php"); 
 include_once("connectdb.php");
-include("bootstrap.php")
 
 if (!$conn) { die("Connection failed: " . mysqli_connect_error()); }
 mysqli_set_charset($conn, "utf8");
