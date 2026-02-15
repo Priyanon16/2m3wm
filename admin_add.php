@@ -2,6 +2,7 @@
 session_start();
 include_once("check_login.php");
 include_once("connectdb.php");
+
 mysqli_set_charset($conn,"utf8");
 
 /* =========================
@@ -17,11 +18,11 @@ $result_brand = mysqli_query($conn,
 "SELECT * FROM brand ORDER BY brand_name ASC");
 
 /* =========================
-   สร้างโฟลเดอร์รูป
+   สร้างโฟลเดอร์อัปโหลด
 ========================= */
 $upload_dir = __DIR__."/FileUpload/";
 if(!is_dir($upload_dir)){
-    mkdir($upload_dir,0777,true);
+    mkdir($upload_dir,0755,true);
 }
 
 /* =========================
@@ -30,17 +31,18 @@ if(!is_dir($upload_dir)){
 if(isset($_POST['save'])){
 
     $name   = mysqli_real_escape_string($conn,$_POST['p_name']);
-    $price  = $_POST['p_price'];
-    $qty    = $_POST['p_qty'];
+    $price  = floatval($_POST['p_price']);
+    $qty    = intval($_POST['p_qty']);
     $type   = mysqli_real_escape_string($conn,$_POST['p_type']);
     $detail = mysqli_real_escape_string($conn,$_POST['p_detail']);
-    $c_id   = $_POST['c_id'];
-    $brand_id = $_POST['brand_id'];
+    $c_id   = intval($_POST['c_id']);
+    $brand_id = intval($_POST['brand_id']);
 
     /* ===== SIZE ===== */
     $p_size = "";
     if(isset($_POST['p_size'])){
-        $p_size = implode(",",$_POST['p_size']);
+        $sizes = array_map('intval', $_POST['p_size']);
+        $p_size = implode(",", $sizes);
     }
 
     /* ===== อัปโหลดรูปหลายรูป ===== */
@@ -63,6 +65,7 @@ if(isset($_POST['save'])){
                     if(move_uploaded_file($_FILES['p_img']['tmp_name'][$key],$target)){
                         $uploaded_files[] = "FileUpload/".$new_name;
                     }
+
                 }
             }
         }
@@ -80,7 +83,7 @@ if(isset($_POST['save'])){
         echo "<script>alert('เพิ่มสินค้าสำเร็จ');window.location='admin_product.php';</script>";
         exit();
     }else{
-        echo mysqli_error($conn);
+        echo "<div style='color:red;'>".mysqli_error($conn)."</div>";
     }
 }
 ?>
