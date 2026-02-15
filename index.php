@@ -14,7 +14,7 @@ $result = mysqli_query($conn, $sql);
 <div class="row">
 <?php if(mysqli_num_rows($result) > 0): ?>
 <?php while($p = mysqli_fetch_assoc($result)): ?>
-
+  
 <div class="col-md-4">
   <div class="card">
     <img src="images/<?= $p['p_img']; ?>" class="card-img-top">

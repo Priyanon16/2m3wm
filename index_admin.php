@@ -167,7 +167,7 @@ header {
                     ยินดีต้อนรับกลับมา
                     <span class="admin-name">
                         <?= htmlspecialchars($_SESSION['uname']); ?>
-                    </span> 👋
+                    </span>
                 </h1>
 
                 <p class="text-muted">
