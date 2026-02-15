@@ -218,6 +218,38 @@ value="<?= $row['p_qty']; ?>" required>
 <?= ($row['p_type']=='unisex')?'checked':''; ?>> Unisex
 </div>
 
+<div class="mb-3">
+<label class="fw-semibold">ไซส์ที่มี</label>
+
+<?php
+$current_sizes = [];
+if(!empty($row['p_size'])){
+    $current_sizes = explode(",", $row['p_size']);
+}
+?>
+
+<div class="d-flex flex-wrap gap-3 mt-2">
+
+<?php for($i=36;$i<=46;$i++): ?>
+<div class="form-check">
+    <input class="form-check-input"
+           type="checkbox"
+           name="p_size[]"
+           value="<?= $i ?>"
+           id="size<?= $i ?>"
+           <?= in_array($i,$current_sizes) ? 'checked' : '' ?>>
+           
+    <label class="form-check-label"
+           for="size<?= $i ?>">
+        <?= $i ?>
+    </label>
+</div>
+<?php endfor; ?>
+
+</div>
+</div>
+
+
 <hr>
 
 <h5>รูปปัจจุบัน</h5>
