@@ -183,7 +183,7 @@ body{
 
     <!-- GENDER -->
       <div class="col-lg-2">
-        <select name="brand" class="form-select">
+        <select name="gender" class="form-select">
           <option value="">ทุกเพศ</option>
           <?php while($b = mysqli_fetch_assoc($brandRS)): ?>
             <option value="<?= $b['p_type']; ?>"
