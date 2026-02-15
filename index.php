@@ -192,11 +192,12 @@ body{
 
 .product-actions{
   display:flex;
-  justify-content:flex-end;   /* ดันไปขวา */
+  justify-content:space-between; /* ดันซ้าย-ขวา */
   align-items:center;
-  gap:10px;                   /* ระยะห่างปุ่ม */
+  gap:10px;
   margin-top:15px;
 }
+
 
 </style>
 </head>
@@ -307,19 +308,20 @@ while($row = mysqli_fetch_assoc($rs)):
       </div>
     </a>
 
-    <div class="product-actions px-3 pb-3">
-
-      <a href="?add_to_fav=<?= $row['p_id']; ?>" 
-        class="btn-fav">
-        <i class="bi bi-heart"></i>
-      </a>
+   <div class="product-actions px-3 pb-3">
 
       <a href="?add_to_cart=<?= $row['p_id']; ?>" 
         class="btn btn-cart">
         เพิ่มลงตะกร้า
       </a>
 
+      <a href="?add_to_fav=<?= $row['p_id']; ?>" 
+        class="btn-fav">
+        <i class="bi bi-heart"></i>
+      </a>
+
     </div>
+
 
 
   </div>
