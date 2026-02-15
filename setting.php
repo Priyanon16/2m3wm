@@ -53,7 +53,7 @@ $user = mysqli_fetch_assoc($rs);
                 </div>
                 <div class="col-md-3">
                     <label for="birthDate" class="form-label">วันที่สมัคร </label>
-                    <input type="date" class="form-control form-control readonly" id="birthDate" name="birthDate" value="<?= htmlspecialchars($user['birthdate']) ?>" required>
+                    <input type="date"class="form-control bg-light"id="birthDate"value="<?= $user['created_at']; ?>"readonly>
                 </div>
             </div>
 
