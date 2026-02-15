@@ -114,6 +114,21 @@ body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
 .brand-img{width:70px;height:70px;object-fit:cover;border-radius:10px;}
 .card{border:none;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.05);}
 
+.layout{
+    display:flex;
+    min-height:100vh;
+}
+
+.sidebar{
+    width:250px;
+    background:#111;
+    color:#fff;
+}
+
+.main-content{
+    flex:1;
+    background:#f4f6f9;
+}
 
 </style>
 </head>
