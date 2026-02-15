@@ -15,10 +15,9 @@ if(isset($_POST['add_brand'])){
 
         if(isset($_FILES['brand_img']) && $_FILES['brand_img']['error'] == 0){
 
+            $file_tmp  = $_FILES['brand_img']['tmp_name'];   // ✅ เพิ่มบรรทัดนี้
             $file_name = time()."_".$_FILES['brand_img']['name'];
             $target = "uploads/brands/".$file_name;
-
-
 
             if(move_uploaded_file($file_tmp,$target)){
 
@@ -35,9 +34,8 @@ if(isset($_POST['add_brand'])){
                 echo "<script>alert('อัปโหลดรูปไม่สำเร็จ');</script>";
             }
 
-        }else{
-            echo "<script>alert('กรุณาเลือกรูป');</script>";
         }
+
     }
 }
 
