@@ -1,6 +1,8 @@
 <?php
 session_start();
 include_once("connectdb.php");
+include_once("sidebar.php");
+include_once("bootstrap.php");
 
 $upload_dir = __DIR__."/uploads/brands/";
 if(!is_dir($upload_dir)){
