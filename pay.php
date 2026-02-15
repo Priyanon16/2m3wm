@@ -37,7 +37,7 @@ if(isset($_POST['confirm_order'])){
     // ลบตะกร้า
     $conn->query("DELETE FROM cart WHERE user_id='$user_id'");
 
-    header("Location: orderhistory.php?success=1");
+    header("Location: orderdetail.php?success=1");
     exit();
 }
 
