@@ -118,6 +118,27 @@ include("header.php");
                             <i class="bi bi-heart"></i>
                         </a>
                     </div>
+                    <div class="product-body">
+    <span class="brand-tag"><?= htmlspecialchars($row['c_name'] ?? 'General'); ?></span>
+    
+    <div class="product-title"><?= htmlspecialchars($row['p_name']); ?></div>
+    
+    <div class="text-muted small mb-1">
+        Category: <?= ($row['p_type'] == 'male') ? 'Men' : 'Women'; ?>
+    </div>
+
+    <div class="small mb-2">
+        <?php if($row['p_qty'] > 0): ?>
+            <span class="text-success">คงเหลือ: <?= number_format($row['p_qty']); ?> คู่</span>
+        <?php else: ?>
+            <span class="text-danger fw-bold">สินค้าหมด</span>
+        <?php endif; ?>
+    </div>
+    
+    <div class="product-price">
+        ฿<?= number_format($row['p_price'], 0); ?>
+    </div>
+</div>
                 </div>
             </div>
             <?php endwhile; ?>

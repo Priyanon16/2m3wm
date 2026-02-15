@@ -19,8 +19,14 @@ if(isset($_GET['add_to_fav'])){
 /* =========================
    ดึงสินค้าจากฐานข้อมูลจริง
 ========================= */
-$sql = "SELECT * FROM products ORDER BY p_id DESC";
-$rs  = mysqli_query($conn,$sql);
+$sql = "
+SELECT p.*, c.c_name
+FROM products p
+LEFT JOIN category c ON p.c_id = c.c_id
+ORDER BY p.p_id DESC
+";
+$rs = mysqli_query($conn,$sql);
+
 
 include("header.php");
 ?>
@@ -102,6 +108,14 @@ body{
   height: 3px;
   background: #ff7a00;
   border-radius: 5px;
+}
+.btn-warning{
+  border-radius:10px;
+  font-weight:600;
+}
+
+.btn-outline-danger{
+  border-radius:10px;
 }
 
 </style>
@@ -186,9 +200,10 @@ body{
 
 <div class="col-md-4 product-item"
   data-name="<?= strtolower($p['p_name']); ?>"
-  data-brand="<?= $p['p_type']; ?>"
+  data-brand="<?= strtolower($p['p_type']); ?>"
   data-price="<?= $p['p_price']; ?>"
-  data-category="all">
+  data-category="<?= strtolower($p['c_name']); ?>">
+
 
   <div class="card h-100">
 
@@ -211,19 +226,21 @@ body{
     </a>
 
     <!-- ปุ่ม -->
-    <div class="d-flex gap-3 p-3 pt-0">
+    <div class="d-flex justify-content-end align-items-center gap-2 p-3 pt-0">
 
       <a href="?add_to_cart=<?= $p['p_id']; ?>" 
-         class="btn btn-warning w-100">
-         เพิ่มลงตะกร้า
+        class="btn btn-warning px-4">
+        เพิ่มลงตะกร้า
       </a>
 
       <a href="?add_to_fav=<?= $p['p_id']; ?>" 
-         class="btn btn-outline-danger">
-         <i class="bi bi-heart"></i>
+        class="btn btn-outline-danger px-3">
+        <i class="bi bi-heart"></i>
       </a>
 
     </div>
+
+
 
   </div>
 </div>
