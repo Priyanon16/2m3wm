@@ -22,6 +22,7 @@ if(isset($_GET['add_to_fav'])){
 $search   = $_GET['search'] ?? '';
 $brand    = $_GET['brand'] ?? '';
 $category = $_GET['category'] ?? '';
+$gender   = $_GET['gender'] ?? '';
 $sort     = $_GET['sort'] ?? '';
 
 $where = " WHERE 1=1 ";
@@ -41,6 +42,12 @@ if(!empty($brand)){
 /* หมวดหมู่ */
 if(!empty($category)){
     $where .= " AND p.c_id = ".intval($category)." ";
+}
+
+/* เพศ */
+if(!empty($gender)){
+    $safeGender = mysqli_real_escape_string($conn,$gender);
+    $where .= " AND p.p_gender = '$safeGender' ";
 }
 
 /* เรียงราคา */
@@ -125,13 +132,6 @@ body{
 .badge-brand{
   background:#000;
 }
-.btn-warning{
-  border-radius:10px;
-  font-weight:600;
-}
-.btn-outline-danger{
-  border-radius:10px;
-}
 </style>
 </head>
 <body>
@@ -143,19 +143,20 @@ body{
 
 <div class="container py-5">
 
-<!-- FILTER -->
 <form method="GET">
 <div class="filter-box mb-5">
-  <div class="row g-3 align-items-center">
+  <div class="row g-3">
 
-    <div class="col-lg-4">
+    <!-- SEARCH -->
+    <div class="col-lg-3">
       <input type="text" name="search"
         value="<?= htmlspecialchars($search); ?>"
         class="form-control"
         placeholder="ค้นหาสินค้า...">
     </div>
 
-    <div class="col-lg-3">
+    <!-- BRAND -->
+    <div class="col-lg-2">
       <select name="brand" class="form-select">
         <option value="">ทุกแบรนด์</option>
         <?php while($b = mysqli_fetch_assoc($brandRS)): ?>
@@ -167,7 +168,8 @@ body{
       </select>
     </div>
 
-    <div class="col-lg-3">
+    <!-- CATEGORY -->
+    <div class="col-lg-2">
       <select name="category" class="form-select">
         <option value="">ทุกหมวดหมู่</option>
         <?php while($c = mysqli_fetch_assoc($catRS)): ?>
@@ -179,32 +181,45 @@ body{
       </select>
     </div>
 
+    <!-- GENDER -->
     <div class="col-lg-2">
-      <select name="sort" class="form-select">
-        <option value="">เรียงตามราคา</option>
-        <option value="low" <?= ($sort=="low")?'selected':''; ?>>
-          ราคาน้อย → มาก
+      <select name="gender" class="form-select">
+        <option value="">ทุกเพศ</option>
+        <option value="male" <?= ($gender=="male")?'selected':''; ?>>
+          ชาย
         </option>
-        <option value="high" <?= ($sort=="high")?'selected':''; ?>>
-          ราคามาก → น้อย
+        <option value="female" <?= ($gender=="female")?'selected':''; ?>>
+          หญิง
+        </option>
+        <option value="unisex" <?= ($gender=="unisex")?'selected':''; ?>>
+          ยูนิเซ็กส์
         </option>
       </select>
     </div>
 
-    <div class="col-12 text-end">
-      <button type="submit" class="btn btn-warning">
+    <!-- SORT -->
+    <div class="col-lg-2">
+      <select name="sort" class="form-select">
+        <option value="">เรียงราคา</option>
+        <option value="low" <?= ($sort=="low")?'selected':''; ?>>
+          น้อย → มาก
+        </option>
+        <option value="high" <?= ($sort=="high")?'selected':''; ?>>
+          มาก → น้อย
+        </option>
+      </select>
+    </div>
+
+    <div class="col-lg-1">
+      <button type="submit" class="btn btn-warning w-100">
         ค้นหา
       </button>
-      <a href="all_products.php" class="btn btn-secondary">
-        รีเซ็ต
-      </a>
     </div>
 
   </div>
 </div>
 </form>
 
-<!-- PRODUCT GRID -->
 <div class="row g-4">
 
 <?php if(mysqli_num_rows($rs) > 0): ?>
@@ -225,25 +240,16 @@ body{
 
         <h6><?= htmlspecialchars($p['p_name']); ?></h6>
 
+        <small class="text-muted">
+          <?= htmlspecialchars($p['c_name']); ?> |
+          <?= ucfirst($p['p_gender']); ?>
+        </small>
+
         <p class="price mt-2">
           ฿<?= number_format($p['p_price'],0); ?>
         </p>
       </div>
     </a>
-
-    <div class="d-flex justify-content-end gap-2 p-3 pt-0">
-
-      <a href="?add_to_cart=<?= $p['p_id']; ?>"
-        class="btn btn-warning px-4">
-        เพิ่มลงตะกร้า
-      </a>
-
-      <a href="?add_to_fav=<?= $p['p_id']; ?>"
-        class="btn btn-outline-danger px-3">
-        <i class="bi bi-heart"></i>
-      </a>
-
-    </div>
 
   </div>
 </div>
