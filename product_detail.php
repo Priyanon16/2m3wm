@@ -1,6 +1,7 @@
 <?php
 session_start();
 include_once("connectdb.php");
+include_once("bootstrap.php");
 
 $id = intval($_GET['id'] ?? 0);
 
