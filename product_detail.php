@@ -10,14 +10,9 @@ if($id <= 0){
     exit;
 }
 
-/* =========================
-   ดึงข้อมูลสินค้า + แบรนด์ + หมวดหมู่
-========================= */
+/* ดึงข้อมูลสินค้า */
 $sql = "
-SELECT 
-    p.*, 
-    b.brand_name, 
-    c.c_name
+SELECT p.*, b.brand_name, c.c_name
 FROM products p
 LEFT JOIN brand b ON p.brand_id = b.brand_id
 LEFT JOIN category c ON p.c_id = c.c_id
@@ -33,9 +28,7 @@ if(!$product){
     exit;
 }
 
-/* =========================
-   ดึงรูปทั้งหมดของสินค้า
-========================= */
+/* ดึงรูปทั้งหมด */
 $img_rs = mysqli_query($conn,"
 SELECT img_path 
 FROM product_images 
@@ -47,98 +40,172 @@ while($img = mysqli_fetch_assoc($img_rs)){
     $images[] = $img['img_path'];
 }
 
+/* แยกไซส์ */
+$sizes = [];
+if(!empty($product['p_size'])){
+    $sizes = explode(",",$product['p_size']);
+}
+
 include("header.php");
 ?>
 
-<div class="container mt-5 mb-5">
+<style>
+.size-btn{
+    border:1px solid #ddd;
+    padding:10px 15px;
+    margin:5px;
+    border-radius:8px;
+    cursor:pointer;
+    background:#fff;
+    transition:.2s;
+}
+.size-btn:hover{
+    border-color:#ff7a00;
+}
+.size-btn.active{
+    background:#111;
+    color:#fff;
+    border-color:#111;
+}
+.qty-box{
+    display:flex;
+    align-items:center;
+    border:1px solid #ddd;
+    width:140px;
+    border-radius:8px;
+    overflow:hidden;
+}
+.qty-box button{
+    width:40px;
+    border:none;
+    background:#f5f5f5;
+    font-size:18px;
+}
+.qty-box input{
+    width:60px;
+    text-align:center;
+    border:none;
+}
+.buy-btn{
+    background:#ff7a00;
+    color:#fff;
+    border:none;
+}
+.buy-btn:hover{
+    background:#e96b00;
+}
+</style>
+
+<div class="container py-5">
 <div class="row">
 
-<!-- =========================
-     รูปสินค้า (หลายรูป)
-========================= -->
+<!-- รูปสินค้า -->
 <div class="col-md-6">
 
-<?php if(count($images) > 0): ?>
-
-<div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
-    <div class="carousel-inner">
-
-        <?php foreach($images as $key => $img): ?>
-        <div class="carousel-item <?= $key == 0 ? 'active' : '' ?>">
-            <img src="<?= htmlspecialchars($img); ?>" 
-                 class="d-block w-100 rounded shadow"
-                 style="height:450px;object-fit:cover;">
-        </div>
-        <?php endforeach; ?>
-
+<?php if(count($images)>0): ?>
+<div id="carouselExample" class="carousel slide">
+  <div class="carousel-inner">
+    <?php foreach($images as $key=>$img): ?>
+    <div class="carousel-item <?= $key==0?'active':'' ?>">
+      <img src="<?= htmlspecialchars($img) ?>" 
+           class="d-block w-100 rounded"
+           style="height:450px;object-fit:cover;">
     </div>
-
-    <?php if(count($images) > 1): ?>
-    <button class="carousel-control-prev" type="button" 
-            data-bs-target="#productCarousel" 
-            data-bs-slide="prev">
-        <span class="carousel-control-prev-icon"></span>
-    </button>
-
-    <button class="carousel-control-next" type="button" 
-            data-bs-target="#productCarousel" 
-            data-bs-slide="next">
-        <span class="carousel-control-next-icon"></span>
-    </button>
-    <?php endif; ?>
+    <?php endforeach; ?>
+  </div>
 </div>
-
 <?php else: ?>
-<img src="images/no-image.png" 
-     class="img-fluid rounded shadow">
+<img src="images/no-image.png" class="img-fluid rounded">
 <?php endif; ?>
 
 </div>
 
 
-<!-- =========================
-     รายละเอียดสินค้า
-========================= -->
+<!-- รายละเอียด -->
 <div class="col-md-6">
 
-<h3 class="fw-bold">
-<?= htmlspecialchars($product['p_name']) ?>
-</h3>
+<h3 class="fw-bold"><?= htmlspecialchars($product['p_name']) ?></h3>
 
 <p class="text-muted">
-แบรนด์: <?= htmlspecialchars($product['brand_name'] ?? '-') ?>
-<br>
-หมวดหมู่: <?= htmlspecialchars($product['c_name'] ?? '-') ?>
-<br>
-ประเภท: <?= htmlspecialchars($product['p_type']) ?>
+<?= htmlspecialchars($product['brand_name']) ?> |
+<?= htmlspecialchars($product['c_name']) ?>
 </p>
 
 <h4 class="text-warning mb-3">
-฿<?= number_format($product['p_price'],2) ?>
+฿<?= number_format($product['p_price'],0) ?>
 </h4>
-
-<p>
-ไซซ์: <?= htmlspecialchars($product['p_size']) ?>
-</p>
 
 <hr>
 
-<p>
-<?= nl2br(htmlspecialchars($product['p_detail'])) ?>
-</p>
-
-<div class="mt-4 d-flex gap-3">
-    <a href="cart.php?add=<?= $product['p_id'] ?>" 
-       class="btn btn-warning">
-       เพิ่มลงตะกร้า
-    </a>
-
-    <a href="favorite.php?add=<?= $product['p_id'] ?>" 
-       class="btn btn-outline-danger">
-       เพิ่มรายการโปรด
-    </a>
+<!-- เลือกไซส์ -->
+<h6 class="fw-bold">เลือกไซส์</h6>
+<div id="sizeContainer">
+<?php foreach($sizes as $size): ?>
+<span class="size-btn" onclick="selectSize(this,'<?= $size ?>')">
+<?= $size ?>
+</span>
+<?php endforeach; ?>
 </div>
 
+<input type="hidden" id="selectedSize" value="">
+
+<hr>
+
+<!-- เลือกจำนวน -->
+<h6 class="fw-bold">จำนวน</h6>
+
+<div class="qty-box mb-3">
+    <button type="button" onclick="decrease()">-</button>
+    <input type="text" id="qty" value="1" readonly>
+    <button type="button" onclick="increase()">+</button>
+</div>
+
+<hr>
+
+<p><?= nl2br(htmlspecialchars($product['p_detail'])) ?></p>
+
+<!-- ปุ่มสั่งซื้อ -->
+<button class="btn buy-btn btn-lg"
+onclick="addToCart(<?= $product['p_id'] ?>)">
+เพิ่มลงตะกร้า
+</button>
+
 </div>
 </div>
 </div>
+
+
+<script>
+function selectSize(el,size){
+    document.querySelectorAll('.size-btn')
+        .forEach(btn=>btn.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('selectedSize').value = size;
+}
+
+function increase(){
+    let qty = document.getElementById('qty');
+    qty.value = parseInt(qty.value)+1;
+}
+
+function decrease(){
+    let qty = document.getElementById('qty');
+    if(parseInt(qty.value)>1){
+        qty.value = parseInt(qty.value)-1;
+    }
+}
+
+function addToCart(id){
+    let size = document.getElementById('selectedSize').value;
+    let qty  = document.getElementById('qty').value;
+
+    if(size==""){
+        alert("กรุณาเลือกไซส์ก่อน");
+        return;
+    }
+
+    window.location = "cart.php?add="+id+
+                      "&size="+size+
+                      "&qty="+qty;
+}
+</script>
