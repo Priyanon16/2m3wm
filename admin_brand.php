@@ -144,7 +144,7 @@ body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
 }
 
 .page-sub{
-    color:#FFFFFF;
+    color:#6c757d;
     font-weight:500;
 }
 
