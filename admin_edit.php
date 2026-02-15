@@ -14,8 +14,7 @@ $id = intval($_GET['id']);
 /* =========================
    ดึงข้อมูลสินค้า
 ========================= */
-$product_query = mysqli_query($conn,
-"SELECT * FROM products WHERE p_id=$id");
+$product_query = mysqli_query($conn,"SELECT * FROM products WHERE p_id=$id");
 $row = mysqli_fetch_assoc($product_query);
 
 if(!$row){
@@ -30,31 +29,29 @@ $cat_query   = mysqli_query($conn,"SELECT * FROM category ORDER BY c_name ASC");
 $brand_query = mysqli_query($conn,"SELECT * FROM brand ORDER BY brand_name ASC");
 
 /* =========================
-   โฟลเดอร์รูป
+   โฟลเดอร์อัปโหลด (สำคัญมาก)
 ========================= */
-$upload_dir = __DIR__."/FileUpload/";
+$upload_dir = __DIR__."/uploads/products/";
+
 if(!is_dir($upload_dir)){
     mkdir($upload_dir,0755,true);
 }
 
 /* =========================
-   ลบรูปเดี่ยว
+   ลบรูป
 ========================= */
 if(isset($_GET['delete_img'])){
     $img_id = intval($_GET['delete_img']);
 
-    $img_rs = mysqli_query($conn,
-    "SELECT img_path FROM product_images WHERE img_id=$img_id");
-
+    $img_rs = mysqli_query($conn,"SELECT img_path FROM product_images WHERE img_id=$img_id");
     $img = mysqli_fetch_assoc($img_rs);
 
     if($img){
-        $file = __DIR__."/".$img['img_path'];
-        if(file_exists($file)){
-            unlink($file);
+        $file_path = __DIR__."/".$img['img_path'];
+        if(file_exists($file_path)){
+            unlink($file_path);
         }
-        mysqli_query($conn,
-        "DELETE FROM product_images WHERE img_id=$img_id");
+        mysqli_query($conn,"DELETE FROM product_images WHERE img_id=$img_id");
     }
 
     header("Location: admin_edit.php?id=".$id);
@@ -79,7 +76,6 @@ if(isset($_POST['update'])){
         $p_size = implode(",",$_POST['p_size']);
     }
 
-    // อัปเดตข้อมูลหลัก
     mysqli_query($conn,"
         UPDATE products SET
         p_name='$name',
@@ -93,12 +89,12 @@ if(isset($_POST['update'])){
         WHERE p_id=$id
     ");
 
-    /* ===== เพิ่มรูปใหม่ ===== */
+    /* ===== เพิ่มรูปใหม่หลายรูป ===== */
     if(isset($_FILES['p_img']) && !empty($_FILES['p_img']['name'][0])){
 
         foreach($_FILES['p_img']['name'] as $key=>$val){
 
-            if($_FILES['p_img']['error'][$key]===0){
+            if($_FILES['p_img']['error'][$key] === 0){
 
                 $ext = strtolower(pathinfo($val,PATHINFO_EXTENSION));
                 $allowed = ['jpg','jpeg','png','gif','webp'];
@@ -106,25 +102,19 @@ if(isset($_POST['update'])){
                 if(in_array($ext,$allowed)){
 
                     $new_name = "product_".time()."_".uniqid().".".$ext;
-                    $target = $upload_dir.$new_name;
+                    $target_path = $upload_dir.$new_name;
 
-                    if(move_uploaded_file($_FILES['p_img']['tmp_name'][$key],$target)){
+                    if(move_uploaded_file($_FILES['p_img']['tmp_name'][$key],$target_path)){
 
-                        echo "Upload success<br>";
+                        // เก็บ path ลง DB
+                        $db_path = "uploads/products/".$new_name;
 
-                        $insert = mysqli_query($conn,"
+                        mysqli_query($conn,"
                             INSERT INTO product_images (p_id,img_path)
-                            VALUES ($id,'FileUpload/$new_name')
+                            VALUES ($id,'$db_path')
                         ");
 
-                        if(!$insert){
-                            die("Insert error: ".mysqli_error($conn));
-                        }
-
-                    }else{
-                        die("Upload failed");
                     }
-
                 }
             }
         }
@@ -134,6 +124,7 @@ if(isset($_POST['update'])){
     exit();
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="th">
@@ -231,20 +222,26 @@ value="<?= $row['p_qty']; ?>" required>
 
 <h5>รูปปัจจุบัน</h5>
 <div class="d-flex flex-wrap">
+
 <?php
-$imgs = mysqli_query($conn,
-"SELECT * FROM product_images WHERE p_id=$id");
+$imgs = mysqli_query($conn,"SELECT * FROM product_images WHERE p_id=$id");
+
 while($img=mysqli_fetch_assoc($imgs)){
 ?>
-<div class="text-center">
-<img src="<?= $img['img_path']; ?>" class="img-thumb">
-<br>
-<a href="?id=<?= $id ?>&delete_img=<?= $img['img_id']; ?>"
-class="btn btn-sm btn-danger mt-1"
-onclick="return confirm('ลบรูปนี้?')">ลบ</a>
+
+<div class="text-center me-3 mb-3">
+    <img src="<?= $img['img_path']; ?>" width="120" class="rounded">
+    <br>
+    <a href="?id=<?= $id ?>&delete_img=<?= $img['img_id']; ?>"
+       class="btn btn-sm btn-danger mt-1"
+       onclick="return confirm('ลบรูปนี้?')">
+       ลบ
+    </a>
 </div>
+
 <?php } ?>
 </div>
+
 
 <hr>
 
