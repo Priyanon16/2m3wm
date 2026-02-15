@@ -44,8 +44,8 @@ $user = mysqli_fetch_assoc($rs);
                     <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($user['name']) ?>" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-bold text-muted">Email (ไม่สามารถแก้ไขได้)</label>
-                    <input type="email" class="form-control form-control-readonly" value="<?= htmlspecialchars($user['email']) ?>" readonly>
+                    <label class="form-label fw-bold text-muted">Email <span class="text-danger">*</span></label></label>
+                    <input type="email" class="form-control" value="<?= htmlspecialchars($user['email']) ?>" readonly>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-bold">เบอร์โทรศัพท์ <span class="text-danger">*</span></label>
@@ -53,7 +53,7 @@ $user = mysqli_fetch_assoc($rs);
                 </div>
                 <div class="col-md-3">
                     <label for="birthDate" class="form-label">วันที่สมัคร </label>
-                    <input type="date" class="form-control" id="birthDate" name="birthDate" required>
+                    <input type="date" class="form-control" id="birthDate" name="birthDate" value="<?= htmlspecialchars($user['birthdate']) ?>" required>
                 </div>
             </div>
 
