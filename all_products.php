@@ -1,17 +1,36 @@
 <?php
 session_start();
-include "data.php";
-include "functions.php";
-include "header.php";
+include_once("connectdb.php");
+include_once("header.php");
 
+// เพิ่มตะกร้า
 if(isset($_GET['add_to_cart'])){
-    addToCart($_GET['add_to_cart']);
+    $pid = intval($_GET['add_to_cart']);
+    if(!isset($_SESSION['cart'][$pid])){
+        $_SESSION['cart'][$pid] = 1;
+    }else{
+        $_SESSION['cart'][$pid]++;
+    }
 }
 
+// เพิ่มรายการโปรด
 if(isset($_GET['add_to_fav'])){
-    addToFavorite($_GET['add_to_fav']);
+    $pid = intval($_GET['add_to_fav']);
+    if(!isset($_SESSION['favorite'])){
+        $_SESSION['favorite'] = [];
+    }
+    if(!in_array($pid,$_SESSION['favorite'])){
+        $_SESSION['favorite'][] = $pid;
+    }
 }
+
+/* ===============================
+   ดึงสินค้าจากฐานข้อมูลจริง
+================================ */
+$sql = "SELECT * FROM products ORDER BY p_id DESC";
+$rs  = mysqli_query($conn,$sql);
 ?>
+
 
 
 <!DOCTYPE html>
@@ -173,47 +192,60 @@ body{
   <!-- PRODUCT GRID -->
   <div class="row g-4" id="productList">
 
-    <?php foreach($products as $p){ ?>
+    <?php if(mysqli_num_rows($rs) > 0): ?>
+    <?php while($row = mysqli_fetch_assoc($rs)): ?>
     <div class="col-md-4 product-item"
-      data-name="<?= strtolower($p['name']); ?>"
-      data-brand="<?= $p['brand']; ?>"
-      data-price="<?= $p['price']; ?>"
-      data-category="<?= $p['category']; ?>">
+      data-name="<?= strtolower($row['p_name']); ?>"
+      data-brand="<?= htmlspecialchars($row['p_type']); ?>"
+      data-price="<?= $row['p_price']; ?>"
+      data-category="<?= $row['c_id']; ?>">
 
-
-      <a href="product_detail.php?id=<?= $p['id']; ?>" class="text-decoration-none text-dark">
+      <a href="product_detail.php?id=<?= $row['p_id']; ?>" class="text-decoration-none text-dark">
         <div class="card h-100">
-          <img src="<?= $p['img']; ?>" class="w-100">
+          <img src="<?= htmlspecialchars($row['p_img']); ?>" class="w-100">
+
           <div class="card-body">
-            <span class="badge badge-brand mb-2"><?= $p['brand']; ?></span>
-            <h6><?= $p['name']; ?></h6>
-            <small class="text-muted"><?= $p['type']; ?></small>
-            <p class="price mt-2">฿<?= number_format($p['price']); ?></p>
 
-        <div class="d-flex align-items-center mt-3">
-            <!-- กลุ่มปุ่มขวา -->
-            <div class="d-flex gap-3 ms-auto">
+            <span class="badge badge-brand mb-2">
+              <?= htmlspecialchars($row['p_type']); ?>
+            </span>
 
-                <a href="?add_to_cart=<?= $p['id']; ?>" 
+            <h6><?= htmlspecialchars($row['p_name']); ?></h6>
+
+            <small class="text-muted">
+              Size: <?= htmlspecialchars($row['p_size']); ?>
+            </small>
+
+            <p class="price mt-2">
+              ฿<?= number_format($row['p_price']); ?>
+            </p>
+
+            <div class="d-flex align-items-center mt-3">
+              <div class="d-flex gap-3 ms-auto">
+
+                <a href="?add_to_cart=<?= $row['p_id']; ?>" 
                   class="btn btn-warning px-4">
                   เพิ่มลงตะกร้า
                 </a>
 
-                <a href="?add_to_fav=<?= $p['id']; ?>" 
+                <a href="?add_to_fav=<?= $row['p_id']; ?>" 
                   class="btn btn-outline-danger px-3">
                   <i class="bi bi-heart"></i>
                 </a>
 
+              </div>
             </div>
 
-        </div>
-
-          </div>
-        </div>
-      </a>
-
+      </div>
     </div>
-    <?php } ?>
+  </a>
+</div>
+
+    <?php endwhile; ?>
+    <?php else: ?>
+      <div class="text-center">ยังไม่มีสินค้าในระบบ</div>
+    <?php endif; ?>
+
 
   </div>
 
