@@ -196,9 +196,6 @@ body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
         </div>
 
 
-        <div class="container py-5">
-
-
 <!-- เพิ่มแบรนด์ -->
 <div class="card p-4 mb-4">
   <h5 class="mb-3">เพิ่มแบรนด์ใหม่</h5>
