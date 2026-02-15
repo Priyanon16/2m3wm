@@ -125,6 +125,9 @@ body{background:#f5f5f5;font-family:'Kanit',sans-serif;}
     background:#111;
     color:#fff;
     border-radius:6px;
+    text-align:center;
+    line-height:32px;
+    text-decoration:none;
 }
 
 .price{
@@ -155,8 +158,12 @@ body{background:#f5f5f5;font-family:'Kanit',sans-serif;}
 .checkout-btn:hover{
     background:#e66e00;
 }
-</style>
 
+.select-all{
+    font-weight:600;
+    margin-bottom:20px;
+}
+</style>
 </head>
 
 <body>
@@ -175,10 +182,21 @@ body{background:#f5f5f5;font-family:'Kanit',sans-serif;}
 <div class="cart-box">
 
 <?php if(mysqli_num_rows($rs)==0): ?>
+
 <div class="text-center py-5">
 ยังไม่มีสินค้าในตะกร้า
 </div>
+
 <?php else: ?>
+
+<!-- SELECT ALL -->
+<div class="select-all">
+<input type="checkbox" id="selectAll" checked
+style="width:18px;height:18px;accent-color:#ff7a00;">
+<label for="selectAll" class="ms-2">
+เลือกสินค้าทั้งหมด
+</label>
+</div>
 
 <?php 
 $total = 0;
@@ -194,7 +212,12 @@ $img = !empty($item['main_img'])
 
 <div class="cart-item">
 
-<input type="checkbox" checked style="width:18px;height:18px;accent-color:#ff7a00;">
+<input type="checkbox"
+class="item-check"
+data-price="<?= $item['p_price']; ?>"
+data-qty="<?= $qty; ?>"
+checked
+style="width:18px;height:18px;accent-color:#ff7a00;">
 
 <img src="<?= htmlspecialchars($img); ?>" class="cart-img">
 
@@ -202,13 +225,9 @@ $img = !empty($item['main_img'])
     <h6><?= htmlspecialchars($item['p_name']); ?></h6>
 
     <div class="qty-box mt-2">
-        <a href="?update=<?= $item['p_id']; ?>&type=minus" 
-           class="qty-btn text-center">−</a>
-
+        <a href="?update=<?= $item['p_id']; ?>&type=minus" class="qty-btn">−</a>
         <span><?= $qty; ?></span>
-
-        <a href="?update=<?= $item['p_id']; ?>&type=plus" 
-           class="qty-btn text-center">+</a>
+        <a href="?update=<?= $item['p_id']; ?>&type=plus" class="qty-btn">+</a>
     </div>
 </div>
 
@@ -241,7 +260,9 @@ $img = !empty($item['main_img'])
 
 <div class="d-flex justify-content-between">
 <span>ยอดสินค้า</span>
-<span>฿<?= number_format($total ?? 0,0); ?></span>
+<span id="subtotal">
+฿<?= number_format($total ?? 0,0); ?>
+</span>
 </div>
 
 <div class="d-flex justify-content-between">
@@ -253,7 +274,7 @@ $img = !empty($item['main_img'])
 
 <h5 class="d-flex justify-content-between">
 <span>ยอดสุทธิ</span>
-<span class="text-warning">
+<span class="text-warning" id="grandTotal">
 ฿<?= number_format(($total ?? 0)+50,0); ?>
 </span>
 </h5>
@@ -270,6 +291,56 @@ $img = !empty($item['main_img'])
 </div>
 </div>
 
+<!-- ======================
+   JAVASCRIPT REAL-TIME
+====================== -->
+<script>
+
+function calculateTotal(){
+    let checkboxes = document.querySelectorAll('.item-check');
+    let subtotal = 0;
+
+    checkboxes.forEach(cb=>{
+        if(cb.checked){
+            let price = parseFloat(cb.dataset.price);
+            let qty = parseInt(cb.dataset.qty);
+            subtotal += price * qty;
+        }
+    });
+
+    document.getElementById('subtotal').innerText =
+        "฿" + subtotal.toLocaleString();
+
+    document.getElementById('grandTotal').innerText =
+        "฿" + (subtotal + 50).toLocaleString();
+}
+
+/* Select All */
+document.getElementById('selectAll')
+.addEventListener('change', function(){
+
+    let items = document.querySelectorAll('.item-check');
+    items.forEach(cb => cb.checked = this.checked);
+
+    calculateTotal();
+});
+
+/* Individual */
+document.querySelectorAll('.item-check')
+.forEach(cb=>{
+    cb.addEventListener('change', function(){
+
+        let all = document.querySelectorAll('.item-check');
+        let checked = document.querySelectorAll('.item-check:checked');
+
+        document.getElementById('selectAll').checked =
+            (all.length === checked.length);
+
+        calculateTotal();
+    });
+});
+
+</script>
 
 </body>
 </html>
