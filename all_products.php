@@ -46,7 +46,7 @@ if(!empty($category)){
 /* เพศ */
 if(!empty($gender)){
     $safeGender = mysqli_real_escape_string($conn,$gender);
-    $where .= " AND p.p_gender = '$safeGender' ";
+    $where .= " AND p.p_type = '$safeGender' ";
 }
 
 /* เรียงราคา */
@@ -63,13 +63,23 @@ if($sort == "high"){
    Query สินค้า
 ========================= */
 $sql = "
-SELECT p.*, b.brand_name, c.c_name
+SELECT 
+    p.*,
+    b.brand_name,
+    c.c_name,
+    (
+        SELECT img_path 
+        FROM product_images 
+        WHERE p_id = p.p_id 
+        LIMIT 1
+    ) AS first_image
 FROM products p
 LEFT JOIN brand b ON p.brand_id = b.brand_id
 LEFT JOIN category c ON p.c_id = c.c_id
 $where
 $order
 ";
+
 
 $rs = mysqli_query($conn,$sql);
 
@@ -192,7 +202,14 @@ body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
     <a href="product_detail.php?id=<?= $p['p_id']; ?>"
        class="text-decoration-none text-dark">
 
-      <img src="<?= htmlspecialchars($p['p_img']); ?>" class="w-100">
+      <?php
+      $image = !empty($p['first_image'])
+          ? $p['first_image']
+          : 'images/no-image.png'; // fallback ถ้าไม่มีรูป
+      ?>
+
+      <img src="<?= htmlspecialchars($image); ?>" class="w-100">
+
 
       <div class="card-body">
         <span class="badge badge-brand mb-2">
@@ -203,7 +220,7 @@ body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
 
         <small class="text-muted">
           <?= htmlspecialchars($p['c_name']); ?> |
-          <?= ucfirst($p['p_gender']); ?>
+          <?= ucfirst($p['p_type']); ?>
         </small>
 
         <p class="price mt-2">
