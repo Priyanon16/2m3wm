@@ -2,12 +2,8 @@
 // admin_edit.php
 session_start();
 include "data.php";
-
-$id = $_GET['id'];
-
-// ดึงข้อมูลสินค้าเดิม
-$pro_query = mysqli_query($conn, "SELECT * FROM products WHERE p_id = '$id'");
-$row = mysqli_fetch_assoc($pro_query);
+include_once("check_login.php"); 
+include_once("connectdb.php");
 
 // ดึงหมวดหมู่ทั้งหมด
 $cat_query = mysqli_query($conn, "SELECT * FROM category");

@@ -179,7 +179,7 @@ body {
             </li>
             <li class="nav-item">
                 <a href="category_products.php" class="nav-link text-white small">
-                    จัดการประเภทสินค้า
+                    จัดการหมวดหมู่สินค้า
                 </a>
             </li>
         </ul>

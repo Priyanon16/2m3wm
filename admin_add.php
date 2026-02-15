@@ -2,12 +2,8 @@
 session_start();
 
 // 1. เชื่อมต่อฐานข้อมูล
-$servername = "localhost";
-$username = "admin_man";    
-$password = "66010914015";         
-$dbname = "2m3wm";      
-
-$conn = mysqli_connect($servername, $username, $password, $dbname);
+include_once("check_login.php"); 
+include_once("connectdb.php");
 
 if (!$conn) {
     die("เชื่อมต่อฐานข้อมูลล้มเหลว: " . mysqli_connect_error());

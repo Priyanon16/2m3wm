@@ -3,9 +3,12 @@ if(session_status() === PHP_SESSION_NONE){
     session_start();
 }
 
-include "data.php";
+include "connectdb.php";
 include "functions.php";
 include "header.php";
+
+$sql = "SELECT * FROM products ORDER BY p_id DESC";
+$result = mysqli_query($conn, $sql);
 
 if(isset($_GET['add_to_cart'])){
     addToCart($_GET['add_to_cart']);
@@ -15,6 +18,7 @@ if(isset($_GET['add_to_fav'])){
     addToFavorite($_GET['add_to_fav']);
 }
 ?>
+
 
 
 <!DOCTYPE html>
@@ -171,14 +175,27 @@ body{
   <div class="container text-center">
     <h5 class="mb-4 fw-semibold">แบรนด์แฟชั่นที่คุณชื่นชอบ</h5>
 
-    <div class="d-flex justify-content-center align-items-center flex-wrap gap-5 brand-logos">
-      <img src="images/brands/newbalance.jpg" alt="New Balance">
-      <img src="images/brands/on.jpg" alt="On">
-      <img src="images/brands/nike.jpg" alt="Nike">
-      <img src="images/brands/puma.jpg" alt="Puma">
-      <img src="images/brands/adidas.jpg" alt="Adidas">
-      <img src="images/brands/jordan.jpg" alt="Jordan">
+   <div class="col product-item">
+      <a href="product_detail.php?id=<?= $p['p_id']; ?>" 
+        class="text-decoration-none text-dark">
+
+        <div class="card h-100">
+          <img src="images/<?= $p['p_img']; ?>" class="card-img-top">
+
+          <div class="card-body">
+            <h6 class="product-name"><?= $p['p_name']; ?></h6>
+            <small class="text-muted product-type">
+              <?= $p['p_type']; ?>
+            </small>
+            <p class="price mt-2">
+              ฿<?= number_format($p['p_price']); ?>
+            </p>
+          </div>
+
+        </div>
+      </a>
     </div>
+
 
     <div class="mt-4">
       <a href="#" class="text-dark text-decoration-underline">ดูเพิ่มเติม</a>
@@ -193,7 +210,7 @@ body{
   <div class="container">
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" id="productList">
 
-      <?php foreach($products as $p){ ?>
+      <?php while($p = mysqli_fetch_assoc($result)){ ?>
       <div class="col product-item">
         <a href="product_detail.php?id=<?= $p['id']; ?>" class="text-decoration-none text-dark">
             <div class="card h-100">
