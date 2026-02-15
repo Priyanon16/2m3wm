@@ -1,51 +1,160 @@
 <?php
 session_start();
-include "data.php";
+include_once("connectdb.php");
 
-$fav = $_SESSION['favorite'] ?? [];
-
-if(isset($_GET['remove'])){
-  unset($_SESSION['favorite'][$_GET['remove']]);
-  header("Location: favorite.php");
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
 }
+
+$uid = $_SESSION['user_id'];
+
+/* =======================
+   เพิ่มรายการโปรด
+======================= */
+if(isset($_GET['action']) && $_GET['action']=="add"){
+
+    $pid = intval($_GET['id']);
+
+    // เช็คว่าซ้ำหรือยัง
+    $check = mysqli_query($conn,"
+        SELECT * FROM favorites
+        WHERE user_id='$uid'
+        AND product_id='$pid'
+    ");
+
+    if(mysqli_num_rows($check)==0){
+        mysqli_query($conn,"
+            INSERT INTO favorites (user_id,product_id)
+            VALUES ('$uid','$pid')
+        ");
+    }
+
+    header("Location: favorite.php");
+    exit;
+}
+
+/* =======================
+   ลบรายการโปรด
+======================= */
+if(isset($_GET['action']) && $_GET['action']=="remove"){
+
+    $pid = intval($_GET['id']);
+
+    mysqli_query($conn,"
+        DELETE FROM favorites
+        WHERE user_id='$uid'
+        AND product_id='$pid'
+    ");
+
+    header("Location: favorite.php");
+    exit;
+}
+
+/* =======================
+   ดึงรายการโปรดทั้งหมด
+======================= */
+$sql = "
+SELECT p.*
+FROM favorites f
+JOIN products p ON f.product_id = p.p_id
+WHERE f.user_id='$uid'
+ORDER BY f.fav_id DESC
+";
+
+$rs = mysqli_query($conn,$sql);
 ?>
 
 <!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>รายการโปรด</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<title>รายการโปรด - 2M3WM</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+body{
+    font-family:'Kanit',sans-serif;
+    background:#f4f6f9;
+}
+.card{
+    border:none;
+    transition:.3s;
+}
+.card:hover{
+    transform:translateY(-5px);
+    box-shadow:0 10px 25px rgba(0,0,0,.1);
+}
+.price{
+    color:#ff7a00;
+    font-weight:600;
+}
+</style>
 </head>
+
 <body>
 
-<div class="container py-5">
-<h3>รายการโปรด</h3>
+<?php include("header.php"); ?>
 
-<?php if(empty($fav)){ ?>
-<p>ยังไม่มีสินค้าในรายการโปรด</p>
-<?php } else { ?>
+<div class="container mt-5 mb-5">
+
+<h3 class="mb-4">
+<i class="bi bi-heart-fill text-danger"></i>
+รายการโปรดของฉัน
+</h3>
 
 <div class="row">
-<?php foreach($fav as $id):
-  foreach($products as $p){
-    if($p['id'] == $id){
-?>
-<div class="col-md-4">
-<div class="card mb-3">
-<img src="<?= $p['img']; ?>" class="card-img-top">
+
+<?php if(mysqli_num_rows($rs)>0): ?>
+
+<?php while($p = mysqli_fetch_assoc($rs)): ?>
+
+<div class="col-md-4 mb-4">
+<div class="card h-100">
+
+<img src="<?= $p['p_img'] ?>" class="card-img-top">
+
 <div class="card-body">
-<h6><?= $p['name']; ?></h6>
-<p>฿<?= number_format($p['price']); ?></p>
-<a href="?remove=<?= $id ?>" class="btn btn-sm btn-danger">ลบ</a>
-</div>
-</div>
-</div>
-<?php } } endforeach; ?>
+
+<h6><?= $p['p_name'] ?></h6>
+<p class="price"><?= number_format($p['p_price'],2) ?> บาท</p>
+
+<div class="d-flex justify-content-between">
+
+<a href="product_detail.php?id=<?= $p['p_id'] ?>" 
+class="btn btn-sm btn-outline-dark">
+ดูสินค้า
+</a>
+
+<a href="favorite.php?action=remove&id=<?= $p['p_id'] ?>" 
+class="btn btn-sm btn-danger"
+onclick="return confirm('ลบออกจากรายการโปรด?')">
+<i class="bi bi-trash"></i>
+</a>
+
 </div>
 
-<?php } ?>
+</div>
+</div>
+</div>
+
+<?php endwhile; ?>
+
+<?php else: ?>
+
+<div class="col-12">
+<div class="alert alert-light text-center">
+ยังไม่มีสินค้าในรายการโปรด
+</div>
+</div>
+
+<?php endif; ?>
 
 </div>
+</div>
+
 </body>
 </html>

@@ -111,7 +111,7 @@ $result = mysqli_query($conn, $sql);
         /* Badge ไซส์ */
         .badge-size {
             background-color: #fff;
-            color: #333;
+            color: #000000;
             border: 1px solid #ddd;
             font-weight: 400;
             margin: 2px;
