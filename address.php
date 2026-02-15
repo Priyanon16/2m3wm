@@ -2,19 +2,18 @@
 session_start();
 include_once("connectdb.php");
 
-// ตรวจสอบการเข้าสู่ระบบ
-if (!isset($_SESSION['uid'])) {
+if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
 
-$uid = $_SESSION['uid'];
+$uid = $_SESSION['user_id'];
 
-// ดึงข้อมูลที่อยู่ล่าสุดจากตาราง address
 $sql = "SELECT * FROM address WHERE user_id = '$uid' LIMIT 1";
 $rs = mysqli_query($conn, $sql);
 $addr = mysqli_fetch_assoc($rs);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="th">
