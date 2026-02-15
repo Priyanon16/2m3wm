@@ -51,6 +51,10 @@ $user = mysqli_fetch_assoc($rs);
                     <label class="form-label fw-bold">เบอร์โทรศัพท์ <span class="text-danger">*</span></label>
                     <input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($user['addr_phone'] ?? $user['phone']) ?>" required>
                 </div>
+                <div class="col-md-3">
+                    <label for="birthDate" class="form-label">วันที่สมัคร </label>
+                    <input type="date" class="form-control" id="birthDate" name="birthDate" required>
+                </div>
             </div>
 
             <h5 class="section-title mt-5">เปลี่ยนรหัสผ่านใหม่</h5>
