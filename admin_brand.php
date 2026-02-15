@@ -1,7 +1,6 @@
 <?php
 session_start();
 include_once("connectdb.php");
-include_once("sidebar.php");
 include_once("bootstrap.php");
 
 $upload_dir = __DIR__."/uploads/brands/";
@@ -114,15 +113,24 @@ body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
 .table thead{background:#111;color:#fff;}
 .brand-img{width:70px;height:70px;object-fit:cover;border-radius:10px;}
 .card{border:none;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.05);}
+
+
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h3>🏷 จัดการแบรนด์</h3>
-</div>
+<div class="layout">
 
-<div class="container py-5">
+    <?php include("sidebar.php"); ?>
+
+    <div class="main-content">
+
+        <div class="header">
+          <h3>🏷 จัดการแบรนด์</h3>
+        </div>
+
+        <div class="container py-5">
+
 
 <!-- เพิ่มแบรนด์ -->
 <div class="card p-4 mb-4">
@@ -218,5 +226,11 @@ body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+        </div> <!-- container -->
+    </div> <!-- main-content -->
+
+</div> <!-- layout -->
+
 </body>
 </html>
