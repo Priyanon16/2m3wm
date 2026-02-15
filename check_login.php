@@ -1,16 +1,17 @@
 <?php
-    session_start();
+session_start();
 
-    // --- กำหนดค่า Admin จำลองเพื่อใช้ในการพัฒนา ---
-    $_SESSION['aid'] = 1; // กำหนด ID เป็น 1 เพื่อให้ผ่านเงื่อนไข empty
-    $_SESSION['aname'] = "Preeyanon Admin"; // ชื่อที่จะปรากฏในหน้า Dashboard
+// 1. ตรวจสอบว่ามีการล็อกอินหรือไม่
+// 2. ตรวจสอบว่า Role ที่ล็อกอินเข้ามาเป็น 'admin' หรือไม่
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    // หากไม่ใช่ Admin ให้เด้งไปหน้า Login และหยุดการทำงานทันที
+    echo "<script>
+            alert('สิทธิ์การเข้าถึงเฉพาะผู้ดูแลระบบเท่านั้น!');
+            window.location.href='login.php';
+          </script>";
+    exit();
+}
 
-    /* // คอมเมนต์ส่วนตรวจสอบจริงไว้ก่อนในช่วงกู้คืนรหัสผ่านฐานข้อมูล
-    if (empty($_SESSION['aid'])) {
-        echo "Access Denied" ;
-        echo "<meta http-equiv='refresh' content='4; url=index.php'>";
-        exit;
-    }
-    */
-    
+include_once("connectdb.php");
+// ... โค้ดส่วนที่เหลือของคุณ ...
 ?>
