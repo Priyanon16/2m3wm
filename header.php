@@ -162,19 +162,19 @@ $totalFav  = count($_SESSION['favorite']);
 
         <ul class="dropdown-menu shadow border-0 rounded-3">
             <li>
-                <a class="dropdown-item" href="profile.php">
+                <a class="dropdown-item" href="customer_profile.php">
                     <i class="bi bi-person me-2 text-warning"></i>โปรไฟล์
                 </a>
             </li>
 
             <li>
-                <a class="dropdown-item" href="order_status.php">
+                <a class="dropdown-item" href="customer_checkorders.php">
                     <i class="bi bi-truck me-2 text-primary"></i>เช็คสถานะออเดอร์
                 </a>
             </li>
 
             <li>
-                <a class="dropdown-item" href="order_history.php">
+                <a class="dropdown-item" href="customer_history.php">
                     <i class="bi bi-clock-history me-2 text-success"></i>ประวัติการสั่งซื้อ
                 </a>
             </li>
@@ -195,9 +195,16 @@ $totalFav  = count($_SESSION['favorite']);
       <!-- ICONS -->
       <div class="d-flex gap-3 header-icons">
 
-        <a href="login.php">
-          <i class="bi bi-person"></i>
-        </a>
+        <?php if(isset($_SESSION['user_id'])): ?>
+          <a href="customer_profile.php" title="โปรไฟล์">
+              <i class="bi bi-person-fill text-warning"></i>
+          </a>
+      <?php else: ?>
+          <a href="login.php" title="เข้าสู่ระบบ">
+              <i class="bi bi-person"></i>
+          </a>
+      <?php endif; ?>
+
 
         <a href="favorite.php">
           <i class="bi bi-heart"></i>
