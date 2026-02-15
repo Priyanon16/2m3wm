@@ -6,29 +6,30 @@ include_once("connectdb.php");
 $error = "";
 
 if (isset($_POST['Submit'])) {
-    // รับค่าจากฟอร์มและป้องกัน SQL Injection
+
     $name     = mysqli_real_escape_string($conn, $_POST['fullname']);
     $email    = mysqli_real_escape_string($conn, $_POST['email']);
+    $phone    = mysqli_real_escape_string($conn, $_POST['phone']);   // เพิ่มบรรทัดนี้
     $password = mysqli_real_escape_string($conn, $_POST['password']);
     $confirm  = $_POST['confirm_password'];
-    $role     = 'member'; // กำหนดสิทธิ์เริ่มต้นเป็น member สำหรับผู้สมัครทั่วไป
+    $role     = 'member';
 
-    // 1. ตรวจสอบว่ารหัสผ่านตรงกันหรือไม่
     if ($password !== $confirm) {
         $error = "รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน";
     } else {
-        // 2. ตรวจสอบอีเมลซ้ำในฐานข้อมูล
+
         $check_sql = "SELECT email FROM users WHERE email = '$email' LIMIT 1";
         $rs_check  = mysqli_query($conn, $check_sql);
 
         if (mysqli_num_rows($rs_check) > 0) {
             $error = "อีเมลนี้ถูกใช้งานแล้ว กรุณาใช้อีเมลอื่น";
         } else {
-            // 3. บันทึกข้อมูลลงตาราง users (id, name, email, password, role, created_at)
-            $sql = "INSERT INTO users (name, email, password, role) VALUES ('$name', '$email', '$password', '$role')";
-            
+
+            // เพิ่ม phone เข้าไปใน INSERT
+            $sql = "INSERT INTO users (name, email, phone, password, role) 
+                    VALUES ('$name', '$email', '$phone', '$password', '$role')";
+
             if (mysqli_query($conn, $sql)) {
-                // แสดงข้อความสำเร็จและย้ายไปหน้า login.php
                 echo "<script>
                     alert('สมัครสมาชิกสำเร็จ!');
                     window.location.href='login.php';
@@ -40,6 +41,7 @@ if (isset($_POST['Submit'])) {
         }
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -197,12 +199,27 @@ if (isset($_POST['Submit'])) {
         </div>
 
         <div class="input-group">
+            <label>เบอร์โทรศัพท์</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-phone"></i>
+                <input type="text" name="phone" 
+                    placeholder="08xxxxxxxx"
+                    value="<?php echo isset($_POST['phone']) ? htmlspecialchars($_POST['phone']) : ''; ?>" 
+                    pattern="[0-9]{9,10}" 
+                    required>
+            </div>
+        </div>
+
+
+        <div class="input-group">
             <label>อีเมล</label>
             <div class="input-wrapper">
                 <i class="fa-regular fa-envelope"></i>
                 <input type="email" name="email" placeholder="your@email.com" value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" required>
             </div>
         </div>
+
+
 
         <div class="input-group">
             <label>รหัสผ่าน</label>
