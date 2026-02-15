@@ -2,6 +2,9 @@
 session_start();
 include_once("connectdb.php");
 
+/* ==========================
+   ต้องล็อกอินก่อน
+========================== */
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
@@ -9,14 +12,13 @@ if (!isset($_SESSION['user_id'])) {
 
 $uid = $_SESSION['user_id'];
 
-/* =======================
+/* ==========================
    เพิ่มรายการโปรด
-======================= */
+========================== */
 if(isset($_GET['action']) && $_GET['action']=="add"){
 
     $pid = intval($_GET['id']);
 
-    // เช็คว่าซ้ำหรือยัง
     $check = mysqli_query($conn,"
         SELECT * FROM favorites
         WHERE user_id='$uid'
@@ -34,9 +36,9 @@ if(isset($_GET['action']) && $_GET['action']=="add"){
     exit;
 }
 
-/* =======================
+/* ==========================
    ลบรายการโปรด
-======================= */
+========================== */
 if(isset($_GET['action']) && $_GET['action']=="remove"){
 
     $pid = intval($_GET['id']);
@@ -51,9 +53,9 @@ if(isset($_GET['action']) && $_GET['action']=="remove"){
     exit;
 }
 
-/* =======================
-   ดึงรายการโปรดทั้งหมด
-======================= */
+/* ==========================
+   ดึงข้อมูลสินค้า
+========================== */
 $sql = "
 SELECT p.*
 FROM favorites f
@@ -65,20 +67,12 @@ ORDER BY f.fav_id DESC
 $rs = mysqli_query($conn,$sql);
 ?>
 
-<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8">
-<title>รายการโปรด - 2M3WM</title>
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<?php include("header.php"); ?>
 
 <style>
 body{
-    font-family:'Kanit',sans-serif;
     background:#f4f6f9;
+    font-family:'Kanit',sans-serif;
 }
 .card{
     border:none;
@@ -93,11 +87,6 @@ body{
     font-weight:600;
 }
 </style>
-</head>
-
-<body>
-
-<?php include("header.php"); ?>
 
 <div class="container mt-5 mb-5">
 
@@ -119,7 +108,7 @@ body{
 
 <div class="card-body">
 
-<h6><?= $p['p_name'] ?></h6>
+<h6><?= htmlspecialchars($p['p_name']) ?></h6>
 <p class="price"><?= number_format($p['p_price'],2) ?> บาท</p>
 
 <div class="d-flex justify-content-between">
@@ -155,6 +144,3 @@ onclick="return confirm('ลบออกจากรายการโปรด?
 
 </div>
 </div>
-
-</body>
-</html>

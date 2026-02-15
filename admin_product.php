@@ -42,44 +42,51 @@ $result = mysqli_query($conn, $sql);
     <title>รายการสินค้า</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <style>
         :root {
             --theme-black: #121212;       /* 60% พื้นหลังหลัก */
-            --theme-dark-card: #1e1e1e;   /* พื้นหลังส่วน Sidebar หรือ Card เข้ม */
             --theme-white: #ffffff;       /* 30% พื้นหลังเนื้อหา */
             --theme-orange: #ff6600;      /* 10% สีเน้น (Accent) */
             --theme-orange-hover: #e65c00;
+            --text-dark: #212529;         /* สีตัวหนังสือเข้ม */
         }
 
         body {
             font-family: 'Kanit', sans-serif;
-            background-color: var(--theme-black); /* สีดำ */
-            color: #333;
+            background-color: var(--theme-black); /* พื้นหลังดำ */
+            color: #ccc; /* ตัวหนังสือบนพื้นดำให้เป็นสีเทาอ่อน */
         }
 
-        /* Sidebar Area (สมมติว่า include sidebar มา) */
+        /* Sidebar Area */
         .sidebar-area {
             min-height: 100vh;
-            background-color: #000000; /* ดำสนิท */
+            background-color: #000000;
             border-right: 1px solid #333;
         }
 
-        /* Card Container */
+        /* Card Container - แก้ไขสีตัวหนังสือที่นี่ */
         .custom-card {
-            background-color: var(--theme-white); /* ขาว */
+            background-color: var(--theme-white); /* พื้นหลังขาว */
+            color: var(--text-dark); /* !!! แก้ไข: บังคับตัวหนังสือเป็นสีดำ !!! */
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0, 0.5); /* เงาฟุ้งๆ */
+            box-shadow: 0 10px 30px rgba(0,0,0, 0.5);
             border: none;
             overflow: hidden;
         }
 
+        /* บังคับสีในตารางให้เข้มชัดเจน */
+        .table {
+            color: var(--text-dark) !important;
+            --bs-table-color: var(--text-dark);
+            --bs-table-hover-color: var(--text-dark);
+        }
+
         /* หัวตาราง */
         .table-head-custom {
-            background-color: #000000 !important; /* ดำ */
-            color: var(--theme-orange) !important; /* ตัวหนังสือส้ม */
+            background-color: #000000 !important;
+            color: var(--theme-orange) !important;
             text-transform: uppercase;
             font-weight: 500;
             border-bottom: 2px solid var(--theme-orange);
@@ -105,14 +112,14 @@ $result = mysqli_query($conn, $sql);
             height: 70px;
             object-fit: cover;
             border-radius: 10px;
-            border: 2px solid #eee;
+            border: 1px solid #ddd;
         }
 
         /* Badge ไซส์ */
         .badge-size {
-            background-color: #fff;
-            color: #333;
-            border: 1px solid #ddd;
+            background-color: #f8f9fa; /* พื้นหลังเทาอ่อน */
+            color: #333; /* ตัวหนังสือเข้ม */
+            border: 1px solid #ccc;
             font-weight: 400;
             margin: 2px;
         }
@@ -124,7 +131,7 @@ $result = mysqli_query($conn, $sql);
             font-weight: 600;
         }
 
-        /* Scrollbar สวยๆ */
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #121212; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
@@ -172,7 +179,7 @@ $result = mysqli_query($conn, $sql);
                                     while($row = mysqli_fetch_assoc($result)){ 
                                 ?>
                                 <tr>
-                                    <td class="text-center text-muted fw-bold">#<?= $row['p_id']; ?></td>
+                                    <td class="text-center fw-bold text-secondary">#<?= $row['p_id']; ?></td>
                                     
                                     <td width="100">
                                         <?php if(!empty($row['p_img'])): ?>
@@ -185,7 +192,7 @@ $result = mysqli_query($conn, $sql);
                                     </td>
                                     
                                     <td>
-                                        <h6 class="fw-bold mb-1 text-dark"><?= $row['p_name']; ?></h6>
+                                        <h6 class="fw-bold mb-1"><?= $row['p_name']; ?></h6>
                                         <small class="text-muted d-block text-truncate" style="max-width: 200px;">
                                             <?= $row['p_detail']; ?>
                                         </small>
@@ -197,7 +204,6 @@ $result = mysqli_query($conn, $sql);
                                         if(!empty($row['p_size'])) {
                                             $sizes = explode(',', $row['p_size']);
                                             foreach($sizes as $s) {
-                                                // แต่งป้ายไซส์ให้ดู Minimal
                                                 echo '<span class="badge-size badge rounded-pill">EU '.$s.'</span>';
                                             }
                                         } else {
