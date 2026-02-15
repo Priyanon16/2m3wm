@@ -180,7 +180,9 @@ body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
 
     <div class="main-content">
 
-        <div class="page-header">
+        <div class="container py-4">
+          <div class="page-header">
+
     
           <div class="page-title">
               <i class="bi bi-award"></i>
@@ -190,8 +192,8 @@ body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
           <div class="page-sub">
               Brand Management
           </div>
-
-      </div>
+          </div>
+        </div>
 
 
         <div class="container py-5">
