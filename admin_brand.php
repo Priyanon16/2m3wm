@@ -49,8 +49,8 @@ if(isset($_GET['delete'])){
     $getImg = mysqli_query($conn,"SELECT brand_img FROM brand WHERE brand_id=$id");
     $imgRow = mysqli_fetch_assoc($getImg);
 
-    if(file_exists("../uploads/brands/".$imgRow['brand_img'])){
-        unlink("../uploads/brands/".$imgRow['brand_img']);
+    if(file_exists("uploads/brands/".$imgRow['brand_img'])){
+        unlink("uploads/brands/".$imgRow['brand_img']);
     }
 
     mysqli_query($conn,"DELETE FROM brand WHERE brand_id=$id");
@@ -151,7 +151,7 @@ body{
         <tr>
           <td><?= $b['brand_id']; ?></td>
           <td>
-            <img src="../uploads/brands/<?= $b['brand_img']; ?>"
+            <img src="uploads/brands/<?= $b['brand_img']; ?>"
                  class="brand-img">
           </td>
           <td><?= $b['brand_name']; ?></td>
