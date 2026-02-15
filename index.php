@@ -4,50 +4,57 @@ if(session_status() === PHP_SESSION_NONE){
 }
 
 include_once("connectdb.php");
-function addToCart($p_id) {
-    if(!isset($_SESSION['cart'])) {
-        $_SESSION['cart'] = array();
+
+/* ==========================
+   ฟังก์ชันเพิ่มตะกร้า
+========================== */
+function addToCart($p_id){
+    if(!isset($_SESSION['cart'])){
+        $_SESSION['cart'] = [];
     }
-    // เพิ่มจำนวนสินค้าตาม ID (ถ้ามีแล้วจะบวกเพิ่ม ถ้ายังไม่มีจะเริ่มที่ 1)
-    if(isset($_SESSION['cart'][$p_id])) {
+
+    if(isset($_SESSION['cart'][$p_id])){
         $_SESSION['cart'][$p_id]++;
-    } else {
+    }else{
         $_SESSION['cart'][$p_id] = 1;
     }
-    // เมื่อประมวลผลเสร็จ ให้กระโดดไปหน้า cart.php ทันที
+
     header("Location: cart.php");
     exit();
 }
 
-// --- ฟังก์ชันจัดการรายการโปรด ---
-function addToFavorite($p_id) {
-    if(!isset($_SESSION['favorite'])) {
-        $_SESSION['favorite'] = array();
+/* ==========================
+   ฟังก์ชันเพิ่มรายการโปรด
+========================== */
+function addToFavorite($p_id){
+    if(!isset($_SESSION['favorite'])){
+        $_SESSION['favorite'] = [];
     }
-    if(isset($_GET['add_to_fav'])){
-    addToFavorite($_GET['add_to_fav']);
-    }
-    // ตรวจสอบเพื่อไม่ให้เพิ่มสินค้าซ้ำในรายการโปรด
-    if(!in_array($p_id, $_SESSION['favorite'])) {
+
+    // กันซ้ำ
+    if(!in_array($p_id, $_SESSION['favorite'])){
         $_SESSION['favorite'][] = $p_id;
     }
-    // เมื่อประมวลผลเสร็จ ให้กระโดดไปหน้า favorite.php ทันที
+
     header("Location: favorite.php");
     exit();
 }
 
-// ตรวจสอบการรับค่าผ่าน URL (GET)
+/* ==========================
+   ตรวจสอบค่าที่ส่งมา
+========================== */
 if(isset($_GET['add_to_cart'])){
-    addToCart($_GET['add_to_cart']);
+    addToCart((int)$_GET['add_to_cart']);
 }
 
 if(isset($_GET['add_to_fav'])){
-    addToFavorite($_GET['add_to_fav']);
+    addToFavorite((int)$_GET['add_to_fav']);
 }
+
 include("header.php");
 include_once("bootstrap.php");
-
 ?>
+
 
 
 <!DOCTYPE html>
