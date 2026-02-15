@@ -109,11 +109,22 @@ if(isset($_POST['update'])){
                     $target = $upload_dir.$new_name;
 
                     if(move_uploaded_file($_FILES['p_img']['tmp_name'][$key],$target)){
-                        mysqli_query($conn,"
+
+                        echo "Upload success<br>";
+
+                        $insert = mysqli_query($conn,"
                             INSERT INTO product_images (p_id,img_path)
                             VALUES ($id,'FileUpload/$new_name')
                         ");
+
+                        if(!$insert){
+                            die("Insert error: ".mysqli_error($conn));
+                        }
+
+                    }else{
+                        die("Upload failed");
                     }
+
                 }
             }
         }
