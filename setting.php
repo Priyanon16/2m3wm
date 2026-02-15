@@ -2,13 +2,7 @@
 session_start();
 include_once("connectdb.php");
 
-// ตรวจสอบการเข้าสู่ระบบ (อ้างอิงจากระบบที่คุณมี)
-if (!isset($_SESSION['uid'])) {
-    header("Location: login.php");
-    exit;
-}
 
-$uid = $_SESSION['uid'];
 
 // ดึงข้อมูลจากตาราง users เชื่อมกับตาราง address
 $sql = "SELECT u.*, a.phone as addr_phone, a.address, a.district, a.province, a.postal_code 
@@ -43,23 +37,13 @@ $user = mysqli_fetch_assoc($rs);
         <h3 class="text-center mb-4 fw-bold">แก้ไขโปรไฟล์ลูกค้า</h3>
         
         <form action="update_profile_db.php" method="POST" enctype="multipart/form-data">
-            <div class="text-center mb-4">
-                <img src="https://via.placeholder.com/140" id="preview" class="profile-img mb-3">
-                <div class="mb-3">
-                    <label class="form-label d-block small text-muted">เปลี่ยนรูปโปรไฟล์</label>
-                    <input type="file" name="p_img" class="form-control form-control-sm" id="imgInput" accept="image/*">
-                </div>
-            </div>
+
 
             <h5 class="section-title">ข้อมูลบัญชี</h5>
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label fw-bold">ชื่อ-นามสกุล <span class="text-danger">*</span></label>
                     <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($user['name']) ?>" required>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-bold text-muted">วันที่สมัคร</label>
-                    <input type="text" class="form-control form-control-readonly" value="<?= date('d/m/Y', strtotime($user['created_at'])) ?>" readonly>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-bold text-muted">Email</label>
