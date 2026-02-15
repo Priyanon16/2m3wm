@@ -3,7 +3,8 @@ session_start();
 include_once("connectdb.php");
 
 
-// ดึงข้อมูลจากตาราง users และเชื่อมกับตาราง address
+// ดึงข้อมูลจากตาราง users เชื่อมกับตาราง address
+// อ้างอิงชื่อคอลัมน์ตามโครงสร้างตารางที่คุณส่งมา (image_b99566.png และ image_bae71e.jpg)
 $sql = "SELECT u.*, a.phone as addr_phone, a.address, a.district, a.province, a.postal_code 
         FROM users u 
         LEFT JOIN address a ON u.id = a.user_id 
@@ -14,6 +15,7 @@ $user = mysqli_fetch_assoc($rs);
 // แปลงรูปแบบวันที่สมัคร (created_at) ให้เป็น YYYY-MM-DD เพื่อแสดงใน input type="date"
 $reg_date = "";
 if (!empty($user['created_at'])) {
+    // strtotime ช่วยแปลงข้อมูลทุกรูปแบบจาก SQL ให้เป็น Timestamp ของ PHP ก่อนแปลงเป็น format ที่ต้องการ
     $reg_date = date('Y-m-d', strtotime($user['created_at']));
 }
 ?>
@@ -29,8 +31,8 @@ if (!empty($user['created_at'])) {
         body { background: #f5f5f5; font-family: 'Kanit', sans-serif; }
         .profile-card { max-width: 800px; margin: 50px auto; background: #fff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .section-title { color: #ff7a00; font-weight: 600; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
-        .form-control-readonly { background-color: #e9ecef !important; color: #6c757d; cursor: not-allowed; }
-        .btn-orange { background: #ff7a00; color: #fff; border: none; font-weight: 600; transition: 0.3s; padding: 15px; border-radius: 10px; }
+        .form-control-readonly { background-color: #e9ecef !important; color: #6c757d; cursor: not-allowed; border: 1px solid #ced4da; }
+        .btn-orange { background: #ff7a00; color: #fff; border: none; font-weight: 600; transition: 0.3s; padding: 15px; border-radius: 10px; width: 100%; }
         .btn-orange:hover { background: #e66e00; transform: translateY(-2px); }
     </style>
 </head>
@@ -49,14 +51,17 @@ if (!empty($user['created_at'])) {
                     <label class="form-label fw-bold">ชื่อ-นามสกุล <span class="text-danger">*</span></label>
                     <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($user['name'] ?? "") ?>" required>
                 </div>
+
                 <div class="col-md-6">
                     <label class="form-label fw-bold text-muted">วันที่สมัคร</label>
                     <input type="date" class="form-control form-control-readonly" value="<?= $reg_date ?>" readonly>
                 </div>
+
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Email <span class="text-danger">*</span></label>
                     <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($user['email'] ?? "") ?>" required>
                 </div>
+
                 <div class="col-md-6">
                     <label class="form-label fw-bold">เบอร์โทรศัพท์ <span class="text-danger">*</span></label>
                     <input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($user['addr_phone'] ?? $user['phone'] ?? "") ?>" required>
@@ -76,7 +81,7 @@ if (!empty($user['created_at'])) {
             </div>
 
             <div class="mt-5">
-                <button type="submit" name="Submit" class="btn btn-orange w-100 shadow-sm">
+                <button type="submit" name="Submit" class="btn btn-orange">
                     บันทึกการเปลี่ยนแปลงทั้งหมด
                 </button>
             </div>
