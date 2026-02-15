@@ -126,6 +126,8 @@ body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
     background:#ff7a00;
     border-top-left-radius:20px;
     border-bottom-left-radius:20px;
+    box-shadow:0 6px 18px rgba(0,0,0,.06);
+
 }
 
 .page-title{
