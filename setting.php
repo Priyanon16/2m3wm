@@ -2,27 +2,66 @@
 session_start();
 include_once("connectdb.php");
 include_once("bootstrap.php");
-
-/* =========================
-   ตรวจสอบการเข้าสู่ระบบ
-========================= */
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
 
 $uid = $_SESSION['user_id'];
+$success = "";
+$error = "";
 
 /* =========================
-   ดึงข้อมูล user จริงจากฐานข้อมูล
+   เมื่อกดบันทึก
 ========================= */
-$sql = "SELECT * FROM users WHERE id = '$uid' LIMIT 1";
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    $name  = mysqli_real_escape_string($conn,$_POST['name']);
+    $email = mysqli_real_escape_string($conn,$_POST['email']);
+    $phone = mysqli_real_escape_string($conn,$_POST['phone']);
+
+    /* ===== อัปเดตข้อมูลพื้นฐาน ===== */
+    $update_sql = "
+        UPDATE users SET
+        name='$name',
+        email='$email',
+        phone='$phone'
+        WHERE id='$uid'
+    ";
+
+    if(mysqli_query($conn,$update_sql)){
+        $success = "บันทึกข้อมูลเรียบร้อยแล้ว ✅";
+    } else {
+        $error = "เกิดข้อผิดพลาดในการบันทึกข้อมูล";
+    }
+
+    /* ===== เปลี่ยนรหัสผ่าน (ถ้ามีกรอก) ===== */
+    if(!empty($_POST['new_password'])){
+
+        if($_POST['new_password'] == $_POST['confirm_password']){
+
+            $new_pass = mysqli_real_escape_string($conn,$_POST['new_password']);
+
+            mysqli_query($conn,"
+                UPDATE users SET
+                password='$new_pass'
+                WHERE id='$uid'
+            ");
+
+            $success = "บันทึกข้อมูลและเปลี่ยนรหัสผ่านเรียบร้อยแล้ว ✅";
+        } else {
+            $error = "รหัสผ่านใหม่ไม่ตรงกัน ❌";
+        }
+    }
+}
+
+/* =========================
+   ดึงข้อมูลล่าสุด
+========================= */
+$sql = "SELECT * FROM users WHERE id='$uid' LIMIT 1";
 $rs  = mysqli_query($conn,$sql);
 $user = mysqli_fetch_assoc($rs);
 
-/* =========================
-   แปลงวันที่สมัคร
-========================= */
 $reg_date = "";
 if (!empty($user['created_at'])) {
     $reg_date = date('Y-m-d', strtotime($user['created_at']));
@@ -35,14 +74,10 @@ if (!empty($user['created_at'])) {
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>แก้ไขโปรไฟล์ - 2M3WM</title>
-
+<title>โปรไฟล์ - 2M3WM</title>
 
 <style>
-body{
-    background:#f5f5f5;
-    font-family:'Kanit',sans-serif;
-}
+body{ background:#f5f5f5; font-family:'Kanit',sans-serif; }
 .profile-card{
     max-width:800px;
     margin:50px auto;
@@ -80,7 +115,15 @@ body{
 
 <h3 class="text-center mb-4 fw-bold">แก้ไขโปรไฟล์ลูกค้า</h3>
 
-<form action="update_profile_db.php" method="POST">
+<?php if($success): ?>
+<div class="alert alert-success"><?= $success ?></div>
+<?php endif; ?>
+
+<?php if($error): ?>
+<div class="alert alert-danger"><?= $error ?></div>
+<?php endif; ?>
+
+<form method="POST">
 
 <h5 class="section-title">ข้อมูลบัญชี</h5>
 
