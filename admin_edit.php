@@ -2,10 +2,8 @@
 session_start();
 include_once("check_login.php");
 include_once("connectdb.php");
-
 mysqli_set_charset($conn,"utf8");
 
-// รับ id
 if(!isset($_GET['id'])){
     header("Location: admin_product.php");
     exit();
@@ -13,8 +11,11 @@ if(!isset($_GET['id'])){
 
 $id = intval($_GET['id']);
 
-// ดึงข้อมูลสินค้า
-$product_query = mysqli_query($conn,"SELECT * FROM products WHERE p_id=$id");
+/* =========================
+   ดึงข้อมูลสินค้า
+========================= */
+$product_query = mysqli_query($conn,
+"SELECT * FROM products WHERE p_id=$id");
 $row = mysqli_fetch_assoc($product_query);
 
 if(!$row){
@@ -22,79 +23,104 @@ if(!$row){
     exit();
 }
 
-// ดึงหมวดหมู่
-$cat_query = mysqli_query($conn,"SELECT * FROM category");
+/* =========================
+   ดึงหมวดหมู่ / แบรนด์
+========================= */
+$cat_query   = mysqli_query($conn,"SELECT * FROM category ORDER BY c_name ASC");
+$brand_query = mysqli_query($conn,"SELECT * FROM brand ORDER BY brand_name ASC");
 
-// ดึงแบรนด์
-$brand_query = mysqli_query($conn,"SELECT * FROM brand");
-
-// สร้างโฟลเดอร์
-$upload_dir = "FileUpload/";
+/* =========================
+   โฟลเดอร์รูป
+========================= */
+$upload_dir = __DIR__."/FileUpload/";
 if(!is_dir($upload_dir)){
-    mkdir($upload_dir,0777,true);
+    mkdir($upload_dir,0755,true);
 }
 
-// ===== UPDATE =====
+/* =========================
+   ลบรูปเดี่ยว
+========================= */
+if(isset($_GET['delete_img'])){
+    $img_id = intval($_GET['delete_img']);
+
+    $img_rs = mysqli_query($conn,
+    "SELECT img_path FROM product_images WHERE img_id=$img_id");
+
+    $img = mysqli_fetch_assoc($img_rs);
+
+    if($img){
+        $file = __DIR__."/".$img['img_path'];
+        if(file_exists($file)){
+            unlink($file);
+        }
+        mysqli_query($conn,
+        "DELETE FROM product_images WHERE img_id=$img_id");
+    }
+
+    header("Location: admin_edit.php?id=".$id);
+    exit();
+}
+
+/* =========================
+   UPDATE ข้อมูลสินค้า
+========================= */
 if(isset($_POST['update'])){
 
     $name   = mysqli_real_escape_string($conn,$_POST['p_name']);
-    $price  = $_POST['p_price'];
-    $qty    = $_POST['p_qty'];
+    $price  = floatval($_POST['p_price']);
+    $qty    = intval($_POST['p_qty']);
     $detail = mysqli_real_escape_string($conn,$_POST['p_detail']);
-    $c_id   = $_POST['c_id'];
-    $brand_id = $_POST['brand_id'];
-    $type   = $_POST['p_type'];
+    $c_id   = intval($_POST['c_id']);
+    $brand_id = intval($_POST['brand_id']);
+    $type   = mysqli_real_escape_string($conn,$_POST['p_type']);
 
-    // ===== SIZE =====
     $p_size = "";
     if(isset($_POST['p_size'])){
         $p_size = implode(",",$_POST['p_size']);
     }
 
-    $p_img = $row['p_img']; // ค่าเดิม
+    // อัปเดตข้อมูลหลัก
+    mysqli_query($conn,"
+        UPDATE products SET
+        p_name='$name',
+        p_price='$price',
+        p_qty='$qty',
+        p_size='$p_size',
+        p_type='$type',
+        p_detail='$detail',
+        c_id='$c_id',
+        brand_id='$brand_id'
+        WHERE p_id=$id
+    ");
 
-    // ===== อัปโหลดรูปใหม่ =====
-    if($_FILES['p_img']['name'] != ""){
+    /* ===== เพิ่มรูปใหม่ ===== */
+    if(isset($_FILES['p_img']) && !empty($_FILES['p_img']['name'][0])){
 
-        $ext = strtolower(pathinfo($_FILES['p_img']['name'],PATHINFO_EXTENSION));
-        $allowed = ['jpg','jpeg','png','gif','webp'];
+        foreach($_FILES['p_img']['name'] as $key=>$val){
 
-        if(in_array($ext,$allowed)){
+            if($_FILES['p_img']['error'][$key]===0){
 
-            $new_name = "product_".time()."_".uniqid().".".$ext;
-            $target = $upload_dir.$new_name;
+                $ext = strtolower(pathinfo($val,PATHINFO_EXTENSION));
+                $allowed = ['jpg','jpeg','png','gif','webp'];
 
-            if(move_uploaded_file($_FILES['p_img']['tmp_name'],$target)){
+                if(in_array($ext,$allowed)){
 
-                // ลบรูปเก่า
-                if(!empty($row['p_img']) && file_exists($row['p_img'])){
-                    unlink($row['p_img']);
+                    $new_name = "product_".time()."_".uniqid().".".$ext;
+                    $target = $upload_dir.$new_name;
+
+                    if(move_uploaded_file($_FILES['p_img']['tmp_name'][$key],$target)){
+                        mysqli_query($conn,"
+                            INSERT INTO product_images (p_id,img_path)
+                            VALUES ($id,'FileUpload/$new_name')
+                        ");
+                    }
                 }
-
-                $p_img = $target;
             }
         }
     }
 
-    // ===== UPDATE SQL =====
-    $sql = "UPDATE products SET
-            p_name   = '$name',
-            p_price  = '$price',
-            p_qty    = '$qty',
-            p_size   = '$p_size',
-            p_type   = '$type',
-            p_detail = '$detail',
-            p_img    = '$p_img',
-            c_id     = '$c_id',
-            brand_id = '$brand_id'
-            WHERE p_id = $id";
-
-    if(mysqli_query($conn,$sql)){
-        echo "<script>alert('อัปเดตสำเร็จ');window.location='admin_product.php';</script>";
-        exit();
-    }else{
-        echo mysqli_error($conn);
-    }
+    echo "<script>alert('อัปเดตสำเร็จ');window.location='admin_product.php';</script>";
+    exit();
 }
 ?>
 
@@ -108,28 +134,24 @@ if(isset($_POST['update'])){
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
-body{
-    font-family:'Kanit',sans-serif;
-    background:#f8f9fa;
+body{font-family:'Kanit',sans-serif;background:#f8f9fa;}
+.card{border-radius:18px;border:none;}
+.img-thumb{
+    width:120px;
+    height:120px;
+    object-fit:cover;
+    border-radius:10px;
+    margin:5px;
 }
-.card{
-    border-radius:18px;
-    border:none;
-}
-.btn-theme{
-    background:#ff5722;
-    color:#fff;
-}
-.btn-theme:hover{
-    background:#e64a19;
-}
+.btn-theme{background:#ff5722;color:#fff;border:none;}
+.btn-theme:hover{background:#e64a19;}
 </style>
 </head>
 <body>
 
 <div class="container py-5">
 <div class="row justify-content-center">
-<div class="col-lg-8">
+<div class="col-lg-9">
 
 <div class="card shadow">
 <div class="card-header bg-dark text-white">
@@ -137,6 +159,7 @@ body{
 </div>
 
 <div class="card-body">
+
 <form method="post" enctype="multipart/form-data">
 
 <div class="mb-3">
@@ -160,26 +183,26 @@ value="<?= $row['p_qty']; ?>" required>
 
 <div class="col-md-4 mb-3">
 <label>หมวดหมู่</label>
-<select name="c_id" class="form-select" required>
-<?php while($c=mysqli_fetch_assoc($cat_query)){ ?>
+<select name="c_id" class="form-select">
+<?php while($c=mysqli_fetch_assoc($cat_query)): ?>
 <option value="<?= $c['c_id']; ?>"
 <?= ($row['c_id']==$c['c_id'])?'selected':''; ?>>
 <?= $c['c_name']; ?>
 </option>
-<?php } ?>
+<?php endwhile; ?>
 </select>
 </div>
 </div>
 
 <div class="mb-3">
 <label>แบรนด์</label>
-<select name="brand_id" class="form-select" required>
-<?php while($b=mysqli_fetch_assoc($brand_query)){ ?>
+<select name="brand_id" class="form-select">
+<?php while($b=mysqli_fetch_assoc($brand_query)): ?>
 <option value="<?= $b['brand_id']; ?>"
 <?= ($row['brand_id']==$b['brand_id'])?'selected':''; ?>>
 <?= $b['brand_name']; ?>
 </option>
-<?php } ?>
+<?php endwhile; ?>
 </select>
 </div>
 
@@ -193,13 +216,30 @@ value="<?= $row['p_qty']; ?>" required>
 <?= ($row['p_type']=='unisex')?'checked':''; ?>> Unisex
 </div>
 
-<div class="mb-3">
-<label>รูปปัจจุบัน</label><br>
-<?php if(!empty($row['p_img'])){ ?>
-<img src="<?= $row['p_img']; ?>" width="120" class="rounded mb-2">
+<hr>
+
+<h5>รูปปัจจุบัน</h5>
+<div class="d-flex flex-wrap">
+<?php
+$imgs = mysqli_query($conn,
+"SELECT * FROM product_images WHERE p_id=$id");
+while($img=mysqli_fetch_assoc($imgs)){
+?>
+<div class="text-center">
+<img src="<?= $img['img_path']; ?>" class="img-thumb">
+<br>
+<a href="?id=<?= $id ?>&delete_img=<?= $img['img_id']; ?>"
+class="btn btn-sm btn-danger mt-1"
+onclick="return confirm('ลบรูปนี้?')">ลบ</a>
+</div>
 <?php } ?>
-<input type="file" name="p_img" class="form-control">
-<small class="text-muted">ถ้าไม่เลือก = ใช้รูปเดิม</small>
+</div>
+
+<hr>
+
+<div class="mb-3">
+<label>เพิ่มรูปใหม่ (หลายรูปได้)</label>
+<input type="file" name="p_img[]" class="form-control" multiple>
 </div>
 
 <div class="mb-3">
@@ -208,11 +248,16 @@ value="<?= $row['p_qty']; ?>" required>
 </div>
 
 <div class="d-grid gap-2">
-<button type="submit" name="update" class="btn btn-theme">บันทึกการแก้ไข</button>
-<a href="admin_product.php" class="btn btn-secondary">ยกเลิก</a>
+<button type="submit" name="update" class="btn btn-theme">
+บันทึกการแก้ไข
+</button>
+<a href="admin_product.php" class="btn btn-secondary">
+ยกเลิก
+</a>
 </div>
 
 </form>
+
 </div>
 </div>
 

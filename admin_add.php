@@ -18,7 +18,7 @@ $result_brand = mysqli_query($conn,
 "SELECT * FROM brand ORDER BY brand_name ASC");
 
 /* =========================
-   สร้างโฟลเดอร์อัปโหลด
+   สร้างโฟลเดอร์
 ========================= */
 $upload_dir = __DIR__."/FileUpload/";
 if(!is_dir($upload_dir)){
@@ -45,48 +45,56 @@ if(isset($_POST['save'])){
         $p_size = implode(",", $sizes);
     }
 
-    /* ===== อัปโหลดรูปหลายรูป ===== */
-    $uploaded_files = [];
+    /* ===== 1️⃣ INSERT สินค้าก่อน ===== */
+    $sql = "INSERT INTO products
+            (p_name,p_price,p_qty,p_size,p_type,p_detail,c_id,brand_id)
+            VALUES
+            ('$name','$price','$qty','$p_size','$type','$detail','$c_id','$brand_id')";
 
-    if(isset($_FILES['p_img']) && !empty($_FILES['p_img']['name'][0])){
+    if(mysqli_query($conn,$sql)){
 
-        foreach($_FILES['p_img']['name'] as $key => $val){
+        // ดึง ID สินค้าที่เพิ่งเพิ่ม
+        $new_product_id = mysqli_insert_id($conn);
 
-            if($_FILES['p_img']['error'][$key] === 0){
+        /* ===== 2️⃣ อัปโหลดรูปหลายรูป ===== */
+        if(isset($_FILES['p_img']) && !empty($_FILES['p_img']['name'][0])){
 
-                $ext = strtolower(pathinfo($val,PATHINFO_EXTENSION));
-                $allowed = ['jpg','jpeg','png','gif','webp'];
+            foreach($_FILES['p_img']['name'] as $key => $val){
 
-                if(in_array($ext,$allowed)){
+                if($_FILES['p_img']['error'][$key] === 0){
 
-                    $new_name = "product_".time()."_".uniqid().".".$ext;
-                    $target = $upload_dir.$new_name;
+                    $ext = strtolower(pathinfo($val,PATHINFO_EXTENSION));
+                    $allowed = ['jpg','jpeg','png','gif','webp'];
 
-                    if(move_uploaded_file($_FILES['p_img']['tmp_name'][$key],$target)){
-                        $uploaded_files[] = "FileUpload/".$new_name;
+                    if(in_array($ext,$allowed)){
+
+                        $new_name = "product_".time()."_".uniqid().".".$ext;
+                        $target = $upload_dir.$new_name;
+
+                        if(move_uploaded_file($_FILES['p_img']['tmp_name'][$key],$target)){
+
+                            $img_path = "FileUpload/".$new_name;
+
+                            // บันทึกลง product_images
+                            mysqli_query($conn,"
+                                INSERT INTO product_images (p_id,img_path)
+                                VALUES ('$new_product_id','$img_path')
+                            ");
+                        }
                     }
-
                 }
             }
         }
-    }
 
-    $p_img = implode(",",$uploaded_files);
-
-    /* ===== INSERT ===== */
-    $sql = "INSERT INTO products
-            (p_name,p_price,p_qty,p_size,p_type,p_img,p_detail,c_id,brand_id)
-            VALUES
-            ('$name','$price','$qty','$p_size','$type','$p_img','$detail','$c_id','$brand_id')";
-
-    if(mysqli_query($conn,$sql)){
         echo "<script>alert('เพิ่มสินค้าสำเร็จ');window.location='admin_product.php';</script>";
         exit();
+
     }else{
         echo "<div style='color:red;'>".mysqli_error($conn)."</div>";
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
