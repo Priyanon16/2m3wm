@@ -44,7 +44,7 @@ if(isset($_POST['confirm_order'])){
     $stmt_del->bind_param("i",$user_id);
     $stmt_del->execute();
 
-    header("Location: orderhistory.php?success=1");
+    header("Location: orderdetail.php?success=1");
     exit();
 }
 

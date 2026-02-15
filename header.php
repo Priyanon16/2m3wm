@@ -12,32 +12,26 @@ if(isset($_SESSION['user_id'])){
 
     $uid = intval($_SESSION['user_id']);
 
-    // ===== CART =====
     $cartQ = mysqli_query($conn,"
-        SELECT IFNULL(SUM(quantity),0) as total 
-        FROM cart 
+        SELECT SUM(quantity) as total
+        FROM cart
         WHERE user_id='$uid'
     ");
 
-    if($cartQ){
-        $cartData = mysqli_fetch_assoc($cartQ);
-        $totalCart = intval($cartData['total']);
-    }
+    $cartData = mysqli_fetch_assoc($cartQ);
+    $totalCart = $cartData['total'] ?? 0;
 
-    // ===== FAVORITE =====
     $favQ = mysqli_query($conn,"
-        SELECT IFNULL(COUNT(*),0) as total 
-        FROM favorites 
+        SELECT COUNT(*) as total
+        FROM favorites
         WHERE user_id='$uid'
     ");
 
-    if($favQ){
-        $favData = mysqli_fetch_assoc($favQ);
-        $totalFav = intval($favData['total']);
-    }
+    $favData = mysqli_fetch_assoc($favQ);
+    $totalFav = $favData['total'] ?? 0;
 }
-
 ?>
+
 
 
 <style>
