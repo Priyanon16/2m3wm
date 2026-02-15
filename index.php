@@ -24,6 +24,9 @@ function addToFavorite($p_id) {
     if(!isset($_SESSION['favorite'])) {
         $_SESSION['favorite'] = array();
     }
+    if(isset($_GET['add_to_fav'])){
+    addToFavorite($_GET['add_to_fav']);
+    }
     // ตรวจสอบเพื่อไม่ให้เพิ่มสินค้าซ้ำในรายการโปรด
     if(!in_array($p_id, $_SESSION['favorite'])) {
         $_SESSION['favorite'][] = $p_id;
