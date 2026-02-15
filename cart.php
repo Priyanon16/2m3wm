@@ -10,32 +10,67 @@ if(!isset($_SESSION['user_id'])){
 
 $uid = intval($_SESSION['user_id']);
 
-/* ==========================
+/* =========================
+   เพิ่ม / ลด จำนวน
+========================= */
+if(isset($_GET['update'])){
+    $pid = intval($_GET['update']);
+    $action = $_GET['type'];
+
+    if($action == "plus"){
+        mysqli_query($conn,"
+            UPDATE cart 
+            SET quantity = quantity + 1
+            WHERE user_id=$uid AND product_id=$pid
+        ");
+    }
+
+    if($action == "minus"){
+        mysqli_query($conn,"
+            UPDATE cart 
+            SET quantity = IF(quantity>1, quantity-1,1)
+            WHERE user_id=$uid AND product_id=$pid
+        ");
+    }
+
+    header("Location: cart.php");
+    exit;
+}
+
+/* =========================
    ลบสินค้า
-========================== */
+========================= */
 if(isset($_GET['remove'])){
     $pid = intval($_GET['remove']);
     mysqli_query($conn,"
         DELETE FROM cart 
-        WHERE user_id='$uid' 
-        AND product_id='$pid'
+        WHERE user_id=$uid AND product_id=$pid
     ");
     header("Location: cart.php");
     exit;
 }
 
-/* ==========================
-   ดึงข้อมูลตะกร้า
-========================== */
+/* =========================
+   ดึงข้อมูล + รูปหลัก
+========================= */
 $sql = "
-SELECT c.quantity, p.*
+SELECT 
+    c.quantity,
+    p.*,
+    (
+        SELECT img_path 
+        FROM product_images 
+        WHERE p_id = p.p_id 
+        LIMIT 1
+    ) AS main_img
 FROM cart c
 JOIN products p ON c.product_id = p.p_id
-WHERE c.user_id='$uid'
+WHERE c.user_id = $uid
 ";
 
 $rs = mysqli_query($conn,$sql);
 ?>
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -46,139 +81,195 @@ $rs = mysqli_query($conn,$sql);
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
-body{
-    background:#f4f6f9;
-    font-family:'Kanit',sans-serif;
-}
+body{background:#f5f5f5;font-family:'Kanit',sans-serif;}
 
-/* PAGE HEADER */
 .page-header{
     background:#111;
+    color:#fff;
     padding:40px 0;
     text-align:center;
-    color:#fff;
 }
 
-.page-header h2{
-    font-weight:600;
-}
-
-/* CART BOX */
 .cart-box{
     background:#fff;
-    padding:35px;
+    padding:25px;
     border-radius:15px;
-    box-shadow:0 8px 25px rgba(0,0,0,.08);
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
 }
 
 .cart-item{
     display:flex;
     align-items:center;
+    gap:20px;
     padding:20px 0;
     border-bottom:1px solid #eee;
 }
 
-.cart-item img{
-    width:120px;
-    height:120px;
+.cart-img{
+    width:110px;
+    height:110px;
     object-fit:cover;
     border-radius:10px;
-    margin-right:20px;
+}
+
+.qty-box{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.qty-btn{
+    width:32px;
+    height:32px;
+    border:none;
+    background:#111;
+    color:#fff;
+    border-radius:6px;
 }
 
 .price{
     color:#ff7a00;
-    font-weight:600;
+    font-weight:700;
     font-size:18px;
 }
 
-.summary{
-    margin-top:30px;
-    padding-top:20px;
-    border-top:2px solid #ff7a00;
-    text-align:right;
+.summary-box{
+    background:#fff;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+    position:sticky;
+    top:100px;
 }
 
 .checkout-btn{
     background:#ff7a00;
     border:none;
-    padding:12px 30px;
-    border-radius:10px;
-    font-weight:600;
+    padding:12px;
+    border-radius:8px;
     color:#fff;
-    transition:.3s;
+    font-weight:600;
+    width:100%;
 }
 
 .checkout-btn:hover{
     background:#e66e00;
 }
 </style>
+
 </head>
 
 <body>
 
-<?php include_once("header.php"); ?>
+<?php include("header.php"); ?>
 
-<!-- PAGE HEADER -->
 <div class="page-header">
-    <h2>ตะกร้าสินค้า</h2>
-    <p class="mb-0 text-light">ตรวจสอบสินค้าก่อนทำการสั่งซื้อ</p>
+<h2>ตะกร้าสินค้า</h2>
+<p>ตรวจสอบก่อนชำระเงิน</p>
 </div>
 
-<div class="container mt-5 mb-5">
+<div class="container py-5">
+<div class="row">
+
+<div class="col-lg-8">
 <div class="cart-box">
 
 <?php if(mysqli_num_rows($rs)==0): ?>
-
-    <div class="alert alert-light text-center">
-        ยังไม่มีสินค้าในตะกร้า
-    </div>
-
+<div class="text-center py-5">
+ยังไม่มีสินค้าในตะกร้า
+</div>
 <?php else: ?>
 
 <?php 
 $total = 0;
-while($item = mysqli_fetch_assoc($rs)): 
-    $qty = $item['quantity'];
-    $subtotal = $item['p_price'] * $qty;
-    $total += $subtotal;
+while($item = mysqli_fetch_assoc($rs)):
+$qty = $item['quantity'];
+$subtotal = $item['p_price'] * $qty;
+$total += $subtotal;
+
+$img = !empty($item['main_img']) 
+       ? $item['main_img'] 
+       : 'images/no-image.png';
 ?>
 
 <div class="cart-item">
-    <img src="<?= htmlspecialchars($item['p_img']); ?>">
 
-    <div style="flex:1;">
-        <h5><?= htmlspecialchars($item['p_name']); ?></h5>
-        <p>จำนวน: <?= $qty; ?></p>
-        <p class="price">
-            ฿<?= number_format($subtotal,0); ?>
-        </p>
-        <a href="?remove=<?= $item['p_id']; ?>" 
-           class="text-danger"
-           onclick="return confirm('ต้องการลบสินค้านี้หรือไม่?')">
-           ลบสินค้า
-        </a>
+<input type="checkbox" checked style="width:18px;height:18px;accent-color:#ff7a00;">
+
+<img src="<?= htmlspecialchars($img); ?>" class="cart-img">
+
+<div style="flex:1;">
+    <h6><?= htmlspecialchars($item['p_name']); ?></h6>
+
+    <div class="qty-box mt-2">
+        <a href="?update=<?= $item['p_id']; ?>&type=minus" 
+           class="qty-btn text-center">−</a>
+
+        <span><?= $qty; ?></span>
+
+        <a href="?update=<?= $item['p_id']; ?>&type=plus" 
+           class="qty-btn text-center">+</a>
     </div>
 </div>
 
-<?php endwhile; ?>
+<div>
+    <div class="price">
+        ฿<?= number_format($subtotal,0); ?>
+    </div>
 
-<div class="summary">
-    <p>ยอดรวมสินค้า: ฿<?= number_format($total,0); ?></p>
-    <p>ค่าจัดส่ง: ฿50</p>
-    <h4>ยอดสุทธิ: ฿<?= number_format($total+50,0); ?></h4>
-
-    <form action="pay.php" method="post">
-        <button type="submit" class="checkout-btn">
-            ดำเนินการสั่งซื้อ
-        </button>
-    </form>
+    <a href="?remove=<?= $item['p_id']; ?>" 
+       class="text-danger small"
+       onclick="return confirm('ลบสินค้านี้?')">
+       ลบ
+    </a>
 </div>
 
+</div>
+
+<?php endwhile; ?>
 <?php endif; ?>
 
 </div>
 </div>
+
+
+<!-- SUMMARY -->
+<div class="col-lg-4">
+<div class="summary-box">
+
+<h6 class="fw-bold mb-3">สรุปรายการ</h6>
+
+<div class="d-flex justify-content-between">
+<span>ยอดสินค้า</span>
+<span>฿<?= number_format($total ?? 0,0); ?></span>
+</div>
+
+<div class="d-flex justify-content-between">
+<span>ค่าจัดส่ง</span>
+<span>฿50</span>
+</div>
+
+<hr>
+
+<h5 class="d-flex justify-content-between">
+<span>ยอดสุทธิ</span>
+<span class="text-warning">
+฿<?= number_format(($total ?? 0)+50,0); ?>
+</span>
+</h5>
+
+<form action="pay.php" method="post">
+<button class="checkout-btn mt-3">
+ดำเนินการสั่งซื้อ
+</button>
+</form>
+
+</div>
+</div>
+
+</div>
+</div>
+
 
 </body>
 </html>
