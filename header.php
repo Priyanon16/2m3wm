@@ -178,9 +178,9 @@ $totalFav  = count($_SESSION['favorite']);
                     <i class="bi bi-clock-history me-2 text-success"></i>ประวัติการสั่งซื้อ
                 </a>
             </li>
-             <li>
-                <a class="dropdown-item" href="address.php">
-                    <i class="bi bi-box-history me-2 text-danger"></i>ที่อยู่จัดส่ง
+            <li>
+                <a class="dropdown-item" href="customer_address.php">
+                    <i class="bi bi-geo-alt me-2 text-danger"></i>ที่อยู่จัดส่ง
                 </a>
             </li>
         </ul>
