@@ -141,21 +141,6 @@ body{
 รายการโปรดของฉัน
 </h3>
 
-<form method="post" action="favorite.php">
-
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="page-title mb-0">
-        <i class="bi bi-heart-fill text-danger me-2"></i>
-        รายการโปรดของฉัน
-    </h3>
-
-    <button type="submit" name="add_selected"
-        class="btn btn-warning">
-        เพิ่มที่เลือกลงตะกร้า
-    </button>
-</div>
-
-
 <div class="row g-4">
 
 <?php if(mysqli_num_rows($rs)>0): ?>
