@@ -203,32 +203,6 @@ if(isset($_POST['email'])){
         </p>
     </div>
 
-    <?php
-        if(isset($_POST['Submit'])) {
-            include_once("connectdb.php");
-            
-            $email = mysqli_real_escape_string($conn, trim($_POST['email']));
-            $password = mysqli_real_escape_string($conn, $_POST['password']);
-
-            $sql = "SELECT * FROM users WHERE email='{$email}' AND password='{$password}' AND role='admin' LIMIT 1";
-            $rs = mysqli_query($conn, $sql);
-            
-            if($rs) {
-                if(mysqli_num_rows($rs) == 1) {
-                    $data = mysqli_fetch_array($rs);
-                    
-                    $_SESSION['aid'] = $data['id']; 
-                    $_SESSION['aname'] = $data['name'];
-                    
-                    echo "<script>window.location='index.php';</script>";
-                } else {
-                    echo "<script>alert('อีเมลหรือรหัสผ่านไม่ถูกต้อง หรือคุณไม่มีสิทธิ์ Admin');</script>";
-                }
-            } else {
-                echo "<script>alert('เกิดข้อผิดพลาดทางเทคนิค: " . mysqli_error($conn) . "');</script>";
-            }
-            mysqli_close($conn);
-        }
-    ?>
+   
 </body>
 </html>

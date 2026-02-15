@@ -1,21 +1,13 @@
 <?php
 session_start();
-
-// 1. เชื่อมต่อฐานข้อมูล
 include_once("check_login.php"); 
 include_once("connectdb.php");
 
-if (!$conn) {
-    die("เชื่อมต่อฐานข้อมูลล้มเหลว: " . mysqli_connect_error());
-}
+if (!$conn) { die("Connect Failed: " . mysqli_connect_error()); }
 mysqli_set_charset($conn, "utf8");
 
-// --------------------------------------------------------
-// ดึงข้อมูลหมวดหมู่ (Category) มารอไว้ก่อน
-// --------------------------------------------------------
-$sql_category = "SELECT * FROM category";
-$result_category = mysqli_query($conn, $sql_category);
-// --------------------------------------------------------
+// ดึงหมวดหมู่
+$result_category = mysqli_query($conn, "SELECT * FROM category");
 
 if (isset($_POST['save'])) {
     $name = mysqli_real_escape_string($conn, $_POST['p_name']);
@@ -25,42 +17,38 @@ if (isset($_POST['save'])) {
     $c_id = $_POST['c_id']; 
 
     // ==================================================================
-    // 📷 ส่วนจัดการอัพโหลดรูปภาพ (แก้ไขใหม่)
+    // 👟 1. จัดการเรื่องไซส์ (SIZE) - เพิ่มใหม่
     // ==================================================================
-    $p_img = ""; // ตัวแปรสำหรับเก็บชื่อไฟล์ลงฐานข้อมูล
+    $p_size = ""; 
+    if(isset($_POST['p_size'])) {
+        // แปลง Array ที่ติ๊กเลือกหลายๆ อัน ให้เป็นข้อความเดียวคั่นด้วยลูกน้ำ
+        // เช่น เลือก 38, 39, 40 -> จะเก็บเป็น "38,39,40"
+        $p_size = implode(",", $_POST['p_size']); 
+    }
+    // ==================================================================
 
-    // ตรวจสอบว่ามีการเลือกไฟล์เข้ามาไหม
+    // ==================================================================
+    // 📷 2. จัดการรูปภาพ (โค้ดเดิม)
+    // ==================================================================
+    $p_img = ""; 
     if (isset($_FILES['p_img']) && $_FILES['p_img']['name'] != "") {
-        
-        // 1. ตั้งชื่อไฟล์ใหม่ (ป้องกันชื่อซ้ำ)
-        // ใช้เวลาปัจจุบัน (time) + เลขสุ่ม (uniqid) + นามสกุลไฟล์เดิม
         $ext = pathinfo($_FILES['p_img']['name'], PATHINFO_EXTENSION); 
         $new_name = "product_" . uniqid() . "." . $ext; 
-        
-        // 2. กำหนดโฟลเดอร์ปลายทาง
-        $target_dir = "FileUpload/";
-        $upload_path = $target_dir . $new_name;
+        $upload_path = "FileUpload/" . $new_name;
+        $allowed = array('jpg', 'jpeg', 'png', 'gif');
 
-        // 3. เช็คนามสกุลไฟล์ (กันคนอัพไฟล์ไวรัส)
-        $allowed_ext = array('jpg', 'jpeg', 'png', 'gif');
-        
-        if(in_array(strtolower($ext), $allowed_ext)) {
-            // 4. ย้ายไฟล์จาก Temp ไปโฟลเดอร์จริง
+        if(in_array(strtolower($ext), $allowed)) {
             if(move_uploaded_file($_FILES['p_img']['tmp_name'], $upload_path)) {
-                // ย้ายสำเร็จ! ให้เก็บ Path นี้ลงตัวแปรเพื่อรอ INSERT
                 $p_img = $upload_path; 
-            } else {
-                echo "<script>alert('เกิดข้อผิดพลาดในการอัพโหลดรูปภาพ');</script>";
             }
-        } else {
-            echo "<script>alert('อนุญาตเฉพาะไฟล์รูปภาพ (jpg, png, gif) เท่านั้น');</script>";
         }
     } 
-    // ==================================================================
 
-    // INSERT ข้อมูลลงตาราง (บันทึก Path รูปภาพลงไป)
-    $sql = "INSERT INTO products (p_name, p_price, p_type, p_img, p_detail, c_id) 
-            VALUES ('$name', '$price', '$type', '$p_img', '$detail', '$c_id')";
+    // ==================================================================
+    // 💾 3. บันทึกข้อมูล (เพิ่ม p_size ลง SQL)
+    // ==================================================================
+    $sql = "INSERT INTO products (p_name, p_price, p_size, p_type, p_img, p_detail, c_id) 
+            VALUES ('$name', '$price', '$p_size', '$type', '$p_img', '$detail', '$c_id')";
     
     if (mysqli_query($conn, $sql)) {
         echo "<script>alert('บันทึกข้อมูลสำเร็จ!'); window.location='admin_product.php';</script>";
@@ -95,12 +83,33 @@ if (isset($_POST['save'])) {
                             </div>
                             
                             <div class="row">
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-6 mb-3">
                                     <label>ราคา (บาท)</label>
                                     <input type="number" name="p_price" class="form-control" required>
                                 </div>
+
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label fw-bold">เลือกไซส์ที่พร้อมส่ง:</label>
+                                    <div class="card p-3 bg-light">
+                                        <div class="row">
+                                            <?php 
+                                            // วนลูปสร้าง Checkbox เบอร์ 36-45 (แก้เลขได้ตามต้องการ)
+                                            for($i=36; $i<=45; $i++){ 
+                                            ?>
+                                                <div class="col-3 col-md-2 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" name="p_size[]" value="<?=$i;?>" id="size<?=$i;?>">
+                                                        <label class="form-check-label" for="size<?=$i;?>">
+                                                            EU <?=$i;?>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+                                    </div>
+                                </div>
                                 
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-6 mb-3">
                                     <label>ประเภท (เพศ)</label>
                                     <select name="p_type" class="form-select" required>
                                         <option value="" selected disabled>-- เลือก --</option>
@@ -110,29 +119,20 @@ if (isset($_POST['save'])) {
                                     </select>
                                 </div>
 
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-6 mb-3">
                                     <label>หมวดหมู่สินค้า</label>
                                     <select name="c_id" class="form-select" required>
                                         <option value="" selected disabled>-- เลือกหมวดหมู่ --</option>
-                                        <?php 
-                                        if (mysqli_num_rows($result_category) > 0) {
-                                            while($row_c = mysqli_fetch_assoc($result_category)) { 
-                                        ?>
-                                            <option value="<?php echo $row_c['c_id']; ?>">
-                                                <?php echo $row_c['c_name']; ?> 
-                                            </option>
-                                        <?php 
-                                            }
-                                        } 
-                                        ?>
+                                        <?php while($row_c = mysqli_fetch_assoc($result_category)) { ?>
+                                            <option value="<?=$row_c['c_id'];?>"><?=$row_c['c_name'];?></option>
+                                        <?php } ?>
                                     </select>
                                 </div>
                             </div>
 
                             <div class="mb-3">
                                 <label>รูปภาพสินค้า</label>
-                                <input type="file" name="p_img" class="form-control" accept="image/png, image/jpeg, image/jpg" required>
-                                <div class="form-text text-muted">รองรับไฟล์ .jpg, .png, .jpeg</div>
+                                <input type="file" name="p_img" class="form-control" accept="image/*" required>
                             </div>
                             
                             <div class="mb-3">
