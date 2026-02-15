@@ -1,32 +1,39 @@
 <?php
 session_start();
 include_once("connectdb.php");
-include_once("header.php");   // ✅ เรียก header แยก
+include_once("header.php");
 include_once("bootstrap.php");
 
-$cart = $_SESSION['cart'] ?? [];
+if(!isset($_SESSION['user_id'])){
+    header("Location: login.php");
+    exit;
+}
+
+$uid = intval($_SESSION['user_id']);
 
 /* ลบสินค้า */
 if(isset($_GET['remove'])){
-    $remove_id = intval($_GET['remove']);
-    unset($_SESSION['cart'][$remove_id]);
+    $pid = intval($_GET['remove']);
+    mysqli_query($conn,"
+        DELETE FROM cart 
+        WHERE user_id='$uid' 
+        AND product_id='$pid'
+    ");
     header("Location: cart.php");
     exit;
 }
 
-/* ถ้าตะกร้าว่าง */
-if(empty($cart)){
-    $cart_items = [];
-} else {
-    $ids = implode(",", array_keys($cart));
-    $sql = "SELECT * FROM products WHERE p_id IN ($ids)";
-    $rs  = mysqli_query($conn,$sql);
-    $cart_items = [];
-    while($row = mysqli_fetch_assoc($rs)){
-        $cart_items[] = $row;
-    }
-}
+/* ดึงข้อมูลตะกร้า */
+$sql = "
+SELECT c.quantity, p.*
+FROM cart c
+JOIN products p ON c.product_id = p.p_id
+WHERE c.user_id='$uid'
+";
+
+$rs = mysqli_query($conn,$sql);
 ?>
+
 
 
 
@@ -98,14 +105,14 @@ body {
 <div class="container">
 <div class="cart-box">
 
-<?php if(empty($cart_items)): ?>
+<?php if(mysqli_num_rows($rs)==0): ?>
     <h3>ยังไม่มีสินค้าในตะกร้า</h3>
 <?php else: ?>
 
 <?php 
 $total = 0;
-foreach($cart_items as $item): 
-    $qty = $cart[$item['p_id']];
+while($item = mysqli_fetch_assoc($rs)): 
+    $qty = $item['quantity'];
     $subtotal = $item['p_price'] * $qty;
     $total += $subtotal;
 ?>
@@ -122,14 +129,15 @@ foreach($cart_items as $item):
     </div>
 </div>
 
-<?php endforeach; ?>
+<?php endwhile; ?>
+
 
 <div class="summary">
     <p>ยอดรวมสินค้า: ฿<?= number_format($total,0); ?></p>
     <p>ค่าจัดส่ง: ฿50</p>
     <h4>ยอดสุทธิ: ฿<?= number_format($total+50,0); ?></h4>
 
-    <form action="checkout.php" method="post">
+    <form action="pay.php" method="post">
         <button type="submit" class="checkout-btn">
             ดำเนินการสั่งซื้อ
         </button>

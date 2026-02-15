@@ -6,42 +6,43 @@ if(session_status() === PHP_SESSION_NONE){
 include_once("connectdb.php");
 
 /* ==========================
-   ฟังก์ชันเพิ่มตะกร้า
+   1. ฟังก์ชันจัดการตะกร้าสินค้า
 ========================== */
-function addToCart($p_id){
-    if(!isset($_SESSION['cart'])){
+function addToCart($p_id) {
+    if(!isset($_SESSION['cart'])) {
         $_SESSION['cart'] = [];
     }
-
-    if(isset($_SESSION['cart'][$p_id])){
+    // เพิ่มจำนวนสินค้า
+    if(isset($_SESSION['cart'][$p_id])) {
         $_SESSION['cart'][$p_id]++;
-    }else{
+    } else {
         $_SESSION['cart'][$p_id] = 1;
     }
-
+    // บังคับบันทึก และกระโดดไปหน้า cart.php
+    session_write_close(); 
     header("Location: cart.php");
     exit();
 }
 
 /* ==========================
-   ฟังก์ชันเพิ่มรายการโปรด
+   2. ฟังก์ชันจัดการรายการโปรด
 ========================== */
-function addToFavorite($p_id){
-    if(!isset($_SESSION['favorite'])){
+function addToFavorite($p_id) {
+    if(!isset($_SESSION['favorite'])) {
         $_SESSION['favorite'] = [];
     }
-
-    // กันซ้ำ
-    if(!in_array($p_id, $_SESSION['favorite'])){
+    // กันซ้ำ: ถ้ายังไม่มี ID นี้ในอาเรย์ ให้เพิ่มเข้าไป
+    if(!in_array($p_id, $_SESSION['favorite'])) {
         $_SESSION['favorite'][] = $p_id;
     }
-
+    // บังคับบันทึก และกระโดดไปหน้า favorite.php
+    session_write_close(); 
     header("Location: favorite.php");
     exit();
 }
 
 /* ==========================
-   ตรวจสอบค่าที่ส่งมา
+   3. ส่วนตรวจสอบการคลิก (GET)
 ========================== */
 if(isset($_GET['add_to_cart'])){
     addToCart((int)$_GET['add_to_cart']);
@@ -50,7 +51,6 @@ if(isset($_GET['add_to_cart'])){
 if(isset($_GET['add_to_fav'])){
     addToFavorite((int)$_GET['add_to_fav']);
 }
-
 include("header.php");
 include_once("bootstrap.php");
 ?>
