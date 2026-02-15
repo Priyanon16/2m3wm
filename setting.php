@@ -2,10 +2,16 @@
 session_start();
 include_once("connectdb.php");
 
+// ตรวจสอบการเข้าสู่ระบบ (อ้างอิงจากระบบที่คุณมี)
+if (!isset($_SESSION['uid'])) {
+    header("Location: login.php");
+    exit;
+}
 
+$uid = $_SESSION['uid'];
 
 // ดึงข้อมูลจากตาราง users เชื่อมกับตาราง address
-$sql = "SELECT u.*, a.phone, a.address 
+$sql = "SELECT u.*, a.phone as addr_phone, a.address, a.district, a.province, a.postal_code 
         FROM users u 
         LEFT JOIN address a ON u.id = a.user_id 
         WHERE u.id = '$uid' LIMIT 1";
@@ -17,87 +23,101 @@ $user = mysqli_fetch_assoc($rs);
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>แก้ไขโปรไฟล์ลูกค้า - 2M3WM</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         body { background: #f5f5f5; font-family: 'Kanit', sans-serif; }
-        .profile-container { max-width: 750px; margin: 40px auto; }
-        .card { border-radius: 20px; border: none; }
-        .profile-img { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #ff6600; padding: 4px; background: #fff; }
-        .section-title { font-weight: 600; color: #ff6600; margin-top: 20px; margin-bottom: 10px; }
-        .btn-orange { background: linear-gradient(45deg, #ff6600, #ff8533); border: none; color: #fff; font-weight: 600; padding: 12px; border-radius: 10px; transition: 0.3s; }
-        .btn-orange:hover { background: #000; color: #fff; }
-        .readonly-field { background: #f1f1f1 !important; }
+        .profile-card { max-width: 800px; margin: 50px auto; background: #fff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .profile-img { width: 140px; height: 140px; border-radius: 50%; border: 4px solid #ff7a00; object-fit: cover; }
+        .section-title { color: #ff7a00; font-weight: 600; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        .form-control-readonly { background-color: #f8f9fa !important; color: #6c757d; }
     </style>
 </head>
 <body>
 
 <?php include("header.php"); ?>
 
-<div class="profile-container">
-    <div class="card shadow-lg p-4">
-        <h3 class="text-center fw-bold mb-4">แก้ไขโปรไฟล์ลูกค้า</h3>
+<div class="container">
+    <div class="profile-card p-4 p-md-5">
+        <h3 class="text-center mb-4 fw-bold">แก้ไขโปรไฟล์ลูกค้า</h3>
         
         <form action="update_profile_db.php" method="POST" enctype="multipart/form-data">
-            <div class="text-center mb-3">
-                <img src="https://via.placeholder.com/140" id="previewImage" class="profile-img">
+            <div class="text-center mb-4">
+                <img src="https://via.placeholder.com/140" id="preview" class="profile-img mb-3">
+                <div class="mb-3">
+                    <label class="form-label d-block small text-muted">เปลี่ยนรูปโปรไฟล์</label>
+                    <input type="file" name="p_img" class="form-control form-control-sm" id="imgInput" accept="image/*">
+                </div>
             </div>
+
+            <h5 class="section-title">ข้อมูลบัญชี</h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">ชื่อ-นามสกุล <span class="text-danger">*</span></label>
+                    <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($user['name']) ?>" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold text-muted">วันที่สมัคร</label>
+                    <input type="text" class="form-control form-control-readonly" value="<?= date('d/m/Y', strtotime($user['created_at'])) ?>" readonly>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold text-muted">Email</label>
+                    <input type="email" class="form-control form-control-readonly" value="<?= htmlspecialchars($user['email']) ?>" readonly>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">เบอร์โทรศัพท์ <span class="text-danger">*</span></label>
+                    <input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($user['addr_phone'] ?? $user['phone']) ?>" required>
+                </div>
+            </div>
+
+            <h5 class="section-title mt-5">ที่อยู่จัดส่ง</h5>
             <div class="mb-3">
-                <label class="form-label fw-semibold">เปลี่ยนรูปโปรไฟล์</label>
-                <input type="file" name="p_img" class="form-control" id="profileImage" accept="image/*">
-            </div>
-
-            <hr>
-
-            <div class="section-title">ข้อมูลบัญชี</div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="fw-semibold">ชื่อ-นามสกุล <span class="text-danger">*</span></label>
-                    <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($user['name'] ?? '') ?>" required>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">วันที่สมัคร</label>
-                    <input type="text" class="form-control readonly-field" value="<?= date('d/m/Y', strtotime($user['created_at'])) ?>" readonly>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="fw-semibold">Email</label>
-                    <input type="email" class="form-control readonly-field" value="<?= htmlspecialchars($user['email'] ?? '') ?>" readonly>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="fw-semibold">เบอร์โทรศัพท์ <span class="text-danger">*</span></label>
-                    <input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($user['phone'] ?? '') ?>" placeholder="08xxxxxxxx" required>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label class="fw-semibold">ที่อยู่จัดส่ง <span class="text-danger">*</span></label>
+                <label class="form-label fw-bold">ที่อยู่โดยละเอียด <span class="text-danger">*</span></label>
                 <textarea name="address" class="form-control" rows="3" required><?= htmlspecialchars($user['address'] ?? '') ?></textarea>
             </div>
-
-            <hr>
-
-            <div class="section-title">เปลี่ยนรหัสผ่าน (ปล่อยว่างถ้าไม่เปลี่ยน)</div>
-            <div class="mb-3">
-                <label class="fw-semibold">รหัสผ่านใหม่</label>
-                <input type="password" name="new_password" class="form-control" placeholder="กรอกรหัสผ่านใหม่">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">ตำบล/เขต</label>
+                    <input type="text" name="district" class="form-control" value="<?= htmlspecialchars($user['district'] ?? '') ?>">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">จังหวัด</label>
+                    <input type="text" name="province" class="form-control" value="<?= htmlspecialchars($user['province'] ?? '') ?>">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">รหัสไปรษณีย์</label>
+                    <input type="text" name="postal_code" class="form-control" value="<?= htmlspecialchars($user['postal_code'] ?? '') ?>">
+                </div>
             </div>
 
-            <button type="submit" name="Submit" class="btn btn-orange w-100 mt-3">บันทึกการเปลี่ยนแปลง</button>
+            <h5 class="section-title mt-5">เปลี่ยนรหัสผ่านใหม่</h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">รหัสผ่านใหม่</label>
+                    <input type="password" name="new_password" class="form-control" placeholder="ปล่อยว่างหากไม่ต้องการเปลี่ยน">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">ยืนยันรหัสผ่านใหม่</label>
+                    <input type="password" name="confirm_password" class="form-control" placeholder="กรอกรหัสผ่านอีกครั้ง">
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <button type="submit" name="Submit" class="btn btn-warning w-100 fw-bold py-3 text-white" style="background: #ff7a00; border: none;">
+                    บันทึกการเปลี่ยนแปลงทั้งหมด
+                </button>
+            </div>
         </form>
     </div>
 </div>
 
 <script>
-    document.getElementById("profileImage").addEventListener("change", function(event) {
-        const reader = new FileReader();
-        reader.onload = function(){ document.getElementById("previewImage").src = reader.result; }
-        reader.readAsDataURL(event.target.files[0]);
-    });
+    // แสดงตัวอย่างรูปภาพก่อนอัปโหลด
+    imgInput.onchange = evt => {
+        const [file] = imgInput.files;
+        if (file) preview.src = URL.createObjectURL(file);
+    }
 </script>
 </body>
 </html>
