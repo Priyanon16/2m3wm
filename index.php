@@ -117,10 +117,77 @@ body { font-family: 'Kanit', sans-serif; background: #f8f9fa; }
     gap: 10px;
     padding: 15px;
 }
+
+/* =========================
+   SLIDER
+========================= */
+.slider-img {
+    height: 480px;
+    object-fit: cover;
+}
+
+.slider-caption {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    text-align: center;
+    background: rgba(0,0,0,0.45);
+    padding: 30px 40px;
+    border-radius: 20px;
+    color: #fff;
+}
+
 </style>
 </head>
 
 <body>
+
+<!-- =========================
+     BANNER SLIDER
+========================= -->
+<div id="bannerSlider" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
+
+    <div class="carousel-inner">
+
+        <div class="carousel-item active position-relative">
+            <img src="images/1.jpg" class="d-block w-100 slider-img">
+            <div class="slider-caption">
+                <h1>2M3WM Sneaker</h1>
+                <p>รองเท้าของแท้ สำหรับทุกสไตล์</p>
+                <div class="mt-3">
+                    <a href="all_products.php" class="btn btn-warning me-2">
+                        ดูสินค้าทั้งหมด
+                    </a>
+                    <a href="#" class="btn btn-outline-light">
+                        โปรโมชั่น
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="carousel-item">
+            <img src="images/2.jpg" class="d-block w-100 slider-img">
+        </div>
+
+        <div class="carousel-item">
+            <img src="images/3.jpg" class="d-block w-100 slider-img">
+        </div>
+
+    </div>
+
+    <button class="carousel-control-prev" type="button"
+        data-bs-target="#bannerSlider" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+    </button>
+
+    <button class="carousel-control-next" type="button"
+        data-bs-target="#bannerSlider" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+    </button>
+
+</div>
+
 
 <div class="container py-5">
 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
