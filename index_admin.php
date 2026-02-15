@@ -241,6 +241,15 @@ header {
         </a>
     </div>
 
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <a href="admin_brand.php" class="menu-card">
+            <i class="bi bi-bookmark-star card-icon"></i>
+            <h4 class="card-title">จัดการแบรนด์</h4>
+            <p class="card-desc">เพิ่ม แก้ไข ลบ แบรนด์สินค้า</p>
+        </a>
+    </div>
+
+
 </div>
 
     <footer class="text-center pb-5">
