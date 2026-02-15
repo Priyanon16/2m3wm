@@ -2,21 +2,31 @@
 session_start();
 include_once("check_login.php");
 include_once("connectdb.php");
+mysqli_set_charset($conn,"utf8");
 
-mysqli_set_charset($conn, "utf8");
+/* =========================
+   ดึงหมวดหมู่
+========================= */
+$result_category = mysqli_query($conn,
+"SELECT * FROM category ORDER BY c_name ASC");
 
-// ดึงหมวดหมู่
-$result_category = mysqli_query($conn, "SELECT * FROM category ORDER BY c_name ASC");
+/* =========================
+   ดึงแบรนด์
+========================= */
+$result_brand = mysqli_query($conn,
+"SELECT * FROM brand ORDER BY brand_name ASC");
 
-// ดึงแบรนด์
-$result_brand = mysqli_query($conn, "SELECT * FROM brand ORDER BY brand_name ASC");
-
-// สร้างโฟลเดอร์รูป
-$upload_dir = "FileUpload/";
+/* =========================
+   สร้างโฟลเดอร์รูป
+========================= */
+$upload_dir = __DIR__."/FileUpload/";
 if(!is_dir($upload_dir)){
     mkdir($upload_dir,0777,true);
 }
 
+/* =========================
+   บันทึกสินค้า
+========================= */
 if(isset($_POST['save'])){
 
     $name   = mysqli_real_escape_string($conn,$_POST['p_name']);
@@ -27,23 +37,22 @@ if(isset($_POST['save'])){
     $c_id   = $_POST['c_id'];
     $brand_id = $_POST['brand_id'];
 
-    // ===== SIZE =====
+    /* ===== SIZE ===== */
     $p_size = "";
     if(isset($_POST['p_size'])){
         $p_size = implode(",",$_POST['p_size']);
     }
 
-    // ===== รูปหลายรูป =====
+    /* ===== อัปโหลดรูปหลายรูป ===== */
     $uploaded_files = [];
 
-    if(isset($_FILES['p_img'])){
-        $count = count($_FILES['p_img']['name']);
+    if(isset($_FILES['p_img']) && !empty($_FILES['p_img']['name'][0])){
 
-        for($i=0;$i<$count;$i++){
+        foreach($_FILES['p_img']['name'] as $key => $val){
 
-            if($_FILES['p_img']['name'][$i] != ""){
+            if($_FILES['p_img']['error'][$key] === 0){
 
-                $ext = strtolower(pathinfo($_FILES['p_img']['name'][$i],PATHINFO_EXTENSION));
+                $ext = strtolower(pathinfo($val,PATHINFO_EXTENSION));
                 $allowed = ['jpg','jpeg','png','gif','webp'];
 
                 if(in_array($ext,$allowed)){
@@ -51,8 +60,8 @@ if(isset($_POST['save'])){
                     $new_name = "product_".time()."_".uniqid().".".$ext;
                     $target = $upload_dir.$new_name;
 
-                    if(move_uploaded_file($_FILES['p_img']['tmp_name'][$i],$target)){
-                        $uploaded_files[] = $target;
+                    if(move_uploaded_file($_FILES['p_img']['tmp_name'][$key],$target)){
+                        $uploaded_files[] = "FileUpload/".$new_name;
                     }
                 }
             }
@@ -61,8 +70,8 @@ if(isset($_POST['save'])){
 
     $p_img = implode(",",$uploaded_files);
 
-    // ===== INSERT =====
-    $sql = "INSERT INTO products 
+    /* ===== INSERT ===== */
+    $sql = "INSERT INTO products
             (p_name,p_price,p_qty,p_size,p_type,p_img,p_detail,c_id,brand_id)
             VALUES
             ('$name','$price','$qty','$p_size','$type','$p_img','$detail','$c_id','$brand_id')";
@@ -75,7 +84,6 @@ if(isset($_POST['save'])){
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -83,22 +91,10 @@ if(isset($_POST['save'])){
 <title>เพิ่มสินค้าใหม่</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
-body{
-    font-family:'Kanit',sans-serif;
-    background:linear-gradient(135deg,#f8f9fa,#eef1f4);
-}
-
-header{
-    background:#111;
-    padding:15px 0;
-    color:#fff;
-    margin-bottom:40px;
-}
-
+body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
 .card-box{
     background:#fff;
     border-radius:20px;
@@ -106,7 +102,6 @@ header{
     box-shadow:0 15px 35px rgba(0,0,0,.08);
     border-top:5px solid #ff5722;
 }
-
 .btn-theme{
     background:#ff5722;
     color:#fff;
@@ -114,11 +109,7 @@ header{
     border-radius:50px;
     padding:10px 25px;
 }
-
-.btn-theme:hover{
-    background:#e64a19;
-}
-
+.btn-theme:hover{background:#e64a19;}
 .size-box{
     background:#f8f9fa;
     padding:20px;
@@ -129,14 +120,7 @@ header{
 </head>
 <body>
 
-<header>
-<div class="container d-flex justify-content-between">
-    <h5><i class="bi bi-shield-check"></i> 2M3WM ADMIN</h5>
-    <a href="admin_product.php" class="btn btn-theme btn-sm">กลับ</a>
-</div>
-</header>
-
-<div class="container">
+<div class="container py-5">
 <div class="card-box">
 
 <h3 class="mb-4 text-center fw-bold">เพิ่มสินค้าใหม่</h3>
@@ -144,7 +128,7 @@ header{
 <form method="post" enctype="multipart/form-data">
 
 <div class="mb-3">
-<label class="form-label">ชื่อสินค้า</label>
+<label>ชื่อสินค้า</label>
 <input type="text" name="p_name" class="form-control" required>
 </div>
 
@@ -186,41 +170,23 @@ header{
 
 <div class="mb-3">
 <label>เพศ</label><br>
-<div class="form-check form-check-inline">
-<input class="form-check-input" type="radio" name="p_type" value="male" required>
-<label class="form-check-label">ชาย</label>
-</div>
-
-<div class="form-check form-check-inline">
-<input class="form-check-input" type="radio" name="p_type" value="female">
-<label class="form-check-label">หญิง</label>
-</div>
-
-<div class="form-check form-check-inline">
-<input class="form-check-input" type="radio" name="p_type" value="unisex">
-<label class="form-check-label">Unisex</label>
-</div>
+<input type="radio" name="p_type" value="male" required> ชาย
+<input type="radio" name="p_type" value="female"> หญิง
+<input type="radio" name="p_type" value="unisex"> Unisex
 </div>
 
 <div class="mb-3">
 <label>ไซส์</label>
 <div class="size-box">
-<div class="row">
 <?php for($i=36;$i<=46;$i++){ ?>
-<div class="col-3">
-<div class="form-check">
-<input class="form-check-input" type="checkbox" name="p_size[]" value="<?= $i ?>">
-<label class="form-check-label"><?= $i ?></label>
-</div>
-</div>
+<input type="checkbox" name="p_size[]" value="<?= $i ?>"> <?= $i ?>
 <?php } ?>
-</div>
 </div>
 </div>
 
 <div class="mb-3">
 <label>รูปภาพ (หลายรูปได้)</label>
-<input type="file" name="p_img[]" class="form-control" multiple required>
+<input type="file" name="p_img[]" class="form-control" accept="image/*" multiple required>
 </div>
 
 <div class="mb-4">
@@ -229,8 +195,8 @@ header{
 </div>
 
 <div class="text-center">
-<button type="submit" name="save" class="btn btn-theme btn-lg">
-<i class="bi bi-save"></i> บันทึกสินค้า
+<button type="submit" name="save" class="btn btn-theme">
+บันทึกสินค้า
 </button>
 </div>
 
@@ -240,4 +206,3 @@ header{
 
 </body>
 </html>
-
