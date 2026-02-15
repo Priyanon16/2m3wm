@@ -18,9 +18,17 @@ if(isset($_POST['add_brand'])){
           exit();
 
 
-            $file_tmp  = $_FILES['brand_img']['tmp_name'];   // ✅ เพิ่มบรรทัดนี้
-            $file_name = time()."_".$_FILES['brand_img']['name'];
-            $target = "uploads/brands/".$file_name;
+            $file_tmp  = $_FILES['brand_img']['tmp_name'];
+            $file_name = time()."_".basename($_FILES['brand_img']['name']);
+
+            /* ใช้ path แบบชัวร์ 100% */
+            $upload_dir = __DIR__ . "/uploads/brands/";
+
+            if(!is_dir($upload_dir)){
+                mkdir($upload_dir,0777,true);
+            }
+
+            $target = $upload_dir . $file_name;
 
             if(move_uploaded_file($file_tmp,$target)){
 
@@ -30,11 +38,13 @@ if(isset($_POST['add_brand'])){
                 if(mysqli_query($conn,$sql)){
                     echo "<script>alert('เพิ่มแบรนด์สำเร็จ');window.location='admin_brand.php';</script>";
                 }else{
-                    echo "<script>alert('เกิดข้อผิดพลาด SQL');</script>";
+                    echo "SQL Error: " . mysqli_error($conn);
                 }
 
             }else{
-                echo "<script>alert('อัปโหลดรูปไม่สำเร็จ');</script>";
+                echo "Upload failed<br>";
+                echo "TMP: ".$file_tmp."<br>";
+                echo "TARGET: ".$target;
             }
 
         }
