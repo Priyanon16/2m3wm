@@ -53,15 +53,35 @@ if(isset($_POST['confirm_order'])){
     $shipping_cost = 60; 
     $final_total = $total_price + $shipping_cost;
 
-    // 1.2 สร้าง Order
-    $stmt_order = $conn->prepare("INSERT INTO orders (u_id, total_price, status, o_date, payment_method) VALUES (?, ?, 'รอชำระเงิน', NOW(), ?)");
-    $stmt_order->bind_param("ids", $user_id, $final_total, $payment_method);
-    
-    if(!$stmt_order->execute()){
-        die("Error creating order: " . $conn->error);
-    }
-    
-    $order_id = $stmt_order->insert_id;
+   // 1.2 ดึง address ล่าสุดของ user
+$sql_addr2 = "SELECT address_id FROM addresses WHERE user_id = ? ORDER BY address_id DESC LIMIT 1";
+$stmt_addr2 = $conn->prepare($sql_addr2);
+$stmt_addr2->bind_param("i", $user_id);
+$stmt_addr2->execute();
+$res_addr2 = $stmt_addr2->get_result();
+$addr2 = $res_addr2->fetch_assoc();
+
+if(!$addr2){
+    die("ไม่พบที่อยู่ กรุณาเพิ่มที่อยู่ก่อนสั่งซื้อ");
+}
+
+$address_id = $addr2['address_id'];
+
+// 1.3 สร้าง Order (เพิ่ม address_id เข้าไป)
+$stmt_order = $conn->prepare("
+    INSERT INTO orders 
+    (u_id, address_id, total_price, status, o_date, payment_method) 
+    VALUES (?, ?, ?, 'รอชำระเงิน', NOW(), ?)
+");
+
+$stmt_order->bind_param("iids", $user_id, $address_id, $final_total, $payment_method);
+
+if(!$stmt_order->execute()){
+    die("Error creating order: " . $conn->error);
+}
+
+$order_id = $stmt_order->insert_id;
+
 
     // 1.3 บันทึก Order Details
     $stmt_detail = $conn->prepare("INSERT INTO order_details (o_id, p_id, q_ty, price) VALUES (?, ?, ?, ?)");
