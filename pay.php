@@ -1,9 +1,9 @@
 <?php
-session_start();
-include 'connectdb.php';
-
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
+
+session_start();
+include 'connectdb.php';
 
 if(!isset($_SESSION['user_id'])){
     header("Location: login.php");
@@ -12,26 +12,22 @@ if(!isset($_SESSION['user_id'])){
 
 $user_id = intval($_SESSION['user_id']);
 
-/* ===============================
-   เมื่อกดชำระสินค้า
-================================ */
 if(isset($_POST['confirm_order'])){
 
-    if(empty($_POST['payment_method'])){
-        die("<script>alert('กรุณาเลือกช่องทางการชำระเงิน'); window.history.back();</script>");
-    }
-
-    $payment_method = $_POST['payment_method'];
-    $address_id     = intval($_POST['address_id'] ?? 0);
-
-    /* 1️⃣ ดึงสินค้าจาก cart */
+    /* ======================
+       1️⃣ ดึงสินค้าใน cart
+    =======================*/
     $stmt_cart = $conn->prepare("
-        SELECT c.product_id, c.quantity, c.size,
-               p.p_price
+        SELECT c.product_id, c.quantity, p.p_price
         FROM cart c
         JOIN products p ON c.product_id = p.p_id
         WHERE c.user_id = ?
     ");
+
+    if(!$stmt_cart){
+        die("Cart Error: ".$conn->error);
+    }
+
     $stmt_cart->bind_param("i", $user_id);
     $stmt_cart->execute();
     $cart = $stmt_cart->get_result();
@@ -49,69 +45,58 @@ if(isset($_POST['confirm_order'])){
         $items[] = $row;
     }
 
-    /* 2️⃣ สร้าง order */
+    /* ======================
+       2️⃣ สร้าง order
+    =======================*/
     $stmt_order = $conn->prepare("
         INSERT INTO orders
-        (u_id, address_id, total_price, payment_method, status, o_date)
-        VALUES (?, ?, ?, ?, 'รอชำระเงิน', NOW())
+        (u_id, total_price, status, o_date)
+        VALUES (?, ?, 'รอชำระเงิน', NOW())
     ");
 
     if(!$stmt_order){
-        die("Order Prepare Failed: " . $conn->error);
+        die("Order Error: ".$conn->error);
     }
 
-    $stmt_order->bind_param("iids",
-        $user_id,
-        $address_id,
-        $total_price,
-        $payment_method
-    );
-
+    $stmt_order->bind_param("id", $user_id, $total_price);
     $stmt_order->execute();
+
     $order_id = $stmt_order->insert_id;
 
-    /* 3️⃣ เพิ่มรายการสินค้าใน order_details */
+    /* ======================
+       3️⃣ เพิ่ม order_details
+    =======================*/
     foreach($items as $item){
 
         $stmt_detail = $conn->prepare("
             INSERT INTO order_details
-            (o_id, p_id, size, qty, price)
-            VALUES (?, ?, ?, ?, ?)
+            (o_id, p_id, qty, price)
+            VALUES (?, ?, ?, ?)
         ");
 
         if(!$stmt_detail){
-            die("Detail Prepare Failed: " . $conn->error);
+            die("Detail Error: ".$conn->error);
         }
 
-        $stmt_detail->bind_param("iisid",
+        $stmt_detail->bind_param(
+            "iiid",
             $order_id,
             $item['product_id'],
-            $item['size'],
             $item['quantity'],
             $item['p_price']
         );
 
         $stmt_detail->execute();
-
-        /* 4️⃣ ตัดสต็อกสินค้า */
-        $stmt_stock = $conn->prepare("
-            UPDATE products
-            SET p_qty = p_qty - ?
-            WHERE p_id = ?
-        ");
-        $stmt_stock->bind_param("ii",
-            $item['quantity'],
-            $item['product_id']
-        );
-        $stmt_stock->execute();
     }
 
-    /* 5️⃣ ลบ cart */
+    /* ======================
+       4️⃣ ลบ cart
+    =======================*/
     $stmt_clear = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
     $stmt_clear->bind_param("i", $user_id);
     $stmt_clear->execute();
 
-    header("Location: orderdetail.php?id=".$order_id."&success=1");
+    header("Location: orderdetail.php?id=".$order_id);
     exit();
 }
 ?>
