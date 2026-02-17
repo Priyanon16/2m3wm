@@ -2,7 +2,7 @@
 $title = "จัดการออเดอร์";
 require_once 'connectdb.php';
 include 'bootstrap.php';
-include 'header.php';
+include 'sidebar.php';
 
 error_reporting(E_ALL ^ E_NOTICE); 
 
@@ -57,7 +57,7 @@ if (!empty($date)) {
 }
 if (!empty($keyword)) {
     $kw = mysqli_real_escape_string($conn, $keyword);
-    $sql .= " AND (o.o_id LIKE '%$kw%' OR u.fullname LIKE '%$kw%') ";
+    $sql .= " AND (o.o_id LIKE '%$kw%' OR u.name LIKE '%$kw%') ";
 }
 
 $sql .= " GROUP BY o.o_id ORDER BY o.o_date DESC ";
@@ -105,7 +105,7 @@ $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
             <h4 class="mb-0 fw-bold text-dark">
                 <i class="bi bi-box-seam me-2" style="color:#ff7a00;"></i> จัดการออเดอร์
             </h4>
-            <a href="index.php" class="btn btn-sm btn-outline-secondary">กลับหน้าหลัก</a>
+            <a href="index_admin.php" class="btn btn-sm btn-outline-secondary">กลับหน้าหลัก</a>
         </div>
 
         <div class="card-custom">

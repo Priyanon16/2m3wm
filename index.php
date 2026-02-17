@@ -6,72 +6,17 @@ include_once("functions.php");
 include_once("bootstrap.php");
 
 /* =========================================================
-   [แก้ไข] ส่วนเพิ่มตะกร้า : บันทึกลง Database พร้อม Size
+   [แก้ไข] ส่วนเพิ่มตะกร้า : ลบออกได้เลย หรือ Comment ไว้
+   เพราะเราจะให้ไปเพิ่มที่หน้า product_detail.php แทน
 ========================================================= */
-if(isset($_GET['add_to_cart'])){
-    
-    // 1. ตรวจสอบว่า Login หรือยัง
-    if(!isset($_SESSION['user_id'])){
-        echo "<script>alert('กรุณาล็อกอินก่อนซื้อสินค้า'); window.location='login.php';</script>";
-        exit;
-    }
-
-    $pid = intval($_GET['add_to_cart']);
-    $uid = intval($_SESSION['user_id']);
-
-    // 2. ดึงข้อมูลสินค้า (เพิ่ม p_size เข้ามา)
-    $q_prod = mysqli_query($conn, "SELECT p_qty, p_size FROM products WHERE p_id = $pid");
-    $prod   = mysqli_fetch_assoc($q_prod);
-
-    if($prod['p_qty'] > 0){
-        
-        // [เพิ่ม] ดึงไซส์แรกมาเป็น Default
-        // (เช่น p_size = "40,41,42" -> หยิบ "40" มาใช้)
-        $size_arr = explode(',', $prod['p_size']); 
-        $default_size = isset($size_arr[0]) ? trim($size_arr[0]) : '-'; 
-
-        // 3. เช็คว่ามีสินค้านี้ (และไซส์นี้) ในตะกร้าหรือยัง
-        $check_cart = mysqli_query($conn, "
-            SELECT * FROM cart 
-            WHERE user_id=$uid 
-            AND product_id=$pid 
-            AND size='$default_size'
-        ");
-
-        if(mysqli_num_rows($check_cart) > 0){
-            // มีแล้ว -> อัปเดตจำนวน +1 (เช็คไม่ให้เกินสต็อก)
-            $cart_item = mysqli_fetch_assoc($check_cart);
-            if($cart_item['quantity'] < $prod['p_qty']){
-                mysqli_query($conn, "
-                    UPDATE cart 
-                    SET quantity = quantity + 1 
-                    WHERE user_id=$uid 
-                    AND product_id=$pid 
-                    AND size='$default_size'
-                ");
-            }
-        } else {
-            // ยังไม่มี -> Insert ใหม่ (พร้อม Size)
-            $sql_insert = "
-                INSERT INTO cart (user_id, product_id, quantity, size) 
-                VALUES ($uid, $pid, 1, '$default_size')
-            ";
-            mysqli_query($conn, $sql_insert);
-        }
-
-        // แจ้งเตือน (ระบุไซส์ให้ลูกค้าทราบนิดนึง)
-        echo "<script>alert('เพิ่มสินค้าลงตะกร้าเรียบร้อย (Size: $default_size)'); window.location='cart.php';</script>";
-        
-    } else {
-        echo "<script>alert('สินค้าหมด'); window.location='index.php';</script>";
-    }
-    exit;
-}
+// if(isset($_GET['add_to_cart'])){ ... }  <-- ลบส่วนนี้ออกได้เลยครับ
 
 /* =========================
    [คงเดิม] ส่วน Favorite
 ========================= */
 if(isset($_GET['add_to_fav'])){
+    // ส่วนนี้เก็บไว้เหมือนเดิม ถ้าอยากให้กด Fav ได้เลยจากหน้านี้
+    // แต่ต้องมีฟังก์ชัน addToFavorite() รองรับนะครับ
     addToFavorite((int)$_GET['add_to_fav']);
 }
 
@@ -304,7 +249,7 @@ $img = !empty($row['main_img'])
 <div class="product-actions">
 
 <?php if($row['p_qty'] > 0): ?>
-<a href="?add_to_cart=<?= $row['p_id']; ?>" 
+<a href="product_detail.php?id=<?= $row['p_id']; ?>" 
    class="btn btn-cart">
 เพิ่มลงตะกร้า
 </a>
