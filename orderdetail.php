@@ -1,14 +1,13 @@
 <?php
 session_start();
 include_once("connectdb.php");
-include_once("bootstrap.php");
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
 
-$uid = $_SESSION['user_id'];
+$uid = intval($_SESSION['user_id']);
 
 if(!isset($_GET['id'])){
     header("Location: myorders.php");
@@ -18,13 +17,13 @@ if(!isset($_GET['id'])){
 $oid = intval($_GET['id']);
 
 /* ==========================
-   ดึงข้อมูลออเดอร์
+   ดึงข้อมูลออเดอร์ (ตรวจสอบเจ้าของ)
 ========================== */
 $order_sql = "
 SELECT *
 FROM orders
-WHERE o_id = '$oid'
-AND u_id = '$uid'
+WHERE o_id='$oid'
+AND u_id='$uid'
 LIMIT 1
 ";
 
@@ -40,7 +39,6 @@ if(mysqli_num_rows($order_rs) == 0){
 }
 
 $order = mysqli_fetch_assoc($order_rs);
-
 
 /* ==========================
    ยกเลิกออเดอร์
@@ -78,19 +76,17 @@ if(isset($_GET['cancel'])){
     }
 }
 
-
 /* ==========================
-   ดึงรายการสินค้า
+   ดึงรายการสินค้าในออเดอร์
 ========================== */
 $detail_sql = "
 SELECT p.p_name, p.p_price, p.p_img, od.q_ty
 FROM order_details od
 JOIN products p ON od.p_id = p.p_id
-WHERE od.o_id = '$oid'
+WHERE od.o_id='$oid'
 ";
 
 $detail_rs = mysqli_query($conn,$detail_sql);
-
 ?>
 
 <?php include("header.php"); ?>
@@ -100,7 +96,7 @@ body{
     background:#f4f6f9;
     font-family:'Kanit',sans-serif;
 }
-.card{
+.order-card{
     border:none;
     border-radius:15px;
     box-shadow:0 5px 15px rgba(0,0,0,0.08);
@@ -108,14 +104,14 @@ body{
 .status-badge{
     padding:6px 14px;
     border-radius:50px;
-    font-size:14px;
+    font-size:13px;
+    font-weight:500;
 }
-.status-pay{ background:#ff5252; color:#fff; }
-.status-ship{ background:#ff9800; color:#fff; }
-.status-wait{ background:#2196f3; color:#fff; }
-.status-done{ background:#4caf50; color:#fff; }
-.status-return{ background:#9c27b0; color:#fff; }
-.status-cancel{ background:#757575; color:#fff; }
+.summary-box{
+    background:#fff8f0;
+    padding:20px;
+    border-radius:12px;
+}
 </style>
 
 <div class="container mt-5 mb-5">
@@ -124,45 +120,43 @@ body{
 ← กลับไปหน้ารายการสั่งซื้อ
 </a>
 
-<div class="card p-4">
+<div class="card order-card p-4">
 
 <div class="d-flex justify-content-between align-items-center mb-3">
 
 <div>
 <h5>เลขที่ออเดอร์ #<?= $order['o_id'] ?></h5>
 <small class="text-muted">
-<?= date("d/m/Y H:i", strtotime($order['o_date'])) ?>
+สั่งซื้อเมื่อ <?= date("d/m/Y H:i", strtotime($order['o_date'])) ?>
 </small>
 </div>
 
 <div>
 <?php
 $status = $order['status'];
+$badge="bg-secondary";
 
-if($status=="รอชำระเงิน"){
-    echo '<span class="status-badge status-pay">รอชำระเงิน</span>';
-}elseif($status=="ที่ต้องจัดส่ง"){
-    echo '<span class="status-badge status-ship">ที่ต้องจัดส่ง</span>';
-}elseif($status=="รอรับ"){
-    echo '<span class="status-badge status-wait">รอรับ</span>';
-}elseif($status=="จัดส่งสำเร็จ"){
-    echo '<span class="status-badge status-done">จัดส่งสำเร็จ</span>';
-}elseif($status=="คืนสินค้า"){
-    echo '<span class="status-badge status-return">คืนสินค้า</span>';
-}elseif($status=="ยกเลิก"){
-    echo '<span class="status-badge status-cancel">ยกเลิก</span>';
-}else{
-    echo '<span class="badge bg-secondary">'.$status.'</span>';
-}
+if($status=="รอชำระเงิน") $badge="bg-danger";
+elseif($status=="ที่ต้องจัดส่ง") $badge="bg-warning text-dark";
+elseif($status=="รอรับ") $badge="bg-primary";
+elseif($status=="จัดส่งสำเร็จ") $badge="bg-success";
+elseif($status=="ยกเลิก") $badge="bg-dark";
 ?>
+
+<span class="status-badge <?= $badge ?>">
+<?= $status ?>
+</span>
 </div>
 
 </div>
 
 <hr>
 
-<?php while($item = mysqli_fetch_assoc($detail_rs)): 
+<?php 
+$total = 0;
+while($item = mysqli_fetch_assoc($detail_rs)): 
 $subtotal = $item['p_price'] * $item['q_ty'];
+$total += $subtotal;
 ?>
 
 <div class="row align-items-center mb-3">
@@ -174,11 +168,11 @@ $subtotal = $item['p_price'] * $item['q_ty'];
 <div class="col-md-6">
 <strong><?= htmlspecialchars($item['p_name']) ?></strong><br>
 <small class="text-muted">
-จำนวน <?= $item['q_ty'] ?> ชิ้น
+ราคา <?= number_format($item['p_price'],2) ?> บาท × <?= $item['q_ty'] ?>
 </small>
 </div>
 
-<div class="col-md-4 text-end">
+<div class="col-md-4 text-end fw-bold">
 <?= number_format($subtotal,2) ?> บาท
 </div>
 
@@ -188,21 +182,39 @@ $subtotal = $item['p_price'] * $item['q_ty'];
 
 <hr>
 
-<div class="text-end">
-<h5>ยอดรวม: <?= number_format($order['total_price'],2) ?> บาท</h5>
+<div class="summary-box mt-3">
+
+<div class="d-flex justify-content-between">
+<span>ยอดรวมสินค้า</span>
+<span><?= number_format($total,2) ?> บาท</span>
+</div>
+
+<div class="d-flex justify-content-between fw-bold fs-5 mt-2">
+<span>ยอดชำระทั้งหมด</span>
+<span class="text-warning">
+<?= number_format($order['total_price'],2) ?> บาท
+</span>
+</div>
+
 </div>
 
 <?php if($order['status']=="รอชำระเงิน" || 
           $order['status']=="ที่ต้องจัดส่ง"): ?>
 
 <a href="?id=<?= $oid ?>&cancel=1" 
-   class="btn btn-outline-danger mt-3"
+   class="btn btn-outline-danger mt-4"
    onclick="return confirm('ยืนยันการยกเลิกคำสั่งซื้อ?')">
    ยกเลิกคำสั่งซื้อ
 </a>
 
 <?php endif; ?>
 
+<?php if($order['status']=="ยกเลิก"): ?>
+<div class="alert alert-secondary mt-4">
+ยกเลิกเมื่อ <?= date("d/m/Y H:i", strtotime($order['cancelled_at'])) ?><br>
+เหตุผล: <?= $order['cancel_reason'] ?>
 </div>
+<?php endif; ?>
 
+</div>
 </div>
