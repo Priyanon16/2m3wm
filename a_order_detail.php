@@ -14,7 +14,7 @@ $order_id = intval($_GET['id']);
    1. ดึงข้อมูลออเดอร์ + ข้อมูล User + สลิป (JOIN users ON u.id)
 =========================================== */
 $sql_order = "
-    SELECT o.*, u.fullname, u.email, u.phone, 
+    SELECT o.*, u.name, u.email, u.phone, 
            p.slip_image, p.pay_date, p.amount as pay_amount
     FROM orders o
     LEFT JOIN users u ON o.u_id = u.id  
