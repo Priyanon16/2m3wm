@@ -299,7 +299,6 @@ function selectSize(el, size, stock){
 }
 
 
-
 // [แก้ไข] ฟังก์ชันเพิ่มจำนวน ให้เช็คกับ max_stock
 function increase(){
     let qty = document.getElementById('qty');
