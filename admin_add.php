@@ -8,21 +8,20 @@ mysqli_set_charset($conn,"utf8");
 /* =========================
    ดึงหมวดหมู่
 ========================= */
-$result_category = mysqli_query($conn,
-"SELECT * FROM category ORDER BY c_name ASC");
+$result_category = mysqli_query($conn, "SELECT * FROM category ORDER BY c_name ASC");
 
 /* =========================
    ดึงแบรนด์
 ========================= */
-$result_brand = mysqli_query($conn,
-"SELECT * FROM brand ORDER BY brand_name ASC");
+$result_brand = mysqli_query($conn, "SELECT * FROM brand ORDER BY brand_name ASC");
 
 /* =========================
-   สร้างโฟลเดอร์
+   สร้างโฟลเดอร์ (แก้ไขให้ตรงกับหน้า Edit)
 ========================= */
+// [แก้ไข] เปลี่ยนจาก FileUpload เป็น uploads/products/ เพื่อให้เหมือนกันทั้งระบบ
 $upload_dir = __DIR__ . "/uploads/products/";
 if(!is_dir($upload_dir)){
-    mkdir($upload_dir,0755,true);
+    mkdir($upload_dir, 0755, true);
 }
 
 /* =========================
@@ -30,11 +29,11 @@ if(!is_dir($upload_dir)){
 ========================= */
 if(isset($_POST['save'])){
 
-    $name   = mysqli_real_escape_string($conn,$_POST['p_name']);
+    $name   = mysqli_real_escape_string($conn, $_POST['p_name']);
     $price  = floatval($_POST['p_price']);
     $qty    = intval($_POST['p_qty']);
-    $type   = mysqli_real_escape_string($conn,$_POST['p_type']);
-    $detail = mysqli_real_escape_string($conn,$_POST['p_detail']);
+    $type   = mysqli_real_escape_string($conn, $_POST['p_type']);
+    $detail = mysqli_real_escape_string($conn, $_POST['p_detail']);
     $c_id   = intval($_POST['c_id']);
     $brand_id = intval($_POST['brand_id']);
 
@@ -47,11 +46,11 @@ if(isset($_POST['save'])){
 
     /* ===== 1️⃣ INSERT สินค้าก่อน ===== */
     $sql = "INSERT INTO products
-            (p_name,p_price,p_qty,p_size,p_type,p_detail,c_id,brand_id)
+            (p_name, p_price, p_qty, p_size, p_type, p_detail, c_id, brand_id)
             VALUES
-            ('$name','$price','$qty','$p_size','$type','$detail','$c_id','$brand_id')";
+            ('$name', '$price', '$qty', '$p_size', '$type', '$detail', '$c_id', '$brand_id')";
 
-    if(mysqli_query($conn,$sql)){
+    if(mysqli_query($conn, $sql)){
 
         // ดึง ID สินค้าที่เพิ่งเพิ่ม
         $new_product_id = mysqli_insert_id($conn);
@@ -63,22 +62,23 @@ if(isset($_POST['save'])){
 
                 if($_FILES['p_img']['error'][$key] === 0){
 
-                    $ext = strtolower(pathinfo($val,PATHINFO_EXTENSION));
+                    $ext = strtolower(pathinfo($val, PATHINFO_EXTENSION));
                     $allowed = ['jpg','jpeg','png','gif','webp'];
 
-                    if(in_array($ext,$allowed)){
+                    if(in_array($ext, $allowed)){
 
-                        $new_name = "product_".time()."_".uniqid().".".$ext;
-                        $target = $upload_dir.$new_name;
+                        $new_name = "product_" . time() . "_" . uniqid() . "." . $ext;
+                        $target = $upload_dir . $new_name;
 
-                        if(move_uploaded_file($_FILES['p_img']['tmp_name'][$key],$target)){
+                        if(move_uploaded_file($_FILES['p_img']['tmp_name'][$key], $target)){
 
-                            $img_path "uploads/products/".$new_name
+                            // [แก้ไข] แก้ไข Path ที่บันทึกลง DB ให้ตรงกับโครงสร้างโฟลเดอร์ใหม่
+                            $img_path = "uploads/products/" . $new_name;
 
-                            // บันทึกลง product_images
+                            // บันทึกลงตาราง product_images ตามที่เพื่อนคุณออกแบบไว้
                             mysqli_query($conn,"
-                                INSERT INTO product_images (p_id,img_path)
-                                VALUES ('$new_product_id','$img_path')
+                                INSERT INTO product_images (p_id, img_path)
+                                VALUES ('$new_product_id', '$img_path')
                             ");
                         }
                     }
@@ -86,10 +86,10 @@ if(isset($_POST['save'])){
             }
         }
 
-        echo "<script>alert('เพิ่มสินค้าสำเร็จ');window.location='admin_product.php';</script>";
+        echo "<script>alert('เพิ่มสินค้าสำเร็จ'); window.location='admin_product.php';</script>";
         exit();
 
-    }else{
+    } else {
         echo "<div style='color:red;'>".mysqli_error($conn)."</div>";
     }
 }
