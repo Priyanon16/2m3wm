@@ -220,21 +220,6 @@ include("header.php");
 </div>
 
 
-<button type="button"
-    class="size-btn <?= $stock <= 0 ? 'btn-disabled' : '' ?>"
-    onclick="selectSize(this,'<?= $size ?>', <?= $stock ?>)"
-    <?= $stock <= 0 ? 'disabled' : '' ?>>
-    
-    <?= $size ?>
-    <br>
-    <small>(เหลือ <?= $stock ?>)</small>
-
-</button>
-
-<?php endforeach; ?>
-
-</div>
-
 
 <input type="hidden" id="selectedSize" value="">
 
