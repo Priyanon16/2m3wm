@@ -52,13 +52,15 @@ include("header.php");
 <style>
 .size-btn{
     border:1px solid #ddd;
-    padding:10px 15px;
+    padding:8px 14px;
     margin:5px;
     border-radius:8px;
     cursor:pointer;
     background:#fff;
     transition:.2s;
+    min-width:60px;
 }
+
 .size-btn:hover{
     border-color:#ff7a00;
 }
@@ -139,13 +141,17 @@ include("header.php");
 
 <!-- เลือกไซส์ -->
 <h6 class="fw-bold">เลือกไซส์</h6>
-<div id="sizeContainer">
+
+<div id="sizeContainer" class="d-flex flex-wrap">
 <?php foreach($sizes as $size): ?>
-<span class="size-btn" onclick="selectSize(this,'<?= $size ?>')">
-<?= $size ?>
-</span>
+    <button type="button"
+        class="size-btn"
+        onclick="selectSize(this,'<?= trim($size) ?>')">
+        <?= trim($size) ?>
+    </button>
 <?php endforeach; ?>
 </div>
+
 
 <input type="hidden" id="selectedSize" value="">
 
@@ -169,6 +175,12 @@ include("header.php");
 onclick="addToCart(<?= $product['p_id'] ?>)">
 เพิ่มลงตะกร้า
 </button>
+
+<button class="btn btn-outline-danger btn-lg ms-2"
+onclick="addToFav(<?= $product['p_id'] ?>)">
+❤ เพิ่มรายการโปรด
+</button>
+
 
 </div>
 </div>
@@ -208,4 +220,10 @@ function addToCart(id){
                       "&size="+size+
                       "&qty="+qty;
 }
+
+function addToFav(id){
+    window.location = "favorite.php?action=add&id="+id;
+}
+
+
 </script>

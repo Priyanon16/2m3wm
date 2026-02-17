@@ -13,6 +13,52 @@ $uid = intval($_SESSION['user_id']);
 /* =========================
    เพิ่ม / ลด จำนวน
 ========================= */
+/* =========================
+   เพิ่มสินค้าเข้าตะกร้า
+========================= */
+if(isset($_GET['add'])){
+
+    $pid  = intval($_GET['add']);
+    $size = mysqli_real_escape_string($conn,$_GET['size'] ?? '');
+    $qty  = intval($_GET['qty'] ?? 1);
+
+    if($size == ''){
+        header("Location: product_detail.php?id=".$pid);
+        exit;
+    }
+
+    // เช็คว่ามีอยู่แล้วไหม (ต้องเช็ค size ด้วย)
+    $check = mysqli_query($conn,"
+        SELECT cart_id 
+        FROM cart
+        WHERE user_id=$uid
+        AND product_id=$pid
+        AND size='$size'
+        LIMIT 1
+    ");
+
+    if(mysqli_num_rows($check)>0){
+
+        mysqli_query($conn,"
+            UPDATE cart
+            SET quantity = quantity + $qty
+            WHERE user_id=$uid
+            AND product_id=$pid
+            AND size='$size'
+        ");
+
+    }else{
+
+        mysqli_query($conn,"
+            INSERT INTO cart (user_id,product_id,size,quantity)
+            VALUES ($uid,$pid,'$size',$qty)
+        ");
+    }
+
+    header("Location: cart.php");
+    exit;
+}
+
 if(isset($_GET['update'])){
     $pid = intval($_GET['update']);
     $action = $_GET['type'];
@@ -56,6 +102,7 @@ if(isset($_GET['remove'])){
 $sql = "
 SELECT 
     c.quantity,
+    c.size,
     p.*,
     (
         SELECT img_path 
@@ -67,6 +114,7 @@ FROM cart c
 JOIN products p ON c.product_id = p.p_id
 WHERE c.user_id = $uid
 ";
+
 
 $rs = mysqli_query($conn,$sql);
 ?>
@@ -230,6 +278,11 @@ style="width:18px;height:18px;accent-color:#ff7a00;">
         <a href="?update=<?= $item['p_id']; ?>&type=plus" class="qty-btn">+</a>
     </div>
 </div>
+
+<small class="text-muted">
+ไซส์: <?= htmlspecialchars($item['size']); ?>
+</small>
+
 
 <div>
     <div class="price">
