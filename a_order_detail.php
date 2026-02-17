@@ -3,9 +3,6 @@ session_start();
 require_once 'connectdb.php';
 include 'bootstrap.php';
 
-// เช็คสิทธิ์ Admin (ถ้ามีระบบ Login Admin ให้เช็คตรงนี้)
-// if(!isset($_SESSION['is_admin'])) { header("Location: login.php"); exit(); }
-
 if(!isset($_GET['id'])){
     header("Location: a_orderlist.php");
     exit();
@@ -14,26 +11,43 @@ if(!isset($_GET['id'])){
 $order_id = intval($_GET['id']);
 
 /* ===========================================
-   1. ดึงข้อมูลออเดอร์ (ไม่เช็ค u_id)
+   1. ดึงข้อมูลออเดอร์ + ข้อมูล User + สลิป (JOIN users ON u.id)
 =========================================== */
 $sql_order = "
-    SELECT o.*, u.fullname, u.email, u.phone, u.address,
+    SELECT o.*, u.fullname, u.email, u.phone, 
            p.slip_image, p.pay_date, p.amount as pay_amount
     FROM orders o
-    LEFT JOIN users u ON o.u_id = u.user_id
+    LEFT JOIN users u ON o.u_id = u.id  
     LEFT JOIN payments p ON o.o_id = p.order_id
     WHERE o.o_id = $order_id
 ";
-$rs_order = mysqli_query($conn, $sql_order);
+$rs_order = mysqli_query($conn, $sql_order) or die(mysqli_error($conn));
 
 if(mysqli_num_rows($rs_order) == 0){
-    die("ไม่พบข้อมูลออเดอร์");
+    die("<div class='alert alert-danger m-5'>ไม่พบข้อมูลออเดอร์ #$order_id</div>");
 }
 
 $order = mysqli_fetch_assoc($rs_order);
 
 /* ===========================================
-   2. ดึงรายการสินค้า
+   2. ดึงที่อยู่จากตาราง addresses (ดึงอันล่าสุด)
+=========================================== */
+$uid = $order['u_id'];
+$sql_addr = "SELECT * FROM addresses WHERE user_id = $uid ORDER BY address_id DESC LIMIT 1";
+$rs_addr  = mysqli_query($conn, $sql_addr);
+$addr_row = mysqli_fetch_assoc($rs_addr);
+
+// จัดรูปแบบที่อยู่
+$user_address_text = "ไม่ระบุที่อยู่";
+if($addr_row) {
+    $user_address_text = $addr_row['address'] . " " .
+                         "ต." . $addr_row['district'] . " " .
+                         "จ." . $addr_row['province'] . " " .
+                         $addr_row['postal_code'];
+}
+
+/* ===========================================
+   3. ดึงรายการสินค้า
 =========================================== */
 $sql_items = "
     SELECT od.*, p.p_name, p.p_price, pi.img_path
@@ -45,7 +59,6 @@ $sql_items = "
     WHERE od.o_id = $order_id
 ";
 $rs_items = mysqli_query($conn, $sql_items);
-
 ?>
 
 <!DOCTYPE html>
@@ -71,9 +84,7 @@ $rs_items = mysqli_query($conn, $sql_items);
     
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4>รายละเอียดคำสั่งซื้อ #<?= str_pad($order_id, 6, '0', STR_PAD_LEFT); ?></h4>
-        <a href="a_orderlist.php" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> ย้อนกลับ
-        </a>
+        <a href="a_orderlist.php" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> ย้อนกลับ</a>
     </div>
 
     <div class="row">
@@ -126,14 +137,14 @@ $rs_items = mysqli_query($conn, $sql_items);
                 <h5 class="mb-3">ข้อมูลลูกค้า & การจัดส่ง</h5>
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>ชื่อลูกค้า:</strong> <?= htmlspecialchars($order['fullname']) ?></p>
-                        <p><strong>เบอร์โทร:</strong> <?= htmlspecialchars($order['phone']) ?></p>
-                        <p><strong>อีเมล:</strong> <?= htmlspecialchars($order['email']) ?></p>
+                        <p><strong>ชื่อลูกค้า:</strong> <?= htmlspecialchars($order['fullname'] ?? '-') ?></p>
+                        <p><strong>เบอร์โทร:</strong> <?= htmlspecialchars($order['phone'] ?? '-') ?></p>
+                        <p><strong>อีเมล:</strong> <?= htmlspecialchars($order['email'] ?? '-') ?></p>
                     </div>
                     <div class="col-md-6">
                         <p><strong>ที่อยู่จัดส่ง:</strong></p>
                         <div class="alert alert-light border">
-                            <?= nl2br(htmlspecialchars($order['address'])) ?>
+                            <?= nl2br(htmlspecialchars($user_address_text)) ?>
                         </div>
                     </div>
                 </div>
@@ -143,7 +154,6 @@ $rs_items = mysqli_query($conn, $sql_items);
         <div class="col-md-4">
             <div class="card-custom mb-3">
                 <h5 class="mb-3">สถานะออเดอร์</h5>
-                
                 <?php 
                     $st = $order['status'];
                     $cls = 'bg-secondary';
@@ -156,10 +166,8 @@ $rs_items = mysqli_query($conn, $sql_items);
                 <div class="text-center mb-3">
                     <span class="status-badge <?= $cls ?> fs-5 px-4 py-2"><?= $st ?></span>
                 </div>
-                
                 <p class="mb-1 text-muted small">วันที่สั่งซื้อ: <?= date('d/m/Y H:i', strtotime($order['o_date'])) ?></p>
                 <p class="mb-1 text-muted small">ช่องทางชำระ: <?= ($order['payment_method']=='cod') ? 'เก็บปลายทาง' : 'โอนเงิน' ?></p>
-
             </div>
 
             <?php if(!empty($order['slip_image'])): ?>
@@ -174,10 +182,8 @@ $rs_items = mysqli_query($conn, $sql_items);
                 </div>
             </div>
             <?php endif; ?>
-
         </div>
     </div>
-
 </div>
 
 </body>

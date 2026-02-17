@@ -3,10 +3,11 @@ $title = "จัดการออเดอร์";
 require_once 'connectdb.php';
 include 'bootstrap.php';
 
+// ปิด Notice เพื่อความสะอาดของหน้าจอ
 error_reporting(E_ALL ^ E_NOTICE); 
 
 /* ===========================================
-   ส่วนที่ 1: จัดการการอัปเดตสถานะ (Update Status)
+   ส่วนที่ 1: อัปเดตสถานะ
 =========================================== */
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['btn_update_status'])) {
     $oid = intval($_POST['order_id']);
@@ -21,13 +22,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['btn_update_status'])) 
 }
 
 /* ===========================================
-   ส่วนที่ 2: รับค่า Filter และ Query ข้อมูล
+   ส่วนที่ 2: ดึงข้อมูล
 =========================================== */
 $status   = $_GET['status'] ?? '';
 $date     = $_GET['date'] ?? '';
 $keyword  = $_GET['keyword'] ?? '';
 
-// แก้ไข SQL: Join ตาราง payments เพื่อดึง slip_image
+// SQL: JOIN ให้ถูกต้อง (u.id)
 $sql = "
 SELECT 
     o.o_id,
@@ -35,17 +36,16 @@ SELECT
     o.total_price,
     o.status,
     o.payment_method,
-    p.slip_image,  -- ดึงจากตาราง payments แทน
-    u.name AS customer_name,
+    p.slip_image,
+    u.fullname AS customer_name,
     COALESCE(SUM(od.q_ty), 0) as total_qty
 FROM orders o
 LEFT JOIN users u ON o.u_id = u.id 
 LEFT JOIN order_details od ON od.o_id = o.o_id
-LEFT JOIN payments p ON o.o_id = p.order_id  -- JOIN ตาราง payments ตรงนี้
+LEFT JOIN payments p ON o.o_id = p.order_id
 WHERE 1
 ";
 
-/* Filter Logic */
 if (!empty($status)) {
     $s = mysqli_real_escape_string($conn, $status);
     $sql .= " AND o.status = '$s' ";
@@ -56,11 +56,10 @@ if (!empty($date)) {
 }
 if (!empty($keyword)) {
     $kw = mysqli_real_escape_string($conn, $keyword);
-    $sql .= " AND (o.o_id LIKE '%$kw%' OR u.name LIKE '%$kw%') ";
+    $sql .= " AND (o.o_id LIKE '%$kw%' OR u.fullname LIKE '%$kw%') ";
 }
 
 $sql .= " GROUP BY o.o_id ORDER BY o.o_date DESC ";
-
 $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
 ?>
 
@@ -94,17 +93,11 @@ $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
     </style>
 </head>
 <body>
-
 <div class="wrapper">
-    
     <?php include 'sidebar.php'; ?> 
-
     <main>
         <div class="page-header d-flex justify-content-between align-items-center">
-            <h4 class="mb-0 fw-bold text-dark">
-                <i class="bi bi-box-seam me-2" style="color:#ff7a00;"></i> จัดการออเดอร์
-            </h4>
-            <a href="index_admin.php" class="btn btn-sm btn-outline-secondary">กลับหน้าหลัก</a>
+            <h4 class="mb-0 fw-bold text-dark"><i class="bi bi-box-seam me-2" style="color:#ff7a00;"></i> จัดการออเดอร์</h4>
         </div>
 
         <div class="card-custom">
@@ -127,13 +120,10 @@ $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
                     </div>
                     <div class="col-md-4">
                         <label class="form-label small text-muted">ค้นหา</label>
-                        <input type="text" name="keyword" class="form-control form-control-sm" 
-                               placeholder="เลข Order หรือ ชื่อลูกค้า" value="<?= htmlspecialchars($keyword) ?>">
+                        <input type="text" name="keyword" class="form-control form-control-sm" placeholder="เลข Order / ชื่อ" value="<?= htmlspecialchars($keyword) ?>">
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
-                        <button class="btn btn-orange btn-sm w-100">
-                            <i class="bi bi-search"></i> ค้นหา
-                        </button>
+                        <button class="btn btn-orange btn-sm w-100"><i class="bi bi-search"></i> ค้นหา</button>
                     </div>
                 </div>
             </form>
@@ -150,9 +140,9 @@ $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
                             <th>ยอดรวม</th>
                             <th>ช่องทาง</th>
                             <th>หลักฐาน</th>
-                            <th>สถานะปัจจุบัน</th>
-                            <th width="200">เปลี่ยนสถานะ</th>
-                            <th>รายละเอียด</th>
+                            <th>สถานะ</th>
+                            <th>เปลี่ยนสถานะ</th>
+                            <th>จัดการ</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -161,12 +151,8 @@ $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
                         <tr>
                             <td class="fw-bold">#<?= str_pad($row['o_id'], 6, '0', STR_PAD_LEFT); ?></td>
                             <td><?= date("d/m/Y H:i", strtotime($row['o_date'])) ?></td>
-                            <td class="text-start"><?= htmlspecialchars($row['customer_name'] ?? 'Guest') ?></td>
-                            
-                            <td class="fw-bold text-success">
-                                <?= number_format($row['total_price'], 0) ?> ฿
-                            </td>
-
+                            <td class="text-start"><?= htmlspecialchars($row['customer_name'] ?? '-') ?></td>
+                            <td class="fw-bold text-success"><?= number_format($row['total_price'], 0) ?> ฿</td>
                             <td>
                                 <?php if($row['payment_method'] == 'cod'): ?>
                                     <span class="badge bg-dark">เก็บปลายทาง</span>
@@ -174,7 +160,6 @@ $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
                                     <span class="badge bg-info text-dark">โอนจ่าย</span>
                                 <?php endif; ?>
                             </td>
-
                             <td>
                                 <?php if(!empty($row['slip_image'])): ?>
                                     <a href="uploads/slips/<?= $row['slip_image'] ?>" target="_blank" class="btn btn-sm btn-outline-primary py-0">ดูสลิป</a>
@@ -182,7 +167,6 @@ $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
                                     <span class="text-muted small">-</span>
                                 <?php endif; ?>
                             </td>
-                            
                             <td>
                                 <?php 
                                     $st = $row['status'];
@@ -195,7 +179,6 @@ $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
                                 ?>
                                 <span class="status-badge <?= $cls ?>"><?= $st ?></span>
                             </td>
-
                             <td>
                                 <form method="POST" class="d-flex gap-1 justify-content-center">
                                     <input type="hidden" name="order_id" value="<?= $row['o_id'] ?>">
@@ -206,16 +189,11 @@ $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
                                         <option value="จัดส่งแล้ว" <?= $st=='จัดส่งแล้ว'?'selected':''?>>จัดส่งแล้ว</option>
                                         <option value="ยกเลิก" <?= $st=='ยกเลิก'?'selected':''?>>ยกเลิก</option>
                                     </select>
-                                    <button type="submit" name="btn_update_status" class="btn btn-sm btn-success" title="บันทึก">
-                                        <i class="bi bi-check-lg"></i>
-                                    </button>
+                                    <button type="submit" name="btn_update_status" class="btn btn-sm btn-success" title="บันทึก"><i class="bi bi-check-lg"></i></button>
                                 </form>
                             </td>
-
                             <td>
-                                <a href="a_order_detail.php?id=<?= $row['o_id'] ?>" class="btn btn-sm btn-outline-dark">
-                                    <i class="bi bi-list"></i>
-                                </a>
+                                <a href="a_order_detail.php?id=<?= $row['o_id'] ?>" class="btn btn-sm btn-outline-dark"><i class="bi bi-list"></i> ดูรายละเอียด</a>
                             </td>
                         </tr>
                         <?php endwhile; ?>
@@ -228,6 +206,5 @@ $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
         </div>
     </main>
 </div>
-
 </body>
 </html>
