@@ -109,15 +109,15 @@ include("header.php");
     line-height: 1.7;
 }
 .detail-title{
-    margin-bottom: 8px;
+    margin-bottom: 4px;
 }
 
 .product-detail{
     margin-top: 0;
-    word-break: break-all;
-    overflow-wrap: break-word;
     line-height: 1.6;
+    word-break: break-word;
 }
+
 
 </style>
 
@@ -225,9 +225,9 @@ include("header.php");
 
 <hr class="my-3">
 
-<h6 class="fw-bold detail-title">รายละเอียดสินค้า</h6>
+<h6 class="fw-bold detail-title mb-1">รายละเอียดสินค้า</h6>
 
-<p class="product-detail mb-2">
+<p class="product-detail mb-2 mt-0">
 <?= nl2br(htmlspecialchars($product['p_detail'])) ?>
 </p>
 
