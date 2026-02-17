@@ -1,7 +1,7 @@
 <?php
 session_start();
 include 'connectdb.php';
-include 'bootstrap.php'; // เอาออกชั่วคราวถ้าไม่ได้ใช้ หรือใส่ไว้ถ้าจำเป็นต้องโหลด CSS
+// include 'bootstrap.php'; 
 
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
@@ -23,6 +23,8 @@ if(isset($_POST['confirm_order'])){
         echo "<script>alert('กรุณาเลือกช่องทางการชำระเงิน');window.history.back();</script>";
         exit();
     }
+
+    $payment_method = $_POST['payment_method']; // รับค่าวิธีการชำระเงิน
 
     // 1.1 ดึงสินค้าในตะกร้า
     $sql_cart = "SELECT c.product_id, c.quantity, p.p_price 
@@ -54,6 +56,7 @@ if(isset($_POST['confirm_order'])){
     $final_total = $total_price + $shipping_cost;
 
     // 1.2 สร้าง Order
+    // (ถ้าต้องการเก็บวิธีการชำระเงินลง Database ด้วย ให้เพิ่มคอลัมน์ payment_method ในตาราง orders)
     $stmt_order = $conn->prepare("INSERT INTO orders (u_id, total_price, status, o_date) VALUES (?, ?, 'รอชำระเงิน', NOW())");
     $stmt_order->bind_param("id", $user_id, $final_total);
     
@@ -81,15 +84,22 @@ if(isset($_POST['confirm_order'])){
     $stmt_clear->bind_param("i", $user_id);
     $stmt_clear->execute();
 
-    // 1.5 ไปหน้าสำเร็จ
-    header("Location: orderdetail.php?id=".$order_id."&success=1");
+    // ============================================================
+    // 1.5 ตรวจสอบเงื่อนไขการเปลี่ยนหน้า (แก้ไขตรงนี้)
+    // ============================================================
+    if ($payment_method == 'cod') {
+        // ถ้าเป็น เก็บเงินปลายทาง -> ไปหน้ารายละเอียดออเดอร์เลย
+        header("Location: orderdetail.php?id=".$order_id."&success=1");
+    } else {
+        // ถ้าเป็น โอนเงิน (transfer) -> ไปหน้าสแกน QR Code
+        header("Location: qrcode.php?id=".$order_id);
+    }
     exit();
 }
 
 /* =========================================
-   ส่วนที่ 2: ดึงข้อมูลเพื่อแสดงผลหน้าเว็บ
+   ส่วนที่ 2: ดึงข้อมูลเพื่อแสดงผลหน้าเว็บ (คงเดิม)
 ========================================= */
-// ตรวจสอบ Query ว่าถูกต้องหรือไม่
 $sql_view = "
     SELECT c.quantity, p.p_name, p.p_price,
            (SELECT img_path FROM product_images WHERE p_id = p.p_id LIMIT 1) AS p_img
@@ -101,7 +111,6 @@ $sql_view = "
 $stmt_products = $conn->prepare($sql_view);
 
 if(!$stmt_products){
-    // ถ้า SQL ผิดพลาดจะแสดงข้อความตรงนี้
     die("SQL Error: " . $conn->error); 
 }
 
@@ -109,7 +118,6 @@ $stmt_products->bind_param("i", $user_id);
 $stmt_products->execute();
 $cart_result = $stmt_products->get_result();
 
-// ตัวแปรสำหรับคำนวณยอดรวม
 $total = 0;
 $shipping = 60; 
 ?>
@@ -152,12 +160,9 @@ $shipping = 60;
                     
                     <?php if($cart_result->num_rows > 0): ?>
                         <?php 
-                        // วนลูปแสดงข้อมูลสินค้า
                         while($row = $cart_result->fetch_assoc()): 
                             $subtotal = $row['p_price'] * $row['quantity'];
-                            $total += $subtotal; // บวกยอดรวมที่นี่
-                            
-                            // เช็ครูปภาพ ถ้าไม่มีให้ใช้รูป placeholder
+                            $total += $subtotal; 
                             $img = !empty($row['p_img']) ? $row['p_img'] : 'https://placehold.co/100x100?text=No+Image';
                         ?>
                         <div class="d-flex justify-content-between align-items-center item-row">
