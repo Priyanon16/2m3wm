@@ -62,12 +62,18 @@ if(isset($_POST['confirm_order'])){
 $stmt_products = $conn->prepare("
     SELECT c.*, 
            p.p_name, 
-           p.p_price, 
-           p.p_img 
+           p.p_price,
+           (
+                SELECT img_path 
+                FROM product_images 
+                WHERE p_id = p.p_id 
+                LIMIT 1
+           ) AS p_img
     FROM cart c
     JOIN products p ON c.product_id = p.p_id
     WHERE c.user_id = ?
 ");
+
 
 // แก้ไขจาก $u_id เป็น $user_id
 if ($stmt_products) {
