@@ -230,7 +230,9 @@ include("header.php");
 </h6>
 
 
-<input type="hidden" id="max_stock" value="<?= $product['p_qty'] ?>">
+
+<input type="hidden" id="max_stock" value="0">
+
 
 <?php if($product['p_qty'] > 0): // ถ้ามีสินค้ามากกว่า 0 ?>
     <div class="qty-box mb-3">
@@ -283,22 +285,19 @@ function selectSize(el, size, stock){
     document.querySelectorAll('.size-btn')
         .forEach(btn => btn.classList.remove('active'));
 
-    // ใส่ active ให้ปุ่มที่กด
     el.classList.add('active');
 
-    // บันทึกไซส์ที่เลือก
     document.getElementById('selectedSize').value = size;
 
-    // อัพเดต stock ของไซส์นั้น
     document.getElementById('max_stock').value = stock;
 
-    // รีเซ็ตจำนวนกลับเป็น 1
     document.getElementById('qty').value = 1;
 
-    // แสดงจำนวนคงเหลือ
+    // แสดง stock ที่หัวข้อจำนวน
     document.getElementById('stock_text').innerText =
-        "มีสินค้า " + stock + " ชิ้น";
+        "คงเหลือ " + stock + " คู่";
 }
+
 
 
 // [แก้ไข] ฟังก์ชันเพิ่มจำนวน ให้เช็คกับ max_stock
