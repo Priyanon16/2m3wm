@@ -1,233 +1,239 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 $title = "จัดการออเดอร์";
+require_once 'connectdb.php';
+include 'bootstrap.php';
+// include 'header.php'; // ถ้ามี header แยกให้เปิดใช้
 
-require_once __DIR__ . '/connectdb.php';
-include __DIR__ . '/bootstrap.php';
+// ปิด Error Notice กวนใจ (แต่ยังโชว์ Error หลัก)
+error_reporting(E_ALL ^ E_NOTICE); 
 
-/* =======================
-   รับค่า Filter
-======================= */
+/* ===========================================
+   ส่วนที่ 1: จัดการการอัปเดตสถานะ (Update Status)
+=========================================== */
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['btn_update_status'])) {
+    $oid = intval($_POST['order_id']);
+    $new_status = mysqli_real_escape_string($conn, $_POST['new_status']);
+
+    $sql_update = "UPDATE orders SET status = '$new_status' WHERE o_id = $oid";
+    if (mysqli_query($conn, $sql_update)) {
+        echo "<script>alert('อัปเดตสถานะเรียบร้อยแล้ว'); window.location='a_orderlist.php';</script>";
+    } else {
+        echo "<script>alert('Error: " . mysqli_error($conn) . "');</script>";
+    }
+}
+
+/* ===========================================
+   ส่วนที่ 2: รับค่า Filter และ Query ข้อมูล
+=========================================== */
 $status   = $_GET['status'] ?? '';
 $date     = $_GET['date'] ?? '';
 $keyword  = $_GET['keyword'] ?? '';
 
-/* =======================
-   SQL
-======================= */
+// แก้ไข SQL: 
+// 1. เพิ่ม payment_method
+// 2. แก้ u.id เป็น u.user_id (ตามโครงสร้างปกติ)
+// 3. แก้ u.name เป็น u.fullname
 $sql = "
 SELECT 
     o.o_id,
     o.o_date,
     o.total_price,
     o.status,
-    u.name,
-    COALESCE(SUM(od.q_ty),0) as total_qty
+    o.payment_method,
+    o.pay_slip,
+    u.fullname AS customer_name,
+    COALESCE(SUM(od.q_ty), 0) as total_qty
 FROM orders o
-LEFT JOIN users u ON o.u_id = u.id
+LEFT JOIN users u ON o.u_id = u.user_id 
 LEFT JOIN order_details od ON od.o_id = o.o_id
 WHERE 1
 ";
 
-/* Filter */
+/* Filter Logic */
 if (!empty($status)) {
-    $status = mysqli_real_escape_string($conn,$status);
-    $sql .= " AND o.status = '$status' ";
+    $s = mysqli_real_escape_string($conn, $status);
+    $sql .= " AND o.status = '$s' ";
 }
-
 if (!empty($date)) {
-    $date = mysqli_real_escape_string($conn,$date);
-    $sql .= " AND DATE(o.o_date) = '$date' ";
+    $d = mysqli_real_escape_string($conn, $date);
+    $sql .= " AND DATE(o.o_date) = '$d' ";
 }
-
 if (!empty($keyword)) {
-    $kw = mysqli_real_escape_string($conn,$keyword);
-    $sql .= " AND (o.o_id LIKE '%$kw%' OR u.name LIKE '%$kw%') ";
+    $kw = mysqli_real_escape_string($conn, $keyword);
+    // แก้ค้นหาให้ตรงกับชื่อคอลัมน์จริง
+    $sql .= " AND (o.o_id LIKE '%$kw%' OR u.fullname LIKE '%$kw%') ";
 }
 
-$sql .= "
-GROUP BY o.o_id
-ORDER BY o.o_date DESC
-";
-
+$sql .= " GROUP BY o.o_id ORDER BY o.o_date DESC ";
 
 $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
 ?>
 
-<style>
-body{
-  margin:0;
-  background:#f4f6f9;
-}
-
-.wrapper{
-  display:flex;
-  min-height:100vh;
-}
-
-main{
-  flex:1;
-  padding:40px;
-}
-
-.page-header{
-  background:#fff;
-  padding:20px 25px;
-  border-radius:14px;
-  border-left:6px solid #ff7a00;
-  box-shadow:0 5px 15px rgba(0,0,0,0.08);
-  margin-bottom:25px;
-}
-
-.page-header h4{
-  color:#ff7a00;
-  font-weight:600;
-}
-
-.card-custom{
-  background:#fff;
-  border-radius:14px;
-  border:1px solid #eee;
-  box-shadow:0 5px 15px rgba(0,0,0,0.06);
-}
-
-.btn-orange{
-  background:#ff7a00;
-  color:#fff;
-  border:none;
-  border-radius:10px;
-}
-
-.btn-orange:hover{
-  background:#ff9433;
-}
-
-.table thead{
-  background:#212529;
-  color:#fff;
-}
-
-.table tbody tr:hover{
-  background:#fff3e6;
-}
-
-.badge-warning-custom{
-  background:#ff7a00;
-}
-
-.badge-success-custom{
-  background:#28a745;
-}
-</style>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title><?= $title ?></title>
+    <style>
+        body{ margin:0; background:#f4f6f9; font-family: 'Kanit', sans-serif;}
+        .wrapper{ display:flex; min-height:100vh; }
+        main{ flex:1; padding:20px; }
+        
+        .page-header{
+            background:#fff; padding:20px 25px; border-radius:10px;
+            border-left:5px solid #ff7a00; box-shadow:0 5px 15px rgba(0,0,0,0.05); margin-bottom:20px;
+        }
+        .card-custom{
+            background:#fff; border-radius:10px; border:1px solid #eee;
+            box-shadow:0 5px 15px rgba(0,0,0,0.03); padding: 20px; margin-bottom: 20px;
+        }
+        .btn-orange{ background:#ff7a00; color:#fff; border:none; }
+        .btn-orange:hover{ background:#e66e00; color:#fff; }
+        
+        /* Status Badge Colors */
+        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.85rem; color: white; display: inline-block; min-width: 80px;}
+        .st-wait-pay { background-color: #ffc107; color: #000; } /* รอชำระเงิน */
+        .st-check { background-color: #17a2b8; } /* รอตรวจสอบ */
+        .st-paid { background-color: #28a745; } /* ชำระแล้ว */
+        .st-ship { background-color: #007bff; } /* จัดส่งแล้ว */
+        .st-cancel { background-color: #dc3545; } /* ยกเลิก */
+    </style>
+</head>
+<body>
 
 <div class="wrapper">
+    
+    <?php // include 'sidebar.php'; ?> 
 
-<?php include __DIR__ . '/sidebar.php'; ?>
+    <main>
+        <div class="page-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0 fw-bold text-dark">
+                <i class="bi bi-box-seam me-2" style="color:#ff7a00;"></i> จัดการออเดอร์
+            </h4>
+            <a href="index.php" class="btn btn-sm btn-outline-secondary">กลับหน้าหลัก</a>
+        </div>
 
-<main>
+        <div class="card-custom">
+            <form method="GET">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">สถานะ</label>
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="">-- ทั้งหมด --</option>
+                            <option value="รอชำระเงิน" <?= $status=='รอชำระเงิน'?'selected':''?>>รอชำระเงิน</option>
+                            <option value="รอตรวจสอบ" <?= $status=='รอตรวจสอบ'?'selected':''?>>รอตรวจสอบ</option>
+                            <option value="ชำระแล้ว" <?= $status=='ชำระแล้ว'?'selected':''?>>ชำระแล้ว</option>
+                            <option value="จัดส่งแล้ว" <?= $status=='จัดส่งแล้ว'?'selected':''?>>จัดส่งแล้ว</option>
+                            <option value="ยกเลิก" <?= $status=='ยกเลิก'?'selected':''?>>ยกเลิก</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">วันที่</label>
+                        <input type="date" name="date" class="form-control form-control-sm" value="<?= $date ?>">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">ค้นหา</label>
+                        <input type="text" name="keyword" class="form-control form-control-sm" 
+                               placeholder="เลข Order หรือ ชื่อลูกค้า" value="<?= htmlspecialchars($keyword) ?>">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-orange btn-sm w-100">
+                            <i class="bi bi-search"></i> ค้นหา
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
 
-<div class="page-header d-flex justify-content-between align-items-center">
-  <h4 class="mb-0">
-    <i class="bi bi-receipt-cutoff me-2"></i> จัดการออเดอร์
-  </h4>
-  <span class="text-secondary">Order Management</span>
+        <div class="card-custom p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Order ID</th>
+                            <th>วันที่</th>
+                            <th>ลูกค้า</th>
+                            <th>ยอดรวม</th>
+                            <th>ช่องทาง</th>
+                            <th>หลักฐาน</th>
+                            <th>สถานะปัจจุบัน</th>
+                            <th width="200">เปลี่ยนสถานะ</th>
+                            <th>จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php if($result && mysqli_num_rows($result) > 0): ?>
+                        <?php while($row = mysqli_fetch_assoc($result)): ?>
+                        <tr>
+                            <td class="fw-bold">#<?= str_pad($row['o_id'], 6, '0', STR_PAD_LEFT); ?></td>
+                            <td><?= date("d/m/Y H:i", strtotime($row['o_date'])) ?></td>
+                            <td class="text-start"><?= htmlspecialchars($row['customer_name'] ?? 'Guest') ?></td>
+                            
+                            <td class="fw-bold text-success">
+                                <?= number_format($row['total_price'], 0) ?> ฿
+                            </td>
+
+                            <td>
+                                <?php if($row['payment_method'] == 'cod'): ?>
+                                    <span class="badge bg-dark">เก็บปลายทาง</span>
+                                <?php else: ?>
+                                    <span class="badge bg-info text-dark">โอนจ่าย</span>
+                                <?php endif; ?>
+                            </td>
+
+                            <td>
+                                <?php if(!empty($row['pay_slip'])): ?>
+                                    <a href="uploads/slips/<?= $row['pay_slip'] ?>" target="_blank" class="btn btn-sm btn-outline-primary py-0">ดูสลิป</a>
+                                <?php else: ?>
+                                    <span class="text-muted small">-</span>
+                                <?php endif; ?>
+                            </td>
+                            
+                            <td>
+                                <?php 
+                                    $st = $row['status'];
+                                    $cls = 'bg-secondary';
+                                    if($st=='รอชำระเงิน') $cls='st-wait-pay';
+                                    elseif($st=='รอตรวจสอบ') $cls='st-check';
+                                    elseif($st=='ชำระแล้ว') $cls='st-paid';
+                                    elseif($st=='จัดส่งแล้ว') $cls='st-ship';
+                                    elseif($st=='ยกเลิก') $cls='st-cancel';
+                                ?>
+                                <span class="status-badge <?= $cls ?>"><?= $st ?></span>
+                            </td>
+
+                            <td>
+                                <form method="POST" class="d-flex gap-1 justify-content-center">
+                                    <input type="hidden" name="order_id" value="<?= $row['o_id'] ?>">
+                                    <select name="new_status" class="form-select form-select-sm" style="width: 110px; font-size:0.8rem;">
+                                        <option value="รอชำระเงิน" <?= $st=='รอชำระเงิน'?'selected':''?>>รอชำระเงิน</option>
+                                        <option value="รอตรวจสอบ" <?= $st=='รอตรวจสอบ'?'selected':''?>>รอตรวจสอบ</option>
+                                        <option value="ชำระแล้ว" <?= $st=='ชำระแล้ว'?'selected':''?>>ชำระแล้ว</option>
+                                        <option value="จัดส่งแล้ว" <?= $st=='จัดส่งแล้ว'?'selected':''?>>จัดส่งแล้ว</option>
+                                        <option value="ยกเลิก" <?= $st=='ยกเลิก'?'selected':''?>>ยกเลิก</option>
+                                    </select>
+                                    <button type="submit" name="btn_update_status" class="btn btn-sm btn-success" title="บันทึก">
+                                        <i class="bi bi-check-lg"></i>
+                                    </button>
+                                </form>
+                            </td>
+
+                            <td>
+                                <a href="a_order_detail.php?id=<?= $row['o_id'] ?>" class="btn btn-sm btn-outline-dark">
+                                    <i class="bi bi-list"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <tr><td colspan="9" class="py-4 text-muted">ไม่พบข้อมูลออเดอร์</td></tr>
+                    <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
 </div>
 
-<!-- Filter -->
-<div class="card card-custom p-4 mb-4">
-<form method="GET">
-<div class="row g-3">
-
-<div class="col-md-3">
-<label class="form-label">สถานะ</label>
-<select name="status" class="form-select">
-<option value="">ทั้งหมด</option>
-<option value="รอแพ็ค">รอแพ็ค</option>
-<option value="รอจัดส่ง">รอจัดส่ง</option>
-<option value="จัดส่งแล้ว">จัดส่งแล้ว</option>
-</select>
-</div>
-
-<div class="col-md-3">
-<label class="form-label">วันที่สร้างออเดอร์</label>
-<input type="date" name="date" class="form-control">
-</div>
-
-<div class="col-md-4">
-<label class="form-label">ค้นหา</label>
-<input type="text" name="keyword" class="form-control" placeholder="Order ID / ชื่อลูกค้า">
-</div>
-
-<div class="col-md-2 d-flex align-items-end">
-<button class="btn btn-orange w-100">
-<i class="bi bi-search me-1"></i> ค้นหา
-</button>
-</div>
-
-</div>
-</form>
-</div>
-
-<!-- Table -->
-<div class="card card-custom">
-<div class="table-responsive">
-<table class="table align-middle mb-0 text-center">
-<thead>
-<tr>
-<th>Order ID</th>
-<th>วันที่</th>
-<th>ลูกค้า</th>
-<th>จำนวน</th>
-<th>ยอดรวม</th>
-<th>ชำระเงิน</th>
-<th>สถานะ</th>
-<th>จัดการ</th>
-</tr>
-</thead>
-<tbody>
-
-<?php if($result && mysqli_num_rows($result) > 0): ?>
-<?php while($order = mysqli_fetch_assoc($result)): ?>
-<tr>
-<td>#<?= $order['id'] ?></td>
-<td><?= date("Y-m-d", strtotime($order['created_at'])) ?></td>
-<td><?= htmlspecialchars($order['name']) ?></td>
-<td><?= $order['total_qty'] ?></td>
-<td class="text-warning fw-semibold">
-<?= number_format($order['total_price'],2) ?> บาท
-</td>
-<td><?= htmlspecialchars($order['payment_method']) ?></td>
-<td>
-<?php
-$badge = "bg-secondary";
-if($order['status']=="รอแพ็ค") $badge="badge-warning-custom";
-if($order['status']=="รอจัดส่ง") $badge="bg-primary";
-if($order['status']=="จัดส่งแล้ว") $badge="badge-success-custom";
-?>
-<span class="badge <?= $badge ?>">
-<?= $order['status'] ?>
-</span>
-</td>
-<td>
-<a href="a_order_detail.php?id=<?= $order['id'] ?>" 
-class="btn btn-sm btn-outline-dark">
-ดูรายละเอียด
-</a>
-</td>
-</tr>
-<?php endwhile; ?>
-<?php else: ?>
-<tr>
-<td colspan="8">ไม่พบข้อมูล</td>
-</tr>
-<?php endif; ?>
-
-</tbody>
-</table>
-</div>
-</div>
-
-</main>
-</div>
+</body>
+</html>
