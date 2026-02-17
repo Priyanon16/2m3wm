@@ -31,7 +31,6 @@ if (isset($_POST['Submit'])) {
 
             if (mysqli_query($conn, $sql)) {
                 echo "<script>
-                    alert('สมัครสมาชิกสำเร็จ!');
                     window.location.href='login.php';
                 </script>";
                 exit;

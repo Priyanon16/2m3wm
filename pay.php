@@ -76,25 +76,25 @@ if(isset($_POST['confirm_order'])){
     foreach($items as $item){
 
         $stmt_detail = $conn->prepare("
-            INSERT INTO order_details
-            (o_id, p_id, quantity
-, price)
-            VALUES (?, ?, ?, ?)
-        ");
+    INSERT INTO order_details
+    (o_id, p_id, q_ty, price)
+    VALUES (?, ?, ?, ?)
+");
 
-        if(!$stmt_detail){
-            die("Detail Error: ".$conn->error);
-        }
+if(!$stmt_detail){
+    die("Detail Error: " . $conn->error);
+}
 
-        $stmt_detail->bind_param(
-            "iiid",
-            $order_id,
-            $item['product_id'],
-            $item['quantity'],
-            $item['p_price']
-        );
+$stmt_detail->bind_param(
+    "iiid",
+    $order_id,
+    $item['product_id'],
+    $item['quantity'],
+    $item['p_price']
+);
 
-        $stmt_detail->execute();
+$stmt_detail->execute();
+
     }
 
     /* ======================
