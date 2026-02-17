@@ -108,6 +108,16 @@ include("header.php");
     overflow-wrap: break-word;
     line-height: 1.7;
 }
+.detail-title{
+    margin-bottom: 8px;
+}
+
+.product-detail{
+    margin-top: 0;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    line-height: 1.6;
+}
 
 </style>
 
@@ -213,13 +223,14 @@ include("header.php");
     </div>
 <?php endif; ?>
 
-<hr>
+<hr class="my-3">
 
-<h6 class="fw-bold mb-2">รายละเอียดสินค้า</h6>
+<h6 class="fw-bold detail-title">รายละเอียดสินค้า</h6>
 
-<p class="product-detail">
+<p class="product-detail mb-2">
 <?= nl2br(htmlspecialchars($product['p_detail'])) ?>
 </p>
+
 
 
 <?php if($product['p_qty'] > 0): ?>
