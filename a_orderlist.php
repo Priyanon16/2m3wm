@@ -37,7 +37,7 @@ SELECT
     o.status,
     o.payment_method,
     p.slip_image,  -- ดึงจากตาราง payments แทน
-    u.fullname AS customer_name,
+    u.name AS customer_name,
     COALESCE(SUM(od.q_ty), 0) as total_qty
 FROM orders o
 LEFT JOIN users u ON o.u_id = u.user_id 
