@@ -107,6 +107,47 @@ foreach($statuses as $st):
 <?php while($order = $rs->fetch_assoc()): ?>
 
 <div class="card mb-4 p-4 shadow-sm">
+    <?php
+/* ดึงรายการสินค้าในออเดอร์นี้ */
+$stmt_detail = $conn->prepare("
+    SELECT p.p_name, p.p_price,
+           (SELECT img_path FROM product_images WHERE p_id = p.p_id LIMIT 1) AS p_img,
+           od.q_ty
+    FROM order_details od
+    JOIN products p ON od.p_id = p.p_id
+    WHERE od.o_id = ?
+");
+$stmt_detail->bind_param("i", $order['o_id']);
+$stmt_detail->execute();
+$detail_rs = $stmt_detail->get_result();
+?>
+
+<hr>
+
+<?php while($item = $detail_rs->fetch_assoc()): ?>
+
+<div class="d-flex align-items-center mb-3">
+
+    <div style="width:70px;">
+        <img src="<?= $item['p_img'] ?: 'https://placehold.co/70x70' ?>"
+             class="img-fluid rounded">
+    </div>
+
+    <div class="ms-3 flex-grow-1">
+        <strong><?= htmlspecialchars($item['p_name']) ?></strong><br>
+        <small class="text-muted">
+            ราคา <?= number_format($item['p_price'],2) ?> × <?= $item['q_ty'] ?>
+        </small>
+    </div>
+
+    <div class="fw-bold text-end">
+        <?= number_format($item['p_price'] * $item['q_ty'],2) ?> บาท
+    </div>
+
+</div>
+
+<?php endwhile; ?>
+
 
 <div class="d-flex justify-content-between align-items-center">
 
