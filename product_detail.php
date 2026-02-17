@@ -215,9 +215,13 @@ include("header.php");
 
 <hr>
 
+<hr>
+
+<h6 class="fw-bold mb-2">รายละเอียดสินค้า</h6>
+
 <p class="product-detail">
-<?= htmlspecialchars($product['p_detail']) ?>
-</p>
+<?= nl2br(htmlspecialchars($product['p_detail'])) ?>
+</p>>
 
 
 <?php if($product['p_qty'] > 0): ?>
