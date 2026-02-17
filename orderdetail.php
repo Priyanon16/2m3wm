@@ -21,12 +21,20 @@ $oid = intval($_GET['id']);
    ดึงข้อมูลออเดอร์
 ========================== */
 $order_sql = "
-SELECT *
-FROM orders
-WHERE o_id = '$oid'
-AND u_id = '$uid'
+SELECT o.*, 
+       a.fullname,
+       a.phone,
+       a.address,
+       a.district,
+       a.province,
+       a.postal_code
+FROM orders o
+LEFT JOIN addresses a ON o.address_id = a.address_id
+WHERE o.o_id = '$oid'
+AND o.u_id = '$uid'
 LIMIT 1
 ";
+
 
 $order_rs = mysqli_query($conn,$order_sql);
 
@@ -116,6 +124,26 @@ $detail_rs = mysqli_query($conn,$detail_sql);
 </small>
 
 <hr>
+
+<h6 class="mb-3">📍 ที่อยู่จัดส่ง</h6>
+
+<?php if(!empty($order['fullname'])): ?>
+<div class="p-3 mb-4 bg-light rounded border">
+    <strong><?= htmlspecialchars($order['fullname']) ?></strong><br>
+    โทร: <?= htmlspecialchars($order['phone']) ?><br>
+    <?= htmlspecialchars($order['address']) ?>
+    ต.<?= htmlspecialchars($order['district']) ?>
+    จ.<?= htmlspecialchars($order['province']) ?>
+    <?= htmlspecialchars($order['postal_code']) ?>
+</div>
+<?php else: ?>
+<div class="alert alert-warning">
+    ไม่มีข้อมูลที่อยู่ในออเดอร์นี้
+</div>
+<?php endif; ?>
+
+<hr>
+
 
 <?php
 $status = $order['status'];
