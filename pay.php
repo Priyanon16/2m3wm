@@ -12,6 +12,10 @@ if(!isset($_SESSION['user_id'])){
     exit();
 }
 
+echo "SESSION USER ID = " . $_SESSION['user_id'];
+exit;
+
+
 $user_id = intval($_SESSION['user_id']);
 
 /* =========================================
