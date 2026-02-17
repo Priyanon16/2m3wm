@@ -232,7 +232,10 @@ include("header.php");
 
 <hr>
 
-<h6 class="fw-bold">จำนวน (มีสินค้า <?= $product['p_qty'] ?> ชิ้น)</h6>
+<h6 class="fw-bold">
+จำนวน (<span id="stock_text">กรุณาเลือกไซส์</span>)
+</h6>
+
 
 <input type="hidden" id="max_stock" value="<?= $product['p_qty'] ?>">
 
@@ -281,12 +284,29 @@ onclick="addToFav(<?= $product['p_id'] ?>)">
 
 
 <script>
-function selectSize(el,size){
+function selectSize(el, size, stock){
+
+    // ลบ active เดิม
     document.querySelectorAll('.size-btn')
-        .forEach(btn=>btn.classList.remove('active'));
+        .forEach(btn => btn.classList.remove('active'));
+
+    // ใส่ active ให้ปุ่มที่กด
     el.classList.add('active');
+
+    // บันทึกไซส์ที่เลือก
     document.getElementById('selectedSize').value = size;
+
+    // อัพเดต stock ของไซส์นั้น
+    document.getElementById('max_stock').value = stock;
+
+    // รีเซ็ตจำนวนกลับเป็น 1
+    document.getElementById('qty').value = 1;
+
+    // แสดงจำนวนคงเหลือ
+    document.getElementById('stock_text').innerText =
+        "มีสินค้า " + stock + " ชิ้น";
 }
+
 
 // [แก้ไข] ฟังก์ชันเพิ่มจำนวน ให้เช็คกับ max_stock
 function increase(){
