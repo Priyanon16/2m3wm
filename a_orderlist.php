@@ -56,7 +56,7 @@ if (!empty($date)) {
 }
 if (!empty($keyword)) {
     $kw = mysqli_real_escape_string($conn, $keyword);
-    $sql .= " AND (o.o_id LIKE '%$kw%' OR u.fullname LIKE '%$kw%') ";
+    $sql .= " AND (o.o_id LIKE '%$kw%' OR u.name LIKE '%$kw%') ";
 }
 
 $sql .= " GROUP BY o.o_id ORDER BY o.o_date DESC ";
@@ -173,8 +173,8 @@ $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
                                     $cls = 'bg-secondary';
                                     if($st=='รอชำระเงิน') $cls='st-wait-pay';
                                     elseif($st=='รอตรวจสอบ') $cls='st-check';
-                                    elseif($st=='ชำระแล้ว') $cls='st-paid';
-                                    elseif($st=='จัดส่งแล้ว') $cls='st-ship';
+                                    elseif($st=='รอรับ') $cls='st-paid';
+                                    elseif($st=='จัดส่งสำเร็จ') $cls='st-ship';
                                     elseif($st=='ยกเลิก') $cls='st-cancel';
                                 ?>
                                 <span class="status-badge <?= $cls ?>"><?= $st ?></span>
@@ -185,8 +185,8 @@ $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
                                     <select name="new_status" class="form-select form-select-sm" style="width: 110px; font-size:0.8rem;">
                                         <option value="รอชำระเงิน" <?= $st=='รอชำระเงิน'?'selected':''?>>รอชำระเงิน</option>
                                         <option value="รอตรวจสอบ" <?= $st=='รอตรวจสอบ'?'selected':''?>>รอตรวจสอบ</option>
-                                        <option value="ชำระแล้ว" <?= $st=='ชำระแล้ว'?'selected':''?>>ชำระแล้ว</option>
-                                        <option value="จัดส่งแล้ว" <?= $st=='จัดส่งแล้ว'?'selected':''?>>จัดส่งแล้ว</option>
+                                        <option value="รอรับ" <?= $st=='รอรับ'?'selected':''?>>รอรับ</option>
+                                        <option value="จัดส่งสำเร็จ" <?= $st=='จัดส่งสำเร็จ'?'selected':''?>>จัดส่งสำเร็จ</option>
                                         <option value="ยกเลิก" <?= $st=='ยกเลิก'?'selected':''?>>ยกเลิก</option>
                                     </select>
                                     <button type="submit" name="btn_update_status" class="btn btn-sm btn-success" title="บันทึก"><i class="bi bi-check-lg"></i></button>
