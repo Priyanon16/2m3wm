@@ -8,6 +8,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+
 $uid = intval($_SESSION['user_id']);
 
 if(!isset($_GET['id'])){
