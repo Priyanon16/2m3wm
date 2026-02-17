@@ -1,8 +1,7 @@
 <?php
 session_start();
 include 'connectdb.php';
-include 'bootstrap.php'; 
-include 'header.php'; 
+
 
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
@@ -83,7 +82,8 @@ if(isset($_POST['confirm_order'])){
     }
     exit();
 }
-
+include 'bootstrap.php'; 
+include 'header.php'; 
 /* =========================================
    ส่วนที่ 2: ดึงข้อมูลเพื่อแสดงผลหน้าเว็บ
 ========================================= */
@@ -170,7 +170,7 @@ $shipping = 60;
         .address-box { border-left: 4px solid #ff7a00; background: #fff8f0; padding: 15px; border-radius: 5px; }
         .edit-addr-btn { float: right; font-size: 0.9rem; text-decoration: none; color: #ff7a00; }
     </style>
-</head>
+</head> 
 <body>
 
     <div class="container py-5">
@@ -277,6 +277,7 @@ $shipping = 60;
                     <a href="cart.php" class="d-block text-center mt-3 text-muted" style="text-decoration:none;">
                         &lt; ย้อนกลับไปแก้ไขตะกร้า
                     </a>
+                    
 
                 </form>
             </div>
