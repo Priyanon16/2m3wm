@@ -8,7 +8,7 @@ mysqli_set_charset($conn,"utf8");
 /* =========================
    Config Pagination
 ========================= */
-$perpage = 10; // จำนวนรายการต่อหน้า
+$perpage = 10; 
 if (isset($_GET['page']) && (int)$_GET['page'] > 0) {
     $page = (int)$_GET['page'];
 } else {
@@ -22,23 +22,15 @@ $start = ($page - 1) * $perpage;
 if(isset($_GET['delete_id'])){
     $id = intval($_GET['delete_id']);
 
-    // 1. ดึงข้อมูลรูปภาพเพื่อเตรียมลบไฟล์
     $img = mysqli_query($conn,"SELECT p_img FROM products WHERE p_id=$id");
     $imgRow = mysqli_fetch_assoc($img);
 
-    // 2. ดึงรูปภาพเพิ่มเติม (ถ้ามี) จาก product_images (Option)
-    // ตรงนี้ถ้าคุณมีตาราง product_images สามารถเพิ่มโค้ดลบไฟล์วนลูปได้
-
-    // 3. เริ่มลบข้อมูล
     if(mysqli_query($conn,"DELETE FROM products WHERE p_id=$id")){
-        // ลบไฟล์รูปหลัก
         if(!empty($imgRow['p_img']) && file_exists($imgRow['p_img'])){
             unlink($imgRow['p_img']);
         }
         
-        // ลบข้อมูล Stock ที่เกี่ยวข้อง (สำคัญมาก ไม่งั้นเป็นขยะใน DB)
         mysqli_query($conn, "DELETE FROM product_stock WHERE p_id=$id");
-        // ลบรูปภาพย่อยใน DB (ถ้ามีตารางนี้)
         mysqli_query($conn, "DELETE FROM product_images WHERE p_id=$id");
 
         echo "<script>alert('ลบสินค้าและข้อมูลสต็อกเรียบร้อย');window.location='admin_product.php';</script>";
@@ -47,23 +39,38 @@ if(isset($_GET['delete_id'])){
 }
 
 /* =========================
-   ดึงแบรนด์ (สำหรับตัวเลือก Filter)
+   ดึงแบรนด์
 ========================= */
 $brand_rs = mysqli_query($conn,"SELECT * FROM brand ORDER BY brand_name ASC");
 
 /* =========================
-   Filter Condition
+   Filter Condition (แก้ไขเพิ่ม Search)
 ========================= */
 $where = "";
-$param_url = ""; // เก็บค่า parameter สำหรับลิ้งค์เปลี่ยนหน้า
+$param_url = ""; 
+$search_text = ""; // [เพิ่ม] ตัวแปรเก็บคำค้นหา
+
+// 1. เช็ค Brand
 if(isset($_GET['brand_id']) && $_GET['brand_id'] != ""){
     $brand_id = intval($_GET['brand_id']);
     $where = "WHERE p.brand_id = $brand_id";
-    $param_url = "&brand_id=".$brand_id;
+    $param_url .= "&brand_id=".$brand_id;
+}
+
+// 2. เช็ค Search [เพิ่มส่วนนี้]
+if(isset($_GET['search']) && $_GET['search'] != ""){
+    $search_text = mysqli_real_escape_string($conn, $_GET['search']);
+    // ถ้ามี WHERE อยู่แล้ว ให้ใช้ AND ต่อท้าย ถ้าไม่มีให้ใช้ WHERE นำหน้า
+    if($where == ""){
+        $where = "WHERE p.p_name LIKE '%$search_text%'";
+    } else {
+        $where .= " AND p.p_name LIKE '%$search_text%'";
+    }
+    $param_url .= "&search=".$search_text;
 }
 
 /* =========================
-   คำนวณจำนวนหน้า (Pagination Logic)
+   คำนวณจำนวนหน้า
 ========================= */
 $sql_count = "SELECT p.p_id FROM products p $where";
 $query_count = mysqli_query($conn, $sql_count);
@@ -71,9 +78,8 @@ $total_record = mysqli_num_rows($query_count);
 $total_page = ceil($total_record / $perpage);
 
 /* =========================
-   ดึงสินค้า (Main Query)
+   ดึงสินค้า
 ========================= */
-// ดึงข้อมูลสินค้า + limit สำหรับแบ่งหน้า
 $sql = "SELECT p.*, c.c_name, b.brand_name,
         (SELECT img_path FROM product_images WHERE p_id = p.p_id LIMIT 1) AS thumbnail
         FROM products p
@@ -132,7 +138,6 @@ body{
     border-radius: 8px;
     border: 1px solid #ddd;
 }
-/* Style สำหรับป้ายแสดงไซส์ */
 .size-badge {
     font-size: 0.8rem;
     background-color: #eef2f7;
@@ -178,8 +183,7 @@ body{
         </div>
 
         <div class="card p-3 mb-4">
-            <form method="GET" class="row align-items-center g-3">
-                <div class="col-md-4">
+            <form method="GET" class="row align-items-end g-3"> <div class="col-md-3">
                     <label class="fw-semibold">เลือกแบรนด์</label>
                     <select name="brand_id" class="form-select" onchange="this.form.submit()">
                         <option value="">-- ทุกแบรนด์ --</option>
@@ -192,10 +196,22 @@ body{
                     </select>
                 </div>
 
-                <?php if(isset($_GET['brand_id']) && $_GET['brand_id']!=""): ?>
+                <div class="col-md-4">
+                    <label class="fw-semibold">ค้นหาชื่อสินค้า</label>
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" 
+                               placeholder="พิมพ์ชื่อสินค้า..." 
+                               value="<?= htmlspecialchars($search_text); ?>">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-search"></i> ค้นหา
+                        </button>
+                    </div>
+                </div>
+
+                <?php if((isset($_GET['brand_id']) && $_GET['brand_id']!="") || (isset($_GET['search']) && $_GET['search']!="")): ?>
                 <div class="col-md-2">
-                    <a href="admin_product.php" class="btn btn-secondary mt-4">
-                        รีเซ็ต
+                    <a href="admin_product.php" class="btn btn-secondary w-100">
+                        <i class="bi bi-arrow-counterclockwise"></i> รีเซ็ต
                     </a>
                 </div>
                 <?php endif; ?>
@@ -254,7 +270,6 @@ body{
 
                         <td>
                             <?php
-                            // ดึงข้อมูลสต็อกของสินค้านี้จากตาราง product_stock
                             $pid = $row['p_id'];
                             $stock_sql = "SELECT * FROM product_stock WHERE p_id = $pid ORDER BY p_size ASC";
                             $stock_qry = mysqli_query($conn, $stock_sql);
@@ -264,15 +279,12 @@ body{
                                 echo '<div class="d-flex flex-wrap">';
                                 while($st = mysqli_fetch_assoc($stock_qry)){
                                     $total_in_stock += $st['p_qty_stock'];
-                                    // ถ้าสต็อกเป็น 0 ให้เป็นสีแดงจางๆ หรือซ่อน
                                     $bg_style = ($st['p_qty_stock'] > 0) ? '' : 'opacity:0.5; background:#ffebeb;';
                                     echo '<div class="size-badge" style="'.$bg_style.'">';
                                     echo 'เบอร์ ' . $st['p_size'] . ' : <span class="stock-count">' . $st['p_qty_stock'] . '</span>';
                                     echo '</div>';
                                 }
                                 echo '</div>';
-                                
-                                // แสดงยอดรวมทั้งหมดด้านล่าง
                                 echo '<div class="mt-1 small text-secondary">รวมทั้งหมด: <strong>'.number_format($total_in_stock).'</strong> คู่</div>';
                             } else {
                                 echo '<span class="badge bg-danger">ไม่มีข้อมูลสต็อก</span>';

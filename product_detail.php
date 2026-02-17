@@ -211,6 +211,14 @@ include("header.php");
     $size = trim($size);
     $stock = $sizeStocks[$size] ?? 0;
 ?>
+    <button type="button"
+        class="size-btn"
+        onclick="selectSize(this,'<?= $size ?>', <?= $stock ?>)">
+        <?= $size ?>
+    </button>
+<?php endforeach; ?>
+</div>
+
 
 <button type="button"
     class="size-btn <?= $stock <= 0 ? 'btn-disabled' : '' ?>"
