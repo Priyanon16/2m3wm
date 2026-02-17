@@ -2,9 +2,8 @@
 $title = "จัดการออเดอร์";
 require_once 'connectdb.php';
 include 'bootstrap.php';
-include 'header.php'; // ถ้ามี header แยกให้เปิดใช้
+include 'header.php';
 
-// ปิด Error Notice กวนใจ (แต่ยังโชว์ Error หลัก)
 error_reporting(E_ALL ^ E_NOTICE); 
 
 /* ===========================================
@@ -29,10 +28,7 @@ $status   = $_GET['status'] ?? '';
 $date     = $_GET['date'] ?? '';
 $keyword  = $_GET['keyword'] ?? '';
 
-// แก้ไข SQL: 
-// 1. เพิ่ม payment_method
-// 2. แก้ u.id เป็น u.user_id (ตามโครงสร้างปกติ)
-// 3. แก้ u.name เป็น u.fullname
+// แก้ไข SQL: Join ตาราง payments เพื่อดึง slip_image
 $sql = "
 SELECT 
     o.o_id,
@@ -40,12 +36,13 @@ SELECT
     o.total_price,
     o.status,
     o.payment_method,
-    o.pay_slip,
+    p.slip_image,  -- ดึงจากตาราง payments แทน
     u.fullname AS customer_name,
     COALESCE(SUM(od.q_ty), 0) as total_qty
 FROM orders o
 LEFT JOIN users u ON o.u_id = u.user_id 
 LEFT JOIN order_details od ON od.o_id = o.o_id
+LEFT JOIN payments p ON o.o_id = p.order_id  -- JOIN ตาราง payments ตรงนี้
 WHERE 1
 ";
 
@@ -60,7 +57,6 @@ if (!empty($date)) {
 }
 if (!empty($keyword)) {
     $kw = mysqli_real_escape_string($conn, $keyword);
-    // แก้ค้นหาให้ตรงกับชื่อคอลัมน์จริง
     $sql .= " AND (o.o_id LIKE '%$kw%' OR u.fullname LIKE '%$kw%') ";
 }
 
@@ -90,13 +86,12 @@ $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
         .btn-orange{ background:#ff7a00; color:#fff; border:none; }
         .btn-orange:hover{ background:#e66e00; color:#fff; }
         
-        /* Status Badge Colors */
         .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.85rem; color: white; display: inline-block; min-width: 80px;}
-        .st-wait-pay { background-color: #ffc107; color: #000; } /* รอชำระเงิน */
-        .st-check { background-color: #17a2b8; } /* รอตรวจสอบ */
-        .st-paid { background-color: #28a745; } /* ชำระแล้ว */
-        .st-ship { background-color: #007bff; } /* จัดส่งแล้ว */
-        .st-cancel { background-color: #dc3545; } /* ยกเลิก */
+        .st-wait-pay { background-color: #ffc107; color: #000; } 
+        .st-check { background-color: #17a2b8; } 
+        .st-paid { background-color: #28a745; } 
+        .st-ship { background-color: #007bff; } 
+        .st-cancel { background-color: #dc3545; } 
     </style>
 </head>
 <body>
@@ -182,8 +177,8 @@ $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
                             </td>
 
                             <td>
-                                <?php if(!empty($row['pay_slip'])): ?>
-                                    <a href="uploads/slips/<?= $row['pay_slip'] ?>" target="_blank" class="btn btn-sm btn-outline-primary py-0">ดูสลิป</a>
+                                <?php if(!empty($row['slip_image'])): ?>
+                                    <a href="uploads/slips/<?= $row['slip_image'] ?>" target="_blank" class="btn btn-sm btn-outline-primary py-0">ดูสลิป</a>
                                 <?php else: ?>
                                     <span class="text-muted small">-</span>
                                 <?php endif; ?>
