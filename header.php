@@ -207,7 +207,7 @@ if(isset($_SESSION['user_id'])){
                 </a>
             </li>
             <li>
-                <a class="dropdown-item" href="orderdetail.php">
+                <a class="dropdown-item" href="myorders.php">
                     <i class="bi bi-clock-history me-2 text-success"></i>ประวัติการสั่งซื้อ
                 </a>
             </li>
