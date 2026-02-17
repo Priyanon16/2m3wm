@@ -174,7 +174,7 @@ if(isset($_POST['email'])){
 
     <div class="login-card">
         <div class="brand-name">2M3WM</div> <h2>เข้าสู่ระบบ</h2>
-        <p class="subtitle">ระบบจัดการหลังบ้าน (Admin Panel)</p>
+        <p class="subtitle">ยินดีต้อนรับทุกท่าน เดินทางโดยสวัสดิภาพ</p>
 
         <form action="" method="POST">
             <div class="form-group">
