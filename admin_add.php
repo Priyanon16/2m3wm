@@ -20,7 +20,7 @@ $result_brand = mysqli_query($conn,
 /* =========================
    สร้างโฟลเดอร์
 ========================= */
-$upload_dir = __DIR__."/FileUpload/";
+$upload_dir = __DIR__ . "/uploads/products/";
 if(!is_dir($upload_dir)){
     mkdir($upload_dir,0755,true);
 }
@@ -73,7 +73,7 @@ if(isset($_POST['save'])){
 
                         if(move_uploaded_file($_FILES['p_img']['tmp_name'][$key],$target)){
 
-                            $img_path = "FileUpload/".$new_name;
+                            $img_path "uploads/products/".$new_name
 
                             // บันทึกลง product_images
                             mysqli_query($conn,"
