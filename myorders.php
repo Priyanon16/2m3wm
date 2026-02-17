@@ -1,6 +1,7 @@
 <?php
 session_start();
 include_once("connectdb.php");
+include_once("bootstrap.php");
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
