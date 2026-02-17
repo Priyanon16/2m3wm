@@ -122,10 +122,11 @@ $status = $order['status'];
 $step = 1;
 
 if($status == "รอชำระเงิน") $step = 1;
-elseif($status == "ที่ต้องจัดส่ง") $step = 2;
-elseif($status == "รอรับ") $step = 3;
-elseif($status == "จัดส่งสำเร็จ") $step = 4;
+elseif($status == "รอตรวจสอบ") $step = 2;
+elseif($status == "ชำระแล้ว") $step = 3;
+elseif($status == "จัดส่งแล้ว") $step = 4;
 elseif($status == "ยกเลิก") $step = 0;
+
 ?>
 
 <h6 class="mb-3">📦 สถานะการสั่งซื้อ</h6>
@@ -148,20 +149,21 @@ elseif($status == "ยกเลิก") $step = 0;
 <div class="step <?= $step>=2?'active':'' ?>">
     <div class="step-line"></div>
     <div class="step-circle">2</div>
-    <div class="step-label">ที่ต้องจัดส่ง</div>
+    <div class="step-label">รอตรวจสอบ</div>
 </div>
 
 <div class="step <?= $step>=3?'active':'' ?>">
     <div class="step-line"></div>
     <div class="step-circle">3</div>
-    <div class="step-label">รอรับ</div>
+    <div class="step-label">ชำระแล้ว</div>
 </div>
 
 <div class="step <?= $step>=4?'active':'' ?>">
     <div class="step-line"></div>
     <div class="step-circle">4</div>
-    <div class="step-label">จัดส่งสำเร็จ</div>
+    <div class="step-label">จัดส่งแล้ว</div>
 </div>
+
 
 </div>
 
