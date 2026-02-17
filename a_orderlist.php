@@ -40,7 +40,7 @@ SELECT
     u.name AS customer_name,
     COALESCE(SUM(od.q_ty), 0) as total_qty
 FROM orders o
-LEFT JOIN users u ON o.u_id = u.user_id 
+LEFT JOIN users u ON o.u_id = u.id 
 LEFT JOIN order_details od ON od.o_id = o.o_id
 LEFT JOIN payments p ON o.o_id = p.order_id  -- JOIN ตาราง payments ตรงนี้
 WHERE 1
