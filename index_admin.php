@@ -1,5 +1,37 @@
 <?php
-    include_once("check_login.php"); 
+    session_start();
+    include_once("connectdb.php");
+    
+    // ตรวจสอบสิทธิ์ Admin (ถ้ามีระบบ Login แยกสำหรับ Admin ให้เช็คตรงนี้)
+    // if(!isset($_SESSION['admin_id'])) { header("Location: login.php"); exit(); }
+    
+    // ถ้าไม่มี session uname ให้ redirect กลับไป login (ใช้ตาม check_login.php เดิมของคุณ)
+    if(!isset($_SESSION['uname'])){
+        header("Location: login.php");
+        exit();
+    }
+
+    /* ===========================================
+       ดึงข้อมูลสถิติ (Real-time Statistics)
+    =========================================== */
+    
+    // 1. นับจำนวนออเดอร์ทั้งหมด
+    $sql_orders = "SELECT COUNT(*) as count FROM orders";
+    $rs_orders = mysqli_query($conn, $sql_orders);
+    $row_orders = mysqli_fetch_assoc($rs_orders);
+    $count_orders = $row_orders['count'];
+
+    // 2. นับจำนวนสินค้าทั้งหมด
+    $sql_products = "SELECT COUNT(*) as count FROM products";
+    $rs_products = mysqli_query($conn, $sql_products);
+    $row_products = mysqli_fetch_assoc($rs_products);
+    $count_products = $row_products['count'];
+
+    // 3. นับจำนวนสมาชิกทั้งหมด
+    $sql_users = "SELECT COUNT(*) as count FROM users";
+    $rs_users = mysqli_query($conn, $sql_users);
+    $row_users = mysqli_fetch_assoc($rs_users);
+    $count_users = $row_users['count'];
 ?>
 
 <!DOCTYPE html>
@@ -177,83 +209,80 @@ header {
 
         </div>
     </div>
-   <div class="row g-4 mb-5 text-center justify-content-center">
-
-    <div class="col-xl-3 col-lg-4 col-md-6">
-        <div class="stat-card">
-            <i class="bi bi-receipt fs-1 text-warning"></i>
-            <div class="stat-number">125</div>
-            <div class="text-muted">ออเดอร์ทั้งหมด</div>
-        </div>
-    </div>
-
-    <div class="col-xl-3 col-lg-4 col-md-6">
-        <div class="stat-card">
-            <i class="bi bi-box-seam fs-1 text-success"></i>
-            <div class="stat-number">48</div>
-            <div class="text-muted">สินค้าทั้งหมด</div>
-        </div>
-    </div>
-
-    <div class="col-xl-3 col-lg-4 col-md-6">
-        <div class="stat-card">
-            <i class="bi bi-people fs-1 text-primary"></i>
-            <div class="stat-number">320</div>
-            <div class="text-muted">สมาชิกทั้งหมด</div>
-        </div>
-    </div>
-
-</div>
-
-
     
+    <div class="row g-4 mb-5 text-center justify-content-center">
+
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="stat-card">
+                <i class="bi bi-receipt fs-1 text-warning"></i>
+                <div class="stat-number"><?= number_format($count_orders); ?></div> <div class="text-muted">ออเดอร์ทั้งหมด</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="stat-card">
+                <i class="bi bi-box-seam fs-1 text-success"></i>
+                <div class="stat-number"><?= number_format($count_products); ?></div> <div class="text-muted">สินค้าทั้งหมด</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="stat-card">
+                <i class="bi bi-people fs-1 text-primary"></i>
+                <div class="stat-number"><?= number_format($count_users); ?></div> <div class="text-muted">สมาชิกทั้งหมด</div>
+            </div>
+        </div>
+
+    </div>
+
+
     <div class="row g-4 justify-content-center">
 
-    <div class="col-xl-3 col-lg-4 col-md-6">
-        <a href="admin_product.php" class="menu-card">
-            <i class="bi bi-box-seam card-icon"></i>
-            <h4 class="card-title">จัดการสินค้า</h4>
-            <p class="card-desc">เพิ่มรายการสินค้าใหม่ แก้ไขราคา</p>
-        </a>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <a href="admin_product.php" class="menu-card">
+                <i class="bi bi-box-seam card-icon"></i>
+                <h4 class="card-title">จัดการสินค้า</h4>
+                <p class="card-desc">เพิ่มรายการสินค้าใหม่ แก้ไขราคา</p>
+            </a>
+        </div>
+
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <a href="a_orderlist.php" class="menu-card">
+                <i class="bi bi-receipt card-icon"></i>
+                <h4 class="card-title">จัดการออเดอร์</h4>
+                <p class="card-desc">ตรวจสอบรายการสั่งซื้อ</p>
+            </a>
+        </div>
+
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <a href="customer_data.php" class="menu-card">
+                <i class="bi bi-people card-icon"></i>
+                <h4 class="card-title">จัดการลูกค้า</h4>
+                <p class="card-desc">ดูรายชื่อสมาชิก และประวัติการใช้งาน</p>
+            </a>
+        </div>
+
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <a href="category_products.php" class="menu-card">
+                <i class="bi bi-tags card-icon"></i>
+                <h4 class="card-title">จัดการหมวดหมู่</h4>
+                <p class="card-desc">แยกประเภทสินค้า</p>
+            </a>
+        </div>
+
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <a href="admin_brand.php" class="menu-card">
+                <i class="bi bi-bookmark-star card-icon"></i>
+                <h4 class="card-title">จัดการแบรนด์</h4>
+                <p class="card-desc">เพิ่ม แก้ไข ลบ แบรนด์สินค้า</p>
+            </a>
+        </div>
+
+
     </div>
 
-    <div class="col-xl-3 col-lg-4 col-md-6">
-        <a href="a_orderlist.php" class="menu-card">
-            <i class="bi bi-receipt card-icon"></i>
-            <h4 class="card-title">จัดการออเดอร์</h4>
-            <p class="card-desc">ตรวจสอบรายการสั่งซื้อ</p>
-        </a>
-    </div>
-
-    <div class="col-xl-3 col-lg-4 col-md-6">
-        <a href="customer_data.php" class="menu-card">
-            <i class="bi bi-people card-icon"></i>
-            <h4 class="card-title">จัดการลูกค้า</h4>
-            <p class="card-desc">ดูรายชื่อสมาชิก และประวัติการใช้งาน</p>
-        </a>
-    </div>
-
-    <div class="col-xl-3 col-lg-4 col-md-6">
-        <a href="category_products.php" class="menu-card">
-            <i class="bi bi-tags card-icon"></i>
-            <h4 class="card-title">จัดการหมวดหมู่</h4>
-            <p class="card-desc">แยกประเภทสินค้า</p>
-        </a>
-    </div>
-
-    <div class="col-xl-3 col-lg-4 col-md-6">
-        <a href="admin_brand.php" class="menu-card">
-            <i class="bi bi-bookmark-star card-icon"></i>
-            <h4 class="card-title">จัดการแบรนด์</h4>
-            <p class="card-desc">เพิ่ม แก้ไข ลบ แบรนด์สินค้า</p>
-        </a>
-    </div>
-
-
-</div>
-
-    <footer class="text-center pb-5">
-        <p class="small">&copy; 2026 2M3WM SNEAKER HUB - ADMIN PANEL</p>
+    <footer class="text-center pb-5 mt-5">
+        <p class="small text-muted">&copy; 2026 2M3WM SNEAKER HUB - ADMIN PANEL</p>
     </footer>
 </div>
 
