@@ -76,6 +76,34 @@ $rs = $stmt->get_result();
 ?>
 
 <?php include("header.php"); ?>
+<style>
+.filter-btn{
+    border: 1.5px solid #ddd;
+    border-radius: 50px;
+    padding: 6px 18px;
+    font-weight: 500;
+    background: #fff;
+    color: #333;
+    transition: all .25s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.filter-btn:hover{
+    background: #ff7a00;
+    color: #fff;
+    border-color: #ff7a00;
+}
+
+.filter-btn.active{
+    background: #ff7a00;
+    color: #fff;
+    border-color: #ff7a00;
+    box-shadow: 0 4px 12px rgba(255,122,0,0.3);
+}
+</style>
+
+
 
 <div class="container mt-5 mb-5">
 
@@ -83,6 +111,7 @@ $rs = $stmt->get_result();
 
 <!-- ปุ่มกรอง -->
 <div class="mb-4">
+
 <?php
 $statuses = [
     "ทั้งหมด",
@@ -95,12 +124,16 @@ $statuses = [
 
 foreach($statuses as $st):
 ?>
+
 <a href="?status=<?= urlencode($st) ?>"
-   class="btn btn-sm <?= ($filter==$st)?'btn-warning':'btn-outline-secondary' ?> me-2 mb-2">
+   class="filter-btn <?= ($filter==$st)?'active':'' ?> me-2 mb-2">
    <?= $st ?>
 </a>
+
 <?php endforeach; ?>
+
 </div>
+
 
 <?php if($rs->num_rows > 0): ?>
 
