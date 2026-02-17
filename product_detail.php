@@ -40,6 +40,20 @@ while($img = mysqli_fetch_assoc($img_rs)){
     $images[] = $img['img_path'];
 }
 
+/* ดึง stock ต่อไซส์จาก product_stock */
+$sizeStocks = [];
+
+$size_rs = mysqli_query($conn,"
+SELECT p_size, p_qty_stock 
+FROM product_stock 
+WHERE p_id = $id
+");
+
+while($row = mysqli_fetch_assoc($size_rs)){
+    $sizeStocks[$row['p_size']] = $row['p_qty_stock'];
+}
+
+
 /* แยกไซส์ */
 $sizes = [];
 if(!empty($product['p_size'])){
@@ -193,13 +207,24 @@ include("header.php");
 <h6 class="fw-bold">เลือกไซส์</h6>
 
 <div id="sizeContainer" class="d-flex flex-wrap">
-<?php foreach($sizes as $size): ?>
-    <button type="button"
-        class="size-btn"
-        onclick="selectSize(this,'<?= trim($size) ?>')">
-        <?= trim($size) ?>
-    </button>
+<?php foreach($sizes as $size): 
+    $size = trim($size);
+    $stock = $sizeStocks[$size] ?? 0;
+?>
+
+<button type="button"
+    class="size-btn <?= $stock <= 0 ? 'btn-disabled' : '' ?>"
+    onclick="selectSize(this,'<?= $size ?>', <?= $stock ?>)"
+    <?= $stock <= 0 ? 'disabled' : '' ?>>
+    
+    <?= $size ?>
+    <br>
+    <small>(เหลือ <?= $stock ?>)</small>
+
+</button>
+
 <?php endforeach; ?>
+
 </div>
 
 

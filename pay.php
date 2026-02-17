@@ -2,8 +2,7 @@
 session_start();
 include 'connectdb.php';
 
-// ย้าย bootstrap และ header ไปไว้ด้านล่าง (หลัง Logic PHP) 
-// เพื่อป้องกันปัญหา header already sent เวลาใช้คำสั่ง header() หรือ script redirect
+// ย้าย bootstrap และ header ไปไว้ด้านล่างสุด
 // include 'bootstrap.php'; 
 // include 'header.php'; 
 
@@ -31,7 +30,7 @@ if(isset($_POST['confirm_order'])){
     $payment_method = $_POST['payment_method'];
 
     // -----------------------------------------------------------
-    // [แก้ไขใหม่] 1. ตรวจสอบที่อยู่ก่อนทำรายการอื่น
+    // [แก้ไขใหม่] 1. ตรวจสอบที่อยู่ก่อน
     // -----------------------------------------------------------
     $sql_check_addr = "SELECT address_id FROM addresses WHERE user_id = ? ORDER BY address_id DESC LIMIT 1";
     $stmt_check = $conn->prepare($sql_check_addr);
@@ -40,11 +39,7 @@ if(isset($_POST['confirm_order'])){
     $res_check = $stmt_check->get_result();
 
     if($res_check->num_rows == 0){
-        // ถ้าไม่มีที่อยู่ -> แจ้งเตือนและเด้งไปหน้า address.php ทันที
-        echo "<script>
-                alert('กรุณาเพิ่มที่อยู่จัดส่งก่อนทำการสั่งซื้อ'); 
-                window.location='address.php';
-              </script>";
+        echo "<script>alert('กรุณาเพิ่มที่อยู่จัดส่งก่อนทำการสั่งซื้อ'); window.location='address.php';</script>";
         exit();
     }
 
@@ -79,7 +74,7 @@ if(isset($_POST['confirm_order'])){
     $shipping_cost = 60; 
     $final_total = $total_price + $shipping_cost;
 
-    // 1.2 สร้าง Order (ใส่ address_id ที่หามาได้ตะกี้)
+    // 1.2 สร้าง Order
     $stmt_order = $conn->prepare("
         INSERT INTO orders 
         (u_id, address_id, total_price, status, o_date, payment_method) 
@@ -87,13 +82,13 @@ if(isset($_POST['confirm_order'])){
     ");
     
     if(!$stmt_order){
-        die("Prepare Error: " . $conn->error);
+        die("Prepare Error (Order): " . $conn->error);
     }
 
     $stmt_order->bind_param("iids", $user_id, $address_id, $final_total, $payment_method);
     
     if(!$stmt_order->execute()){
-        die("Execute Error: " . $stmt_order->error);
+        die("Execute Error (Order): " . $stmt_order->error);
     }
     
     $order_id = $stmt_order->insert_id;
@@ -127,7 +122,6 @@ if(isset($_POST['confirm_order'])){
 /* =========================================
    ส่วนที่ 2: ดึงข้อมูลเพื่อแสดงผลหน้าเว็บ
 ========================================= */
-// โหลดไฟล์ View ต่างๆ ตรงนี้ (หลังจาก Logic จบแล้ว)
 include 'bootstrap.php'; 
 include 'header.php'; 
 
@@ -153,14 +147,17 @@ if ($addr_row) {
                     $addr_row['postal_code'];
     $has_address = true;
 } else {
-    // Fallback: ดึงชื่อจาก users
-    $sql_u = "SELECT fullname FROM users WHERE user_id = ?";
+    // Fallback: ดึงชื่อจาก users (แก้ชื่อคอลัมน์ user_id -> id)
+    $sql_u = "SELECT fullname FROM users WHERE id = ?"; 
     $stmt_u = $conn->prepare($sql_u);
-    $stmt_u->bind_param("i", $user_id);
-    $stmt_u->execute();
-    $res_u = $stmt_u->get_result();
-    if($u_row = $res_u->fetch_assoc()){
-        $show_fullname = $u_row['fullname'];
+    
+    if($stmt_u){
+        $stmt_u->bind_param("i", $user_id);
+        $stmt_u->execute();
+        $res_u = $stmt_u->get_result();
+        if($u_row = $res_u->fetch_assoc()){
+            $show_fullname = $u_row['fullname'];
+        }
     }
 }
 
