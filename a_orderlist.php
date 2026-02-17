@@ -97,7 +97,7 @@ $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
 
 <div class="wrapper">
     
-    <?php // include 'sidebar.php'; ?> 
+    <?php include 'sidebar.php'; ?> 
 
     <main>
         <div class="page-header d-flex justify-content-between align-items-center">
