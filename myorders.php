@@ -1,7 +1,6 @@
 <?php
 session_start();
 include_once("connectdb.php");
-include_once("bootstrap.php");
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -17,46 +16,39 @@ if(isset($_GET['cancel'])){
 
     $oid = intval($_GET['cancel']);
 
-    // ตรวจสอบว่าเป็นของ user นี้
-    $check = mysqli_query($conn,"
-        SELECT status 
-        FROM orders 
-        WHERE o_id='$oid' 
-        AND u_id='$uid'
-        LIMIT 1
-    ");
+    // เช็คว่าเป็นออเดอร์ของ user นี้จริง
+    $stmt = $conn->prepare("SELECT status FROM orders WHERE o_id=? AND u_id=? LIMIT 1");
+    $stmt->bind_param("ii", $oid, $uid);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-    if(mysqli_num_rows($check) > 0){
+    if($result->num_rows > 0){
 
-        $data = mysqli_fetch_assoc($check);
+        $data = $result->fetch_assoc();
 
-        // ยกเลิกได้เฉพาะ 2 สถานะนี้
-        if($data['status'] == 'รอชำระเงิน' || 
-           $data['status'] == 'ที่ต้องจัดส่ง'){
+        if($data['status'] == 'รอชำระเงิน' || $data['status'] == 'ที่ต้องจัดส่ง'){
 
             // คืน stock
-            $detail_rs = mysqli_query($conn,"
-                SELECT p_id, q_ty 
-                FROM order_details 
-                WHERE o_id='$oid'
-            ");
+            $stmt_detail = $conn->prepare("SELECT p_id, q_ty FROM order_details WHERE o_id=?");
+            $stmt_detail->bind_param("i", $oid);
+            $stmt_detail->execute();
+            $detail_rs = $stmt_detail->get_result();
 
-            while($item = mysqli_fetch_assoc($detail_rs)){
-                mysqli_query($conn,"
-                    UPDATE products 
-                    SET p_qty = p_qty + {$item['q_ty']}
-                    WHERE p_id = {$item['p_id']}
-                ");
+            while($item = $detail_rs->fetch_assoc()){
+                $stmt_update = $conn->prepare("UPDATE products SET p_qty = p_qty + ? WHERE p_id=?");
+                $stmt_update->bind_param("ii", $item['q_ty'], $item['p_id']);
+                $stmt_update->execute();
             }
 
             // เปลี่ยนสถานะ
-            mysqli_query($conn,"
+            $stmt_cancel = $conn->prepare("
                 UPDATE orders 
                 SET status='ยกเลิก',
                     cancelled_at=NOW(),
                     cancel_reason='ลูกค้ายกเลิก'
-                WHERE o_id='$oid'
-            ");
+                WHERE o_id=?");
+            $stmt_cancel->bind_param("i", $oid);
+            $stmt_cancel->execute();
         }
     }
 
@@ -67,58 +59,28 @@ if(isset($_GET['cancel'])){
 /* ==========================
    Filter สถานะ
 ========================== */
+
 $filter = $_GET['status'] ?? 'ทั้งหมด';
 
-$where = "WHERE u_id='$uid'";
-
-if($filter != 'ทั้งหมด'){
-    $filter_safe = mysqli_real_escape_string($conn,$filter);
-    $where .= " AND status='$filter_safe'";
+if($filter == 'ทั้งหมด'){
+    $stmt = $conn->prepare("SELECT * FROM orders WHERE u_id=? ORDER BY o_id DESC");
+    $stmt->bind_param("i", $uid);
+}else{
+    $stmt = $conn->prepare("SELECT * FROM orders WHERE u_id=? AND status=? ORDER BY o_id DESC");
+    $stmt->bind_param("is", $uid, $filter);
 }
 
-/* ==========================
-   ดึงรายการออเดอร์
-========================== */
-$sql = "
-SELECT *
-FROM orders
-$where
-ORDER BY o_id DESC
-";
-
-$rs = mysqli_query($conn,$sql);
+$stmt->execute();
+$rs = $stmt->get_result();
 ?>
 
 <?php include("header.php"); ?>
 
-<style>
-body{
-    background:#f4f6f9;
-    font-family:'Kanit',sans-serif;
-}
-.order-card{
-    border:none;
-    border-radius:15px;
-    box-shadow:0 5px 15px rgba(0,0,0,0.08);
-}
-.status-badge{
-    padding:6px 14px;
-    border-radius:50px;
-    font-size:13px;
-    font-weight:500;
-}
-</style>
-
 <div class="container mt-5 mb-5">
 
-<h3 class="mb-4">
-<i class="bi bi-clock-history text-warning"></i>
-รายการสั่งซื้อของฉัน
-</h3>
+<h3 class="mb-4">รายการสั่งซื้อของฉัน</h3>
 
-<!-- ==========================
-     แถบกรองสถานะ
-========================== -->
+<!-- ปุ่มกรอง -->
 <div class="mb-4">
 <?php
 $statuses = [
@@ -139,12 +101,11 @@ foreach($statuses as $st):
 <?php endforeach; ?>
 </div>
 
+<?php if($rs->num_rows > 0): ?>
 
-<?php if(mysqli_num_rows($rs) > 0): ?>
+<?php while($order = $rs->fetch_assoc()): ?>
 
-<?php while($order = mysqli_fetch_assoc($rs)): ?>
-
-<div class="card order-card mb-4 p-4">
+<div class="card mb-4 p-4 shadow-sm">
 
 <div class="d-flex justify-content-between align-items-center">
 
@@ -159,16 +120,16 @@ foreach($statuses as $st):
 
 <?php
 $status = $order['status'];
-$badge = "bg-secondary";
+$badge = "secondary";
 
-if($status=="รอชำระเงิน") $badge="bg-danger";
-elseif($status=="ที่ต้องจัดส่ง") $badge="bg-warning text-dark";
-elseif($status=="รอรับ") $badge="bg-primary";
-elseif($status=="จัดส่งสำเร็จ") $badge="bg-success";
-elseif($status=="ยกเลิก") $badge="bg-dark";
+if($status=="รอชำระเงิน") $badge="danger";
+elseif($status=="ที่ต้องจัดส่ง") $badge="warning";
+elseif($status=="รอรับ") $badge="primary";
+elseif($status=="จัดส่งสำเร็จ") $badge="success";
+elseif($status=="ยกเลิก") $badge="dark";
 ?>
 
-<span class="status-badge <?= $badge ?>">
+<span class="badge bg-<?= $badge ?>">
 <?= $status ?>
 </span>
 
