@@ -88,7 +88,7 @@ if(isset($_SESSION['user_id'])){
 .header-icons{
   display:flex;
   align-items:center;
-  gap:18px;
+  gap:1คpx;
 }
 
 .header-icons a{
@@ -166,6 +166,19 @@ if(isset($_SESSION['user_id'])){
 .nav-menu .nav-link:hover {
     color: #ff7a00 !important;
 }
+.logo{
+  font-size: 22px;
+  font-weight: bold;
+  color: #fff;      /* หรือสีที่คุณใช้ */
+}
+
+.logo span{
+  color: #ff7a00;   /* สีส้ม */
+}
+
+.logo:hover{
+  opacity: 0.85;
+}
 
 </style>
 
@@ -173,9 +186,10 @@ if(isset($_SESSION['user_id'])){
   <div class="container d-flex align-items-center justify-content-between">
 
     <!-- LOGO -->
-    <div class="logo">
-      2M<span>3WM</span>
-    </div>
+<a href="index.php" class="logo text-decoration-none">
+  2M<span>3WM</span>
+</a>
+
 
     
     <!-- MENU -->
