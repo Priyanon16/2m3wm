@@ -6,50 +6,82 @@ include_once("bootstrap.php");
 mysqli_set_charset($conn,"utf8");
 
 /* =========================
+   Config Pagination
+========================= */
+$perpage = 10; // จำนวนรายการต่อหน้า
+if (isset($_GET['page']) && (int)$_GET['page'] > 0) {
+    $page = (int)$_GET['page'];
+} else {
+    $page = 1;
+}
+$start = ($page - 1) * $perpage;
+
+/* =========================
    ลบสินค้า
 ========================= */
 if(isset($_GET['delete_id'])){
     $id = intval($_GET['delete_id']);
 
-    // หมายเหตุ: ตรงนี้โค้ดยังเป็นแบบเดิมที่ดึงจาก products 
-    // ถ้าอนาคตต้องการลบรูปจริงจาก folder ด้วย อาจต้องแก้ให้ดึงจาก product_images
+    // 1. ดึงข้อมูลรูปภาพเพื่อเตรียมลบไฟล์
     $img = mysqli_query($conn,"SELECT p_img FROM products WHERE p_id=$id");
     $imgRow = mysqli_fetch_assoc($img);
 
+    // 2. ดึงรูปภาพเพิ่มเติม (ถ้ามี) จาก product_images (Option)
+    // ตรงนี้ถ้าคุณมีตาราง product_images สามารถเพิ่มโค้ดลบไฟล์วนลูปได้
+
+    // 3. เริ่มลบข้อมูล
     if(mysqli_query($conn,"DELETE FROM products WHERE p_id=$id")){
+        // ลบไฟล์รูปหลัก
         if(!empty($imgRow['p_img']) && file_exists($imgRow['p_img'])){
             unlink($imgRow['p_img']);
         }
-        echo "<script>alert('ลบสินค้าเรียบร้อย');window.location='admin_product.php';</script>";
+        
+        // ลบข้อมูล Stock ที่เกี่ยวข้อง (สำคัญมาก ไม่งั้นเป็นขยะใน DB)
+        mysqli_query($conn, "DELETE FROM product_stock WHERE p_id=$id");
+        // ลบรูปภาพย่อยใน DB (ถ้ามีตารางนี้)
+        mysqli_query($conn, "DELETE FROM product_images WHERE p_id=$id");
+
+        echo "<script>alert('ลบสินค้าและข้อมูลสต็อกเรียบร้อย');window.location='admin_product.php';</script>";
         exit();
     }
 }
 
 /* =========================
-   ดึงแบรนด์
+   ดึงแบรนด์ (สำหรับตัวเลือก Filter)
 ========================= */
 $brand_rs = mysqli_query($conn,"SELECT * FROM brand ORDER BY brand_name ASC");
 
 /* =========================
-   Filter
+   Filter Condition
 ========================= */
 $where = "";
+$param_url = ""; // เก็บค่า parameter สำหรับลิ้งค์เปลี่ยนหน้า
 if(isset($_GET['brand_id']) && $_GET['brand_id'] != ""){
     $brand_id = intval($_GET['brand_id']);
     $where = "WHERE p.brand_id = $brand_id";
+    $param_url = "&brand_id=".$brand_id;
 }
 
 /* =========================
-   ดึงสินค้า (แก้ไข SQL)
+   คำนวณจำนวนหน้า (Pagination Logic)
 ========================= */
-// [แก้ไข] เพิ่ม Subquery เพื่อดึงรูปภาพ 1 รูปมาเป็น thumbnail
+$sql_count = "SELECT p.p_id FROM products p $where";
+$query_count = mysqli_query($conn, $sql_count);
+$total_record = mysqli_num_rows($query_count);
+$total_page = ceil($total_record / $perpage);
+
+/* =========================
+   ดึงสินค้า (Main Query)
+========================= */
+// ดึงข้อมูลสินค้า + limit สำหรับแบ่งหน้า
 $sql = "SELECT p.*, c.c_name, b.brand_name,
         (SELECT img_path FROM product_images WHERE p_id = p.p_id LIMIT 1) AS thumbnail
         FROM products p
         LEFT JOIN category c ON p.c_id = c.c_id
         LEFT JOIN brand b ON p.brand_id = b.brand_id
         $where
-        ORDER BY p.p_id DESC";
+        ORDER BY p.p_id DESC
+        LIMIT $start, $perpage";
 
 $result = mysqli_query($conn,$sql);
 ?>
@@ -64,33 +96,27 @@ body{
     font-family:'Kanit',sans-serif;
     background:#f4f6f9;
 }
-
 .layout{
     display:flex;
     min-height:100vh;
 }
-
 .main-content{
     flex:1;
     padding:30px;
 }
-
 .card{
     border:none;
     border-radius:18px;
     box-shadow:0 10px 25px rgba(0,0,0,.05);
 }
-
 .table thead{
     background:#111;
     color:#fff;
 }
-
 .price{
     color:#ff5722;
     font-weight:700;
 }
-
 .btn-theme{
     background:#ff5722;
     color:#fff;
@@ -99,14 +125,35 @@ body{
 .btn-theme:hover{
     background:#e64a19;
 }
-
-/* เพิ่ม CSS สำหรับรูปภาพ thumbnail */
 .img-thumb {
     width: 60px;
     height: 60px;
     object-fit: cover;
     border-radius: 8px;
     border: 1px solid #ddd;
+}
+/* Style สำหรับป้ายแสดงไซส์ */
+.size-badge {
+    font-size: 0.8rem;
+    background-color: #eef2f7;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin: 2px;
+    display: inline-block;
+}
+.stock-count {
+    font-weight: bold;
+    color: #ff5722;
+}
+.page-link {
+    color: #333;
+}
+.page-item.active .page-link {
+    background-color: #ff5722;
+    border-color: #ff5722;
+    color: white;
 }
 </style>
 </head>
@@ -160,13 +207,14 @@ body{
                 <table class="table table-hover align-middle">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>รูป</th> <th>ชื่อสินค้า</th>
-                            <th>หมวดหมู่</th>
-                            <th>แบรนด์</th>
-                            <th>เพศ</th>
-                            <th>คงเหลือ</th> <th>ราคา</th>
-                            <th class="text-center">จัดการ</th>
+                            <th width="5%">ID</th>
+                            <th width="10%">รูป</th> 
+                            <th width="20%">ชื่อสินค้า</th>
+                            <th width="10%">แบรนด์</th>
+                            <th width="10%">เพศ</th>
+                            <th width="25%">สต็อก (ไซส์ : จำนวน)</th> 
+                            <th width="10%">ราคา</th>
+                            <th width="10%" class="text-center">จัดการ</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -184,8 +232,10 @@ body{
                             <?php endif; ?>
                         </td>
 
-                        <td><?= $row['p_name']; ?></td>
-                        <td><?= $row['c_name'] ?? '-'; ?></td>
+                        <td>
+                            <div class="fw-bold"><?= $row['p_name']; ?></div>
+                            <small class="text-muted"><?= $row['c_name'] ?? '-'; ?></small>
+                        </td>
                         <td>
                             <span class="badge bg-dark">
                                 <?= $row['brand_name'] ?? '-'; ?>
@@ -203,23 +253,43 @@ body{
                         </td>
 
                         <td>
-                            <?php if($row['p_qty'] <= 0): ?>
-                                <span class="badge bg-danger">สินค้าหมด</span>
-                            <?php else: ?>
-                                <?= number_format($row['p_qty']); ?> ชิ้น
-                            <?php endif; ?>
+                            <?php
+                            // ดึงข้อมูลสต็อกของสินค้านี้จากตาราง product_stock
+                            $pid = $row['p_id'];
+                            $stock_sql = "SELECT * FROM product_stock WHERE p_id = $pid ORDER BY p_size ASC";
+                            $stock_qry = mysqli_query($conn, $stock_sql);
+                            $total_in_stock = 0;
+                            
+                            if(mysqli_num_rows($stock_qry) > 0){
+                                echo '<div class="d-flex flex-wrap">';
+                                while($st = mysqli_fetch_assoc($stock_qry)){
+                                    $total_in_stock += $st['p_qty_stock'];
+                                    // ถ้าสต็อกเป็น 0 ให้เป็นสีแดงจางๆ หรือซ่อน
+                                    $bg_style = ($st['p_qty_stock'] > 0) ? '' : 'opacity:0.5; background:#ffebeb;';
+                                    echo '<div class="size-badge" style="'.$bg_style.'">';
+                                    echo 'เบอร์ ' . $st['p_size'] . ' : <span class="stock-count">' . $st['p_qty_stock'] . '</span>';
+                                    echo '</div>';
+                                }
+                                echo '</div>';
+                                
+                                // แสดงยอดรวมทั้งหมดด้านล่าง
+                                echo '<div class="mt-1 small text-secondary">รวมทั้งหมด: <strong>'.number_format($total_in_stock).'</strong> คู่</div>';
+                            } else {
+                                echo '<span class="badge bg-danger">ไม่มีข้อมูลสต็อก</span>';
+                            }
+                            ?>
                         </td>
 
                         <td class="price">฿<?= number_format($row['p_price']); ?></td>
                         <td class="text-center">
                             <a href="admin_edit.php?id=<?= $row['p_id']; ?>" 
-                               class="btn btn-sm btn-outline-secondary">
+                               class="btn btn-sm btn-outline-secondary" title="แก้ไข">
                                <i class="bi bi-pencil"></i>
                             </a>
 
                             <a href="?delete_id=<?= $row['p_id']; ?>" 
-                               onclick="return confirm('ยืนยันการลบ?')"
-                               class="btn btn-sm btn-outline-danger">
+                               onclick="return confirm('ยืนยันการลบ? ข้อมูลสต็อกจะถูกลบด้วย')"
+                               class="btn btn-sm btn-outline-danger" title="ลบ">
                                <i class="bi bi-trash"></i>
                             </a>
                         </td>
@@ -227,14 +297,38 @@ body{
                     <?php endwhile; ?>
                     <?php else: ?>
                     <tr>
-                        <td colspan="9" class="text-center py-4"> ยังไม่มีสินค้าในระบบ
-                        </td>
+                        <td colspan="8" class="text-center py-4"> ไม่พบข้อมูลสินค้า </td>
                     </tr>
                     <?php endif; ?>
 
                     </tbody>
                 </table>
             </div>
+
+            <?php if($total_record > 0): ?>
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    
+                    <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
+                        <a class="page-link" href="?page=<?= $page-1; ?><?= $param_url; ?>">ก่อนหน้า</a>
+                    </li>
+
+                    <?php for($i=1; $i<=$total_page; $i++): ?>
+                        <li class="page-item <?= ($page == $i) ? 'active' : '' ?>">
+                            <a class="page-link" href="?page=<?= $i; ?><?= $param_url; ?>"><?= $i; ?></a>
+                        </li>
+                    <?php endfor; ?>
+
+                    <li class="page-item <?= ($page >= $total_page) ? 'disabled' : '' ?>">
+                        <a class="page-link" href="?page=<?= $page+1; ?><?= $param_url; ?>">ถัดไป</a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="text-center text-muted small">
+                แสดงหน้า <?= $page; ?> จาก <?= $total_page; ?> (ทั้งหมด <?= $total_record; ?> รายการ)
+            </div>
+            <?php endif; ?>
+
         </div>
 
     </div>
