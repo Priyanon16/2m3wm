@@ -96,12 +96,16 @@ include("header.php");
 .buy-btn:hover{
     background:#e96b00;
 }
+/* [เพิ่ม CSS] สำหรับปุ่มที่กดไม่ได้ */
+.btn-disabled {
+    background: #ccc !important;
+    cursor: not-allowed;
+}
 </style>
 
 <div class="container py-5">
 <div class="row">
 
-<!-- รูปสินค้า -->
 <div class="col-md-6">
 
 <?php if(count($images)>0): ?>
@@ -123,7 +127,6 @@ include("header.php");
 </div>
 
 
-<!-- รายละเอียด -->
 <div class="col-md-6">
 
 <h3 class="fw-bold"><?= htmlspecialchars($product['p_name']) ?></h3>
@@ -139,7 +142,6 @@ include("header.php");
 
 <hr>
 
-<!-- เลือกไซส์ -->
 <h6 class="fw-bold">เลือกไซส์</h6>
 
 <div id="sizeContainer" class="d-flex flex-wrap">
@@ -157,24 +159,36 @@ include("header.php");
 
 <hr>
 
-<!-- เลือกจำนวน -->
-<h6 class="fw-bold">จำนวน</h6>
+<h6 class="fw-bold">จำนวน (มีสินค้า <?= $product['p_qty'] ?> ชิ้น)</h6>
 
-<div class="qty-box mb-3">
-    <button type="button" onclick="decrease()">-</button>
-    <input type="text" id="qty" value="1" readonly>
-    <button type="button" onclick="increase()">+</button>
-</div>
+<input type="hidden" id="max_stock" value="<?= $product['p_qty'] ?>">
+
+<?php if($product['p_qty'] > 0): // ถ้ามีสินค้ามากกว่า 0 ?>
+    <div class="qty-box mb-3">
+        <button type="button" onclick="decrease()">-</button>
+        <input type="text" id="qty" value="1" readonly>
+        <button type="button" onclick="increase()">+</button>
+    </div>
+<?php else: // ถ้าสินค้าหมด ?>
+    <div class="alert alert-danger py-2 mb-3" style="width: fit-content;">
+        ขออภัย สินค้าหมดชั่วคราว
+    </div>
+<?php endif; ?>
 
 <hr>
 
 <p><?= nl2br(htmlspecialchars($product['p_detail'])) ?></p>
 
-<!-- ปุ่มสั่งซื้อ -->
-<button class="btn buy-btn btn-lg"
-onclick="addToCart(<?= $product['p_id'] ?>)">
-เพิ่มลงตะกร้า
-</button>
+<?php if($product['p_qty'] > 0): ?>
+    <button class="btn buy-btn btn-lg"
+    onclick="addToCart(<?= $product['p_id'] ?>)">
+    เพิ่มลงตะกร้า
+    </button>
+<?php else: ?>
+    <button class="btn btn-secondary btn-lg btn-disabled" disabled>
+    สินค้าหมด
+    </button>
+<?php endif; ?>
 
 <button class="btn btn-outline-danger btn-lg ms-2"
 onclick="addToFav(<?= $product['p_id'] ?>)">
@@ -195,9 +209,18 @@ function selectSize(el,size){
     document.getElementById('selectedSize').value = size;
 }
 
+// [แก้ไข] ฟังก์ชันเพิ่มจำนวน ให้เช็คกับ max_stock
 function increase(){
     let qty = document.getElementById('qty');
-    qty.value = parseInt(qty.value)+1;
+    let max = parseInt(document.getElementById('max_stock').value); // รับค่า stock
+
+    let currentVal = parseInt(qty.value);
+
+    if(currentVal < max){
+        qty.value = currentVal + 1;
+    } else {
+        alert("ขออภัย สินค้ามีเพียง " + max + " ชิ้น");
+    }
 }
 
 function decrease(){
@@ -209,10 +232,17 @@ function decrease(){
 
 function addToCart(id){
     let size = document.getElementById('selectedSize').value;
-    let qty  = document.getElementById('qty').value;
+    // [เพิ่ม] เช็คว่ามี element qty หรือไม่ (กันกรณีสินค้าหมดแล้วไม่มี input)
+    let qtyInput = document.getElementById('qty');
+    let qty  = qtyInput ? qtyInput.value : 0;
 
     if(size==""){
         alert("กรุณาเลือกไซส์ก่อน");
+        return;
+    }
+    
+    if(qty <= 0){
+        alert("สินค้าหมด");
         return;
     }
 
