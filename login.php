@@ -199,7 +199,7 @@ if(isset($_POST['email'])){
         </form>
 
         <p class="footer-text">
-            ยังไม่มีบัญชีใช่ไหม? <a href="register.php">คลิกที่นี่</a>
+            ยังไม่มีบัญชีใช่ไหม? <a href="register.php">สมัครสมาชิกคลิกที่นี่</a>
         </p>
     </div>
 

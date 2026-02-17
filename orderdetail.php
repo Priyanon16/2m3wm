@@ -11,6 +11,60 @@ if (!isset($_SESSION['user_id'])) {
 $uid = $_SESSION['user_id'];
 
 /* ==========================
+   ยกเลิกออเดอร์
+========================== */
+if(isset($_GET['cancel'])){
+
+    $oid = intval($_GET['cancel']);
+
+    // เช็คว่าเป็นของ user นี้ และยังยกเลิกได้
+    $check = mysqli_query($conn,"
+        SELECT status 
+        FROM orders 
+        WHERE o_id='$oid' 
+        AND u_id='$uid'
+        LIMIT 1
+    ");
+
+    if(mysqli_num_rows($check) > 0){
+
+        $data = mysqli_fetch_assoc($check);
+
+        // อนุญาตให้ยกเลิกเฉพาะสถานะนี้
+        if($data['status'] == 'รอชำระเงิน' || 
+           $data['status'] == 'ที่ต้องจัดส่ง'){
+
+            // 1️⃣ คืน stock
+            $detail_rs = mysqli_query($conn,"
+                SELECT p_id, q_ty 
+                FROM order_details 
+                WHERE o_id='$oid'
+            ");
+
+            while($item = mysqli_fetch_assoc($detail_rs)){
+                mysqli_query($conn,"
+                    UPDATE products 
+                    SET p_qty = p_qty + {$item['q_ty']}
+                    WHERE p_id = {$item['p_id']}
+                ");
+            }
+
+            // 2️⃣ เปลี่ยนสถานะ
+            mysqli_query($conn,"
+                UPDATE orders 
+                SET status='ยกเลิก',
+                    cancelled_at=NOW(),
+                    cancel_reason='ลูกค้ายกเลิก'
+                WHERE o_id='$oid'
+            ");
+        }
+    }
+
+    header("Location: myorders.php");
+    exit;
+}
+
+/* ==========================
    รับค่า filter status
 ========================== */
 $filter = $_GET['status'] ?? 'ทั้งหมด';
@@ -57,6 +111,8 @@ body{
 .status-wait{ background:#2196f3; color:#fff; }
 .status-done{ background:#4caf50; color:#fff; }
 .status-return{ background:#9c27b0; color:#fff; }
+.status-cancel{ background:#757575; color:#fff; }
+
 .nav-tabs .nav-link.active{
     background:#ff7a00 !important;
     color:#fff !important;
@@ -125,7 +181,8 @@ body{
             "ที่ต้องจัดส่ง",
             "รอรับ",
             "จัดส่งสำเร็จ",
-            "คืนสินค้า"
+            "คืนสินค้า",
+            "ยกเลิก"
         ];
 
         foreach($statuses as $st):
@@ -222,6 +279,18 @@ class="img-fluid rounded">
 ยอดรวม: <?= number_format($order['total_price'],2) ?> บาท
 </strong>
 </div>
+
+<?php if($order['status']=="รอชำระเงิน" || 
+          $order['status']=="ที่ต้องจัดส่ง"): ?>
+
+<a href="?cancel=<?= $order['o_id'] ?>" 
+   class="btn btn-outline-danger btn-sm mt-3"
+   onclick="return confirm('ยืนยันการยกเลิกคำสั่งซื้อ?')">
+   ยกเลิกคำสั่งซื้อ
+</a>
+
+<?php endif; ?>
+
 
 </div>
 
