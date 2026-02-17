@@ -167,7 +167,12 @@ include 'header.php';
 
 <style>
 body{background:#f5f5f5;font-family:'Kanit',sans-serif;}
-.container{ max-width: 900px; margin: 0 auto; padding: 20px;}
+.pay-container{
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
 .card{ background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px;}
 .summary-item{ display: flex; justify-content: space-between; margin-bottom: 10px; }
 .total-price{ font-size: 1.2rem; font-weight: bold; color: #ff7a00; }
@@ -187,7 +192,8 @@ body{background:#f5f5f5;font-family:'Kanit',sans-serif;}
 
 
 
-    <div class="container py-5">
+    <div class="pay-container py-5">
+
         <h2 class="mb-4 text-center">ยืนยันการสั่งซื้อ</h2>
 
         <div class="row">
