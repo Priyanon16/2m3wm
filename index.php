@@ -22,6 +22,7 @@ if(isset($_GET['add_to_fav'])){
 $sql = "
 SELECT p.*, 
        c.c_name,
+       b.brand_name,
        (
         SELECT img_path 
         FROM product_images 
@@ -30,8 +31,10 @@ SELECT p.*,
        ) AS main_img
 FROM products p
 LEFT JOIN category c ON p.c_id = c.c_id
+LEFT JOIN brand b ON p.brand_id = b.brand_id
 ORDER BY p.p_id DESC
 ";
+
 
 $rs = mysqli_query($conn,$sql);
 
@@ -213,8 +216,9 @@ $img = !empty($row['main_img'])
 <div class="product-body">
 
 <span class="brand-tag">
-<?= htmlspecialchars($p['brand_name'] ?? 'General'); ?>
+<?= htmlspecialchars($row['brand_name'] ?? 'General'); ?>
 </span>
+
 
 <div class="product-title">
 <?= htmlspecialchars($row['p_name']); ?>
