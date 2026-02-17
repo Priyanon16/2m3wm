@@ -2,7 +2,7 @@
 $title = "จัดการออเดอร์";
 require_once 'connectdb.php';
 include 'bootstrap.php';
-// include 'header.php'; // ถ้ามี header แยกให้เปิดใช้
+include 'header.php'; // ถ้ามี header แยกให้เปิดใช้
 
 // ปิด Error Notice กวนใจ (แต่ยังโชว์ Error หลัก)
 error_reporting(E_ALL ^ E_NOTICE); 
