@@ -213,7 +213,7 @@ $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
                             </td>
 
                             <td>
-                                <a href="orderdetail.php?id=<?= $row['o_id'] ?>" class="btn btn-sm btn-outline-dark">
+                                <a href="a_order_detail.php?id=<?= $row['o_id'] ?>" class="btn btn-sm btn-outline-dark">
                                     <i class="bi bi-list"></i>
                                 </a>
                             </td>
