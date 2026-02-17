@@ -2,7 +2,6 @@
 $title = "จัดการออเดอร์";
 require_once 'connectdb.php';
 include 'bootstrap.php';
-include 'sidebar.php';
 
 error_reporting(E_ALL ^ E_NOTICE); 
 
