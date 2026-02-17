@@ -62,14 +62,27 @@ if(isset($_GET['cancel'])){
 ========================== */
 
 $filter = $_GET['status'] ?? 'ทั้งหมด';
+$filter = trim($filter); // กันช่องว่าง
 
-if($filter == 'ทั้งหมด'){
-    $stmt = $conn->prepare("SELECT * FROM orders WHERE u_id=? ORDER BY o_id DESC");
+if($filter === 'ทั้งหมด'){
+    $stmt = $conn->prepare("
+        SELECT * 
+        FROM orders 
+        WHERE u_id=? 
+        ORDER BY o_id DESC
+    ");
     $stmt->bind_param("i", $uid);
 }else{
-    $stmt = $conn->prepare("SELECT * FROM orders WHERE u_id=? AND status=? ORDER BY o_id DESC");
+    $stmt = $conn->prepare("
+        SELECT * 
+        FROM orders 
+        WHERE u_id=? 
+        AND status=? 
+        ORDER BY o_id DESC
+    ");
     $stmt->bind_param("is", $uid, $filter);
 }
+
 
 $stmt->execute();
 $rs = $stmt->get_result();
