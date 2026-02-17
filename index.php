@@ -213,7 +213,7 @@ $img = !empty($row['main_img'])
 <div class="product-body">
 
 <span class="brand-tag">
-<?= htmlspecialchars($row['c_name'] ?? 'General'); ?>
+<?= htmlspecialchars($p['brand_name'] ?? 'General'); ?>
 </span>
 
 <div class="product-title">
