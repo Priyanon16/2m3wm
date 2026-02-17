@@ -10,25 +10,94 @@ if(!isset($_SESSION['user_id'])){
 
 $uid = intval($_SESSION['user_id']);
 
+/* =================================================
+   [เพิ่มส่วนนี้] รับสินค้าจากหน้า Product Detail
+================================================= */
+if(isset($_GET['add'])){
+    $pid  = intval($_GET['add']);
+    $qty  = intval($_GET['qty']);
+    $size = mysqli_real_escape_string($conn, $_GET['size']);
+
+    // 1. เช็คสต็อกจริงก่อนว่ามีพอไหม
+    $stock_sql = mysqli_query($conn, "SELECT p_qty FROM products WHERE p_id = $pid");
+    $stock_data = mysqli_fetch_assoc($stock_sql);
+    $max_stock = $stock_data['p_qty'];
+
+    if($max_stock <= 0){
+        echo "<script>alert('สินค้าหมด'); window.location='index.php';</script>";
+        exit;
+    }
+
+    // 2. เช็คว่ามีสินค้านี้ในตะกร้าแล้วหรือยัง
+    $check_cart = mysqli_query($conn, "SELECT * FROM cart WHERE user_id=$uid AND product_id=$pid");
+    
+    if(mysqli_num_rows($check_cart) > 0){
+        // มีแล้ว -> อัปเดตจำนวน (ต้องไม่เกินสต็อก)
+        $cart_item = mysqli_fetch_assoc($check_cart);
+        $new_qty = $cart_item['quantity'] + $qty;
+
+        if($new_qty > $max_stock){
+            $new_qty = $max_stock; // ถ้าเกิน ให้ปรับเท่ากับที่มีสูงสุด
+            echo "<script>alert('สินค้ามีจำกัด เพิ่มได้สูงสุดเท่าที่มีในสต็อก');</script>";
+        }
+
+        mysqli_query($conn, "
+            UPDATE cart 
+            SET quantity = $new_qty 
+            WHERE user_id=$uid AND product_id=$pid
+        ");
+    } else {
+        // ยังไม่มี -> เพิ่มใหม่
+        if($qty > $max_stock) $qty = $max_stock; // กันเหนียว
+
+        // (สมมติว่าตาราง cart มีคอลัมน์ size ถ้าไม่มีให้ลบ '$size' ออก)
+        mysqli_query($conn, "
+            INSERT INTO cart (user_id, product_id, quantity, size)
+            VALUES ($uid, $pid, $qty, '$size')
+        ");
+    }
+
+    header("Location: cart.php");
+    exit;
+}
+
+
 /* =========================
-   เพิ่ม / ลด จำนวน
+   [แก้ไข] เพิ่ม / ลด จำนวน (เช็ค Stock)
 ========================= */
 if(isset($_GET['update'])){
     $pid = intval($_GET['update']);
     $action = $_GET['type'];
 
+    // ดึงสต็อกปัจจุบัน และ จำนวนในตะกร้าปัจจุบัน
+    $q_check = mysqli_query($conn, "
+        SELECT c.quantity, p.p_qty 
+        FROM cart c
+        JOIN products p ON c.product_id = p.p_id
+        WHERE c.user_id=$uid AND c.product_id=$pid
+    ");
+    $data = mysqli_fetch_assoc($q_check);
+    
+    $current_qty = $data['quantity'];
+    $max_stock   = $data['p_qty'];
+
     if($action == "plus"){
-        mysqli_query($conn,"
-            UPDATE cart 
-            SET quantity = quantity + 1
-            WHERE user_id=$uid AND product_id=$pid
-        ");
+        // [แก้ไข] เช็คว่าถ้าบวก 1 แล้วเกินสต็อกไหม
+        if( ($current_qty + 1) <= $max_stock ){
+            mysqli_query($conn,"
+                UPDATE cart 
+                SET quantity = quantity + 1
+                WHERE user_id=$uid AND product_id=$pid
+            ");
+        } else {
+            // ถ้าเกิน ไม่ทำอะไร หรือแจ้งเตือนก็ได้
+        }
     }
 
     if($action == "minus"){
         mysqli_query($conn,"
             UPDATE cart 
-            SET quantity = IF(quantity>1, quantity-1,1)
+            SET quantity = IF(quantity>1, quantity-1, 1)
             WHERE user_id=$uid AND product_id=$pid
         ");
     }
@@ -56,6 +125,7 @@ if(isset($_GET['remove'])){
 $sql = "
 SELECT 
     c.quantity,
+    c.size, 
     p.*,
     (
         SELECT img_path 
@@ -129,6 +199,11 @@ body{background:#f5f5f5;font-family:'Kanit',sans-serif;}
     line-height:32px;
     text-decoration:none;
 }
+/* สไตล์สำหรับปุ่มที่กดไม่ได้ */
+.qty-btn.disabled{
+    background: #ccc;
+    pointer-events: none;
+}
 
 .price{
     color:#ff7a00;
@@ -189,7 +264,6 @@ body{background:#f5f5f5;font-family:'Kanit',sans-serif;}
 
 <?php else: ?>
 
-<!-- SELECT ALL -->
 <div class="select-all">
 <input type="checkbox" id="selectAll" checked
 style="width:18px;height:18px;accent-color:#ff7a00;">
@@ -201,13 +275,19 @@ style="width:18px;height:18px;accent-color:#ff7a00;">
 <?php 
 $total = 0;
 while($item = mysqli_fetch_assoc($rs)):
-$qty = $item['quantity'];
-$subtotal = $item['p_price'] * $qty;
-$total += $subtotal;
+    $qty = $item['quantity'];
+    $max_stock = $item['p_qty']; // จำนวนสต็อกสูงสุด
+    
+    // คำนวณราคารวม
+    $subtotal = $item['p_price'] * $qty;
+    $total += $subtotal;
 
-$img = !empty($item['main_img']) 
-       ? $item['main_img'] 
-       : 'images/no-image.png';
+    $img = !empty($item['main_img']) 
+           ? $item['main_img'] 
+           : 'images/no-image.png';
+    
+    // [เพิ่ม] ตรวจสอบว่าปุ่มบวกควรจะกดได้ไหม
+    $plus_disabled = ($qty >= $max_stock) ? 'disabled' : '';
 ?>
 
 <div class="cart-item">
@@ -223,12 +303,22 @@ style="width:18px;height:18px;accent-color:#ff7a00;">
 
 <div style="flex:1;">
     <h6><?= htmlspecialchars($item['p_name']); ?></h6>
+    
+    <?php if(!empty($item['size'])): ?>
+        <small class="text-muted">Size: <?= htmlspecialchars($item['size']) ?></small>
+    <?php endif; ?>
 
     <div class="qty-box mt-2">
         <a href="?update=<?= $item['p_id']; ?>&type=minus" class="qty-btn">−</a>
         <span><?= $qty; ?></span>
-        <a href="?update=<?= $item['p_id']; ?>&type=plus" class="qty-btn">+</a>
+        <a href="?update=<?= $item['p_id']; ?>&type=plus" 
+           class="qty-btn <?= $plus_disabled; ?>">+</a>
     </div>
+    
+    <?php if($qty >= $max_stock): ?>
+        <small class="text-danger" style="font-size:12px;">*เหลือสินค้าแค่นี้</small>
+    <?php endif; ?>
+
 </div>
 
 <div>
@@ -252,7 +342,6 @@ style="width:18px;height:18px;accent-color:#ff7a00;">
 </div>
 
 
-<!-- SUMMARY -->
 <div class="col-lg-4">
 <div class="summary-box">
 
@@ -291,9 +380,6 @@ style="width:18px;height:18px;accent-color:#ff7a00;">
 </div>
 </div>
 
-<!-- ======================
-   JAVASCRIPT REAL-TIME
-====================== -->
 <script>
 
 function calculateTotal(){
