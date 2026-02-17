@@ -4,13 +4,14 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 include 'connectdb.php';
-in
+include 'bootstrap.php';
+include 'header.php';
 
 // ตั้งค่าบัญชี PromptPay ของร้านค้า
-$promptpay_id = "08X-XXX-XXXX"; // <--- แก้ไขเบอร์โทร/เลขบัตรที่นี่
+$promptpay_id = "0630560150"; // <--- แก้ไขเบอร์โทร/เลขบัตรที่นี่
 $bank_name = "ธนาคารกสิกรไทย";
-$account_name = "นายร้านค้า ตัวอย่าง";
-$account_number = "123-4-56789-0";
+$account_name = "นายภาคภูมิ วรรณชัย";
+$account_number = "2111-428-932";
 
 if(!isset($_SESSION['user_id'])){
     // ถ้ายังไม่ login ให้ไปหน้า login หรือแสดงข้อความเตือน
