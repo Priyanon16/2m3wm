@@ -8,82 +8,39 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-$uid = $_SESSION['user_id'];
+$uid = intval($_SESSION['user_id']);
 
 /* ==========================
-   ยกเลิกออเดอร์
-========================== */
-if(isset($_GET['cancel'])){
-
-    $oid = intval($_GET['cancel']);
-
-    // เช็คว่าเป็นของ user นี้ และยังยกเลิกได้
-    $check = mysqli_query($conn,"
-        SELECT status 
-        FROM orders 
-        WHERE o_id='$oid' 
-        AND u_id='$uid'
-        LIMIT 1
-    ");
-
-    if(mysqli_num_rows($check) > 0){
-
-        $data = mysqli_fetch_assoc($check);
-
-        // อนุญาตให้ยกเลิกเฉพาะสถานะนี้
-        if($data['status'] == 'รอชำระเงิน' || 
-           $data['status'] == 'ที่ต้องจัดส่ง'){
-
-            // 1️⃣ คืน stock
-            $detail_rs = mysqli_query($conn,"
-                SELECT p_id, q_ty 
-                FROM order_details 
-                WHERE o_id='$oid'
-            ");
-
-            while($item = mysqli_fetch_assoc($detail_rs)){
-                mysqli_query($conn,"
-                    UPDATE products 
-                    SET p_qty = p_qty + {$item['q_ty']}
-                    WHERE p_id = {$item['p_id']}
-                ");
-            }
-
-            // 2️⃣ เปลี่ยนสถานะ
-            mysqli_query($conn,"
-                UPDATE orders 
-                SET status='ยกเลิก',
-                    cancelled_at=NOW(),
-                    cancel_reason='ลูกค้ายกเลิก'
-                WHERE o_id='$oid'
-            ");
-        }
-    }
-
-    header("Location: myorders.php");
-    exit;
-}
-
-/* ==========================
-   รับค่า filter status
+   FILTER STATUS
 ========================== */
 $filter = $_GET['status'] ?? 'ทั้งหมด';
 
-$where = "WHERE u_id = '$uid'";
+$where = "WHERE o.u_id = '$uid'";
 
 if($filter != 'ทั้งหมด'){
     $filter_safe = mysqli_real_escape_string($conn,$filter);
-    $where .= " AND status = '$filter_safe'";
+    $where .= " AND o.status = '$filter_safe'";
 }
 
 /* ==========================
-   ดึงออเดอร์
+   ดึงออเดอร์ + จำนวนสินค้า + รูปตัวอย่าง
 ========================== */
 $sql = "
-SELECT *
-FROM orders
+SELECT 
+    o.*,
+    COUNT(od.d_id) AS item_count,
+    (
+        SELECT p.p_img
+        FROM order_details od2
+        JOIN products p ON od2.p_id = p.p_id
+        WHERE od2.o_id = o.o_id
+        LIMIT 1
+    ) AS preview_img
+FROM orders o
+LEFT JOIN order_details od ON o.o_id = od.o_id
 $where
-ORDER BY o_id DESC
+GROUP BY o.o_id
+ORDER BY o.o_id DESC
 ";
 
 $rs = mysqli_query($conn,$sql);
@@ -96,69 +53,51 @@ body{
     background:#f4f6f9;
     font-family:'Kanit',sans-serif;
 }
-.card{
+.order-card{
     border:none;
     border-radius:15px;
     box-shadow:0 5px 15px rgba(0,0,0,0.08);
+    transition:0.3s;
+}
+.order-card:hover{
+    transform:translateY(-3px);
+    box-shadow:0 10px 25px rgba(0,0,0,0.15);
 }
 .status-badge{
     padding:6px 12px;
     border-radius:50px;
-    font-size:14px;
+    font-size:13px;
+    color:#fff;
 }
-.status-pay{ background:#ff5252; color:#fff; }
-.status-ship{ background:#ff9800; color:#fff; }
-.status-wait{ background:#2196f3; color:#fff; }
-.status-done{ background:#4caf50; color:#fff; }
-.status-return{ background:#9c27b0; color:#fff; }
-.status-cancel{ background:#757575; color:#fff; }
-
-.nav-tabs .nav-link.active{
-    background:#ff7a00 !important;
-    color:#fff !important;
+.status-pay{ background:#ff5252; }
+.status-ship{ background:#ff9800; }
+.status-wait{ background:#2196f3; }
+.status-done{ background:#4caf50; }
+.status-cancel{ background:#757575; }
+.preview-img{
+    width:80px;
+    height:80px;
+    object-fit:cover;
+    border-radius:10px;
 }
-/* =========================
-   ORDER STATUS TABS (NEW)
-========================= */
-
-.order-tabs-wrapper{
-    overflow-x:auto;
-    padding-bottom:10px;
-    border-bottom:1px solid #eee;
-}
-
 .order-tabs{
     display:flex;
-    gap:12px;
+    gap:10px;
     flex-wrap:wrap;
 }
-
 .order-tab{
-    padding:10px 22px;
+    padding:8px 18px;
     border-radius:50px;
-    text-decoration:none;
-    font-weight:500;
-    color:#555;
     background:#fff;
-    border:1px solid #e0e0e0;
-    transition:0.3s;
-    white-space:nowrap;
+    border:1px solid #ddd;
+    text-decoration:none;
+    color:#555;
 }
-
-.order-tab:hover{
-    background:#fff3e6;
-    color:#ff7a00;
-    border-color:#ff7a00;
-    transform:translateY(-2px);
-}
-
 .order-tab.active{
     background:#ff7a00;
     color:#fff;
     border-color:#ff7a00;
-    box-shadow:0 5px 15px rgba(255,122,0,0.3);
 }
-
 </style>
 
 <div class="container mt-5 mb-5">
@@ -168,50 +107,51 @@ body{
 รายการสั่งซื้อของฉัน
 </h3>
 
-<!-- ==========================
-     TAB STATUS
-========================== -->
-<!-- STATUS MENU -->
-<div class="order-tabs-wrapper mb-4">
-    <div class="order-tabs">
-        <?php
-        $statuses = [
-            "ทั้งหมด",
-            "รอชำระเงิน",
-            "ที่ต้องจัดส่ง",
-            "รอรับ",
-            "จัดส่งสำเร็จ",
-            "คืนสินค้า",
-            "ยกเลิก"
-        ];
-
-        foreach($statuses as $st):
-        ?>
-            <a class="order-tab <?= ($filter==$st)?'active':'' ?>"
-               href="?status=<?= urlencode($st) ?>">
-                <?= $st ?>
-            </a>
-        <?php endforeach; ?>
-    </div>
+<!-- FILTER TABS -->
+<div class="order-tabs mb-4">
+<?php
+$statuses = [
+    "ทั้งหมด",
+    "รอชำระเงิน",
+    "ที่ต้องจัดส่ง",
+    "รอรับ",
+    "จัดส่งสำเร็จ",
+    "ยกเลิก"
+];
+foreach($statuses as $st):
+?>
+<a class="order-tab <?= ($filter==$st)?'active':'' ?>"
+   href="?status=<?= urlencode($st) ?>">
+   <?= $st ?>
+</a>
+<?php endforeach; ?>
 </div>
-
-
 
 <?php if(mysqli_num_rows($rs) > 0): ?>
 <?php while($order = mysqli_fetch_assoc($rs)): ?>
 
-<div class="card mb-4 p-4">
+<div class="card order-card mb-4 p-4">
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center">
+
+<div class="d-flex align-items-center gap-3">
+
+<img src="<?= $order['preview_img'] ?? 'images/no-image.png' ?>" class="preview-img">
 
 <div>
 <strong>เลขที่ออเดอร์ #<?= $order['o_id'] ?></strong><br>
 <small class="text-muted">
 <?= date("d/m/Y H:i", strtotime($order['o_date'])) ?>
+</small><br>
+<small class="text-muted">
+<?= $order['item_count'] ?> รายการ
 </small>
 </div>
 
-<div>
+</div>
+
+<div class="text-end">
+
 <?php
 $status = $order['status'];
 
@@ -223,79 +163,27 @@ if($status=="รอชำระเงิน"){
     echo '<span class="status-badge status-wait">รอรับ</span>';
 }elseif($status=="จัดส่งสำเร็จ"){
     echo '<span class="status-badge status-done">จัดส่งสำเร็จ</span>';
-}elseif($status=="คืนสินค้า"){
-    echo '<span class="status-badge status-return">คืนสินค้า</span>';
-}else{
-    echo '<span class="badge bg-secondary">'.$status.'</span>';
+}elseif($status=="ยกเลิก"){
+    echo '<span class="status-badge status-cancel">ยกเลิก</span>';
 }
 ?>
+
+<div class="mt-2">
+<strong>฿<?= number_format($order['total_price'],2) ?></strong>
 </div>
 
-</div>
-
-<hr>
-
-<?php
-$oid = $order['o_id'];
-
-$detail_sql = "
-SELECT p.p_name, p.p_price, p.p_img, od.q_ty
-FROM order_details od
-JOIN products p ON od.p_id = p.p_id
-WHERE od.o_id = '$oid'
-";
-
-$detail_rs = mysqli_query($conn,$detail_sql);
-
-while($item = mysqli_fetch_assoc($detail_rs)):
-?>
-
-<div class="row align-items-center mb-3">
-
-<div class="col-md-2">
-<img src="<?= $item['p_img'] ?>" 
-class="img-fluid rounded">
-</div>
-
-<div class="col-md-6">
-<?= htmlspecialchars($item['p_name']) ?><br>
-<small class="text-muted">
-จำนวน <?= $item['q_ty'] ?> ชิ้น
-</small>
-</div>
-
-<div class="col-md-4 text-end">
-<?= number_format($item['p_price'],2) ?> บาท
-</div>
-
-</div>
-
-<?php endwhile; ?>
-
-<hr>
-
-<div class="text-end">
-<strong>
-ยอดรวม: <?= number_format($order['total_price'],2) ?> บาท
-</strong>
-</div>
-
-<?php if($order['status']=="รอชำระเงิน" || 
-          $order['status']=="ที่ต้องจัดส่ง"): ?>
-
-<a href="?cancel=<?= $order['o_id'] ?>" 
-   class="btn btn-outline-danger btn-sm mt-3"
-   onclick="return confirm('ยืนยันการยกเลิกคำสั่งซื้อ?')">
-   ยกเลิกคำสั่งซื้อ
+<a href="orderdetail.php?id=<?= $order['o_id'] ?>" 
+   class="btn btn-sm btn-outline-dark mt-2">
+   ดูรายละเอียด
 </a>
 
-<?php endif; ?>
+</div>
 
+</div>
 
 </div>
 
 <?php endwhile; ?>
-
 <?php else: ?>
 
 <div class="alert alert-light text-center">
