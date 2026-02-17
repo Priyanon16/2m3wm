@@ -160,37 +160,33 @@ $cart_result = $stmt_products->get_result();
 
 $total = 0;
 $shipping = 60; 
+
+
+include 'header.php';
+
 ?>
 
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ชำระเงิน - 2M3WM</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
-    <style>
-        body{background:#f5f5f5;font-family:'Kanit',sans-serif;}
-        .container{ max-width: 900px; margin: 0 auto; padding: 20px;}
-        .card{ background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px;}
-        .summary-item{ display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .total-price{ font-size: 1.2rem; font-weight: bold; color: #ff7a00; }
-        .btn-confirm{ 
-            background: #ff7a00; color: #fff; width: 100%; padding: 12px; 
-            border: none; border-radius: 5px; font-size: 1.1rem; cursor: pointer;
-        }
-        .btn-confirm:hover{ background: #e66e00; }
-        .btn-confirm:disabled{ background: #ccc; cursor: not-allowed; }
-        .payment-option{ margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-        .item-row { border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
-        
-        .address-box { border-left: 4px solid #ff7a00; background: #fff8f0; padding: 15px; border-radius: 5px; }
-        .edit-addr-btn { float: right; font-size: 0.9rem; text-decoration: none; color: #ff7a00; }
-    </style>
-</head> 
-<body>
+<style>
+body{background:#f5f5f5;font-family:'Kanit',sans-serif;}
+.container{ max-width: 900px; margin: 0 auto; padding: 20px;}
+.card{ background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px;}
+.summary-item{ display: flex; justify-content: space-between; margin-bottom: 10px; }
+.total-price{ font-size: 1.2rem; font-weight: bold; color: #ff7a00; }
+.btn-confirm{ 
+    background: #ff7a00; color: #fff; width: 100%; padding: 12px; 
+    border: none; border-radius: 5px; font-size: 1.1rem; cursor: pointer;
+}
+.btn-confirm:hover{ background: #e66e00; }
+.btn-confirm:disabled{ background: #ccc; cursor: not-allowed; }
+.payment-option{ margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+.item-row { border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
+.address-box { border-left: 4px solid #ff7a00; background: #fff8f0; padding: 15px; border-radius: 5px; }
+.edit-addr-btn { float: right; font-size: 0.9rem; text-decoration: none; color: #ff7a00; }
+</style>
+
+
+
+
 
     <div class="container py-5">
         <h2 class="mb-4 text-center">ยืนยันการสั่งซื้อ</h2>
