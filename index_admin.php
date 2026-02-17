@@ -164,7 +164,7 @@ $count_users = $row_users['count'];
         <div class="welcome-banner d-flex justify-content-between align-items-center">
             <div>
                 <h2 class="fw-bold mb-1">สวัสดี, <span class="admin-highlight"><?= isset($_SESSION['uname']) ? htmlspecialchars($_SESSION['uname']) : 'Admin'; ?></span></h2>
-                <p class="mb-0 text-white-50">ยินดีต้อนรับสู่ระบบจัดการร้าน 2M3WM Sneaker Hub</p>
+                <p class="mb-0 text-white-50">ยินดีต้อนรับสู่ระบบจัดการร้าน 2M3WM Sneaker </p>
             </div>
             <div class="d-none d-md-block">
                 <i class="bi bi-speedometer2" style="font-size: 3rem; opacity: 0.5;"></i>

@@ -7,14 +7,46 @@ include 'bootstrap.php';
 error_reporting(E_ALL ^ E_NOTICE); 
 
 /* ===========================================
-   ส่วนที่ 1: อัปเดตสถานะ
+   ส่วนที่ 1: อัปเดตสถานะ (เพิ่มระบบตัดสต็อก)
 =========================================== */
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['btn_update_status'])) {
     $oid = intval($_POST['order_id']);
     $new_status = mysqli_real_escape_string($conn, $_POST['new_status']);
 
+    // 1. ตรวจสอบสถานะเดิมก่อน (ป้องกันการตัดสต็อกซ้ำ)
+    $q_old = mysqli_query($conn, "SELECT status FROM orders WHERE o_id = $oid");
+    $row_old = mysqli_fetch_assoc($q_old);
+    $old_status = $row_old['status'];
+
+    // 2. อัปเดตสถานะ
     $sql_update = "UPDATE orders SET status = '$new_status' WHERE o_id = $oid";
     if (mysqli_query($conn, $sql_update)) {
+
+        // --- เริ่มส่วนตัดสต็อก ---
+        // ทำงานเมื่อเปลี่ยนเป็น "ชำระแล้ว" และของเดิมต้องยังไม่จ่าย/ยังไม่ส่ง
+        if ($new_status == 'ชำระแล้ว' && $old_status != 'ชำระแล้ว' && $old_status != 'จัดส่งแล้ว') {
+            
+            // ดึงรายการสินค้า (ใช้ชื่อ field: p_id, size, q_ty ตามตาราง order_details ของคุณ)
+            $sql_items = "SELECT p_id, size, q_ty FROM order_details WHERE o_id = $oid";
+            $rs_items = mysqli_query($conn, $sql_items);
+
+            while ($item = mysqli_fetch_assoc($rs_items)) {
+                $pid  = $item['p_id'];
+                $size = $item['size']; 
+                $qty  = $item['q_ty'];
+
+                // สั่งตัดสต็อก (ถ้ามีข้อมูลไซส์)
+                if(!empty($size)){
+                    // ตาราง product_stock ใช้ field: p_id, p_size, p_qty_stock
+                    $sql_cut = "UPDATE product_stock 
+                                SET p_qty_stock = p_qty_stock - $qty 
+                                WHERE p_id = $pid AND p_size = '$size'";
+                    mysqli_query($conn, $sql_cut);
+                }
+            }
+        }
+        // --- จบส่วนตัดสต็อก ---
+
         echo "<script>alert('อัปเดตสถานะเรียบร้อยแล้ว'); window.location='a_orderlist.php';</script>";
     } else {
         echo "<script>alert('Error: " . mysqli_error($conn) . "');</script>";
@@ -173,8 +205,8 @@ $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
                                     $cls = 'bg-secondary';
                                     if($st=='รอชำระเงิน') $cls='st-wait-pay';
                                     elseif($st=='รอตรวจสอบ') $cls='st-check';
-                                    elseif($st=='รอรับ') $cls='st-paid';
-                                    elseif($st=='จัดส่งสำเร็จ') $cls='st-ship';
+                                    elseif($st=='ชำระแล้ว' || $st=='รอรับ') $cls='st-paid';
+                                    elseif($st=='จัดส่งสำเร็จ' || $st=='จัดส่งแล้ว') $cls='st-ship';
                                     elseif($st=='ยกเลิก') $cls='st-cancel';
                                 ?>
                                 <span class="status-badge <?= $cls ?>"><?= $st ?></span>
@@ -185,8 +217,8 @@ $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
                                     <select name="new_status" class="form-select form-select-sm" style="width: 110px; font-size:0.8rem;">
                                         <option value="รอชำระเงิน" <?= $st=='รอชำระเงิน'?'selected':''?>>รอชำระเงิน</option>
                                         <option value="รอตรวจสอบ" <?= $st=='รอตรวจสอบ'?'selected':''?>>รอตรวจสอบ</option>
-                                        <option value="รอรับ" <?= $st=='รอรับ'?'selected':''?>>รอรับ</option>
-                                        <option value="จัดส่งสำเร็จ" <?= $st=='จัดส่งสำเร็จ'?'selected':''?>>จัดส่งสำเร็จ</option>
+                                        <option value="ชำระแล้ว" <?= ($st=='ชำระแล้ว'||$st=='รอรับ')?'selected':''?>>ชำระแล้ว</option>
+                                        <option value="จัดส่งแล้ว" <?= ($st=='จัดส่งแล้ว'||$st=='จัดส่งสำเร็จ')?'selected':''?>>จัดส่งแล้ว</option>
                                         <option value="ยกเลิก" <?= $st=='ยกเลิก'?'selected':''?>>ยกเลิก</option>
                                     </select>
                                     <button type="submit" name="btn_update_status" class="btn btn-sm btn-success" title="บันทึก"><i class="bi bi-check-lg"></i></button>
