@@ -1,6 +1,10 @@
 <?php
-session_start();
+// เริ่มต้น Session ถ้ายังไม่ได้เริ่ม
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 include 'connectdb.php';
+in
 
 // ตั้งค่าบัญชี PromptPay ของร้านค้า
 $promptpay_id = "08X-XXX-XXXX"; // <--- แก้ไขเบอร์โทร/เลขบัตรที่นี่
@@ -9,12 +13,15 @@ $account_name = "นายร้านค้า ตัวอย่าง";
 $account_number = "123-4-56789-0";
 
 if(!isset($_SESSION['user_id'])){
-    header("Location: login.php");
+    // ถ้ายังไม่ login ให้ไปหน้า login หรือแสดงข้อความเตือน
+    // header("Location: login.php");
+    echo "<script>alert('กรุณาเข้าสู่ระบบก่อน'); window.location='login.php';</script>";
     exit();
 }
 
 if(!isset($_GET['id'])){
-    header("Location: index.php");
+    // header("Location: index.php");
+    echo "<script>window.location='index.php';</script>";
     exit();
 }
 
@@ -31,7 +38,8 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if($result->num_rows == 0){
-    die("ไม่พบคำสั่งซื้อ");
+    echo "<div class='alert alert-danger text-center mt-5'>ไม่พบคำสั่งซื้อ หรือคุณไม่มีสิทธิ์เข้าถึง</div>";
+    exit();
 }
 
 $order = $result->fetch_assoc();
@@ -63,16 +71,14 @@ if(isset($_POST['upload_slip'])){
 
             if(move_uploaded_file($_FILES['slip_img']['tmp_name'], $upload_path)){
                 
-                // --- จุดที่แก้ไข: บันทึกลงตาราง payments แยก ---
-                
-                // 1. เพิ่มข้อมูลการชำระเงิน
+                // บันทึกลงตาราง payments
                 $sql_pay = "INSERT INTO payments (order_id, user_id, slip_image, amount, pay_date) 
                             VALUES (?, ?, ?, ?, NOW())";
                 $stmt_pay = $conn->prepare($sql_pay);
                 $stmt_pay->bind_param("iisd", $order_id, $user_id, $new_name, $total_price);
                 
                 if($stmt_pay->execute()){
-                    // 2. อัปเดตสถานะออเดอร์เป็น 'รอตรวจสอบ'
+                    // อัปเดตสถานะออเดอร์
                     $sql_update = "UPDATE orders SET status = 'รอตรวจสอบ' WHERE o_id = ?";
                     $stmt_update = $conn->prepare($sql_update);
                     $stmt_update->bind_param("i", $order_id);
@@ -95,82 +101,66 @@ if(isset($_POST['upload_slip'])){
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ชำระเงิน - Scan QR</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
-    <style>
-        body{background:#f5f5f5;font-family:'Kanit',sans-serif;}
-        .container{ max-width: 800px; margin: 0 auto; padding: 40px 20px;}
-        .qr-box { 
-            background: #fff; border-radius: 15px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
-            overflow: hidden;
-        }
-        .header-qr { background: #003d99; color: #fff; padding: 20px; text-align: center; }
-        .qr-img { width: 100%; max-width: 250px; margin: 20px auto; display: block; }
-        .amount-text { color: #003d99; font-size: 2rem; font-weight: bold; text-align: center; }
-        .bank-details { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-top: 20px; }
-    </style>
-</head>
-<body>
+<style>
+    .qr-box { 
+        background: #fff; border-radius: 15px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+        overflow: hidden;
+    }
+    .header-qr { background: #003d99; color: #fff; padding: 20px; text-align: center; }
+    .qr-img { width: 100%; max-width: 250px; margin: 20px auto; display: block; }
+    .amount-text { color: #003d99; font-size: 2rem; font-weight: bold; text-align: center; }
+    .bank-details { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-top: 20px; }
+</style>
 
-    <?php include("header.php"); ?>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="qr-box">
+                <div class="header-qr">
+                    <h3 class="m-0">สแกน QR Code เพื่อชำระเงิน</h3>
+                    <small>Order ID: #<?= str_pad($order_id, 6, '0', STR_PAD_LEFT); ?></small>
+                </div>
 
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="qr-box">
-                    <div class="header-qr">
-                        <h3 class="m-0">สแกน QR Code เพื่อชำระเงิน</h3>
-                        <small>Order ID: #<?= str_pad($order_id, 6, '0', STR_PAD_LEFT); ?></small>
-                    </div>
+                <div class="p-4">
+                    <div class="row">
+                        <div class="col-md-6 text-center border-end">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c5/PromptPay-logo.png" width="100" class="mb-2">
+                            
+                            <img src="<?= $qr_url ?>" class="qr-img" alt="PromptPay QR">
+                            
+                            <div class="amount-text">฿<?= number_format($total_price, 2) ?></div>
+                            <p class="text-muted small mt-2">สแกนด้วยแอพธนาคารได้ทุกธนาคาร</p>
+                        </div>
 
-                    <div class="p-4">
-                        <div class="row">
-                            <div class="col-md-6 text-center border-end">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c5/PromptPay-logo.png" width="100" class="mb-2">
-                                <img src="<?= $qr_url ?>" class="qr-img" alt="PromptPay QR">
-                                <div class="amount-text">฿<?= number_format($total_price, 2) ?></div>
-                                <p class="text-muted small mt-2">สแกนด้วยแอพธนาคารได้ทุกธนาคาร</p>
+                        <div class="col-md-6">
+                            <h5 class="fw-bold mt-3 mt-md-0">รายละเอียดบัญชี</h5>
+                            <div class="bank-details">
+                                <p class="mb-1"><strong>ธนาคาร:</strong> <?= $bank_name ?></p>
+                                <p class="mb-1"><strong>ชื่อบัญชี:</strong> <?= $account_name ?></p>
+                                <p class="mb-0"><strong>เลขบัญชี:</strong> <span class="text-primary fs-5"><?= $account_number ?></span></p>
                             </div>
 
-                            <div class="col-md-6">
-                                <h5 class="fw-bold mt-3 mt-md-0">รายละเอียดบัญชี</h5>
-                                <div class="bank-details">
-                                    <p class="mb-1"><strong>ธนาคาร:</strong> <?= $bank_name ?></p>
-                                    <p class="mb-1"><strong>ชื่อบัญชี:</strong> <?= $account_name ?></p>
-                                    <p class="mb-0"><strong>เลขบัญชี:</strong> <span class="text-primary fs-5"><?= $account_number ?></span></p>
+                            <hr class="my-4">
+
+                            <h5 class="fw-bold">แจ้งโอนเงิน (อัปโหลดสลิป)</h5>
+                            <form action="" method="post" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <label for="slip_img" class="form-label text-muted">เลือกรูปภาพสลิป</label>
+                                    <input type="file" class="form-control" name="slip_img" id="slip_img" required accept="image/*">
                                 </div>
-
-                                <hr class="my-4">
-
-                                <h5 class="fw-bold">แจ้งโอนเงิน (อัปโหลดสลิป)</h5>
-                                <form action="" method="post" enctype="multipart/form-data">
-                                    <div class="mb-3">
-                                        <label for="slip_img" class="form-label text-muted">เลือกรูปภาพสลิป</label>
-                                        <input type="file" class="form-control" name="slip_img" id="slip_img" required accept="image/*">
-                                    </div>
-                                    <button type="submit" name="upload_slip" class="btn btn-primary w-100 py-2">
-                                        แจ้งชำระเงิน
-                                    </button>
-                                </form>
-                            </div>
+                                <button type="submit" name="upload_slip" class="btn btn-primary w-100 py-2">
+                                    แจ้งชำระเงิน
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="text-center mt-3">
-                    <a href="index.php" class="text-muted text-decoration-none">กลับไปหน้าแรก</a>
-                </div>
+            <div class="text-center mt-3">
+                <a href="index.php" class="text-muted text-decoration-none">กลับไปหน้าแรก</a>
             </div>
         </div>
     </div>
-
-</body>
-</html>
+</div>

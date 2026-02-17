@@ -1,13 +1,11 @@
 <?php
 session_start();
 include_once("connectdb.php");
-include_once("bootstrap.php");
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
-
 
 $uid = intval($_SESSION['user_id']);
 
@@ -19,67 +17,31 @@ if(!isset($_GET['id'])){
 $oid = intval($_GET['id']);
 
 /* ==========================
-   ดึงข้อมูลออเดอร์ (ตรวจสอบเจ้าของ)
+   ดึงข้อมูลออเดอร์ + ที่อยู่
 ========================== */
 $order_sql = "
-SELECT *
-FROM orders
-WHERE o_id='$oid'
-AND u_id='$uid'
+SELECT o.*, a.name, a.phone, a.address_line
+FROM orders o
+LEFT JOIN addresses a ON o.address_id = a.address_id
+WHERE o.o_id='$oid'
+AND o.u_id='$uid'
 LIMIT 1
 ";
 
 $order_rs = mysqli_query($conn,$order_sql);
 
 if(mysqli_num_rows($order_rs) == 0){
-    echo "<div class='container mt-5'>
+    die("<div class='container mt-5'>
             <div class='alert alert-danger text-center'>
             ไม่พบคำสั่งซื้อนี้
             </div>
-          </div>";
-    exit;
+          </div>");
 }
 
 $order = mysqli_fetch_assoc($order_rs);
 
 /* ==========================
-   ยกเลิกออเดอร์
-========================== */
-if(isset($_GET['cancel'])){
-
-    if($order['status']=="รอชำระเงิน" || 
-       $order['status']=="ที่ต้องจัดส่ง"){
-
-        // คืน stock
-        $detail_rs = mysqli_query($conn,"
-            SELECT p_id, q_ty 
-            FROM order_details 
-            WHERE o_id='$oid'
-        ");
-
-        while($item = mysqli_fetch_assoc($detail_rs)){
-            mysqli_query($conn,"
-                UPDATE products 
-                SET p_qty = p_qty + {$item['q_ty']}
-                WHERE p_id = {$item['p_id']}
-            ");
-        }
-
-        mysqli_query($conn,"
-            UPDATE orders 
-            SET status='ยกเลิก',
-                cancelled_at=NOW(),
-                cancel_reason='ลูกค้ายกเลิก'
-            WHERE o_id='$oid'
-        ");
-
-        header("Location: orderdetail.php?id=$oid");
-        exit;
-    }
-}
-
-/* ==========================
-   ดึงรายการสินค้าในออเดอร์
+   ดึงสินค้าในออเดอร์
 ========================== */
 $detail_sql = "
 SELECT p.p_name, p.p_price, p.p_img, od.q_ty
@@ -93,72 +55,54 @@ $detail_rs = mysqli_query($conn,$detail_sql);
 
 <?php include("header.php"); ?>
 
-<style>
-body{
-    background:#f4f6f9;
-    font-family:'Kanit',sans-serif;
-}
-.order-card{
-    border:none;
-    border-radius:15px;
-    box-shadow:0 5px 15px rgba(0,0,0,0.08);
-}
-.status-badge{
-    padding:6px 14px;
-    border-radius:50px;
-    font-size:13px;
-    font-weight:500;
-}
-.summary-box{
-    background:#fff8f0;
-    padding:20px;
-    border-radius:12px;
-}
-</style>
-
 <div class="container mt-5 mb-5">
 
 <a href="myorders.php" class="btn btn-light mb-4">
 ← กลับไปหน้ารายการสั่งซื้อ
 </a>
 
-<div class="card order-card p-4">
+<div class="card p-4 shadow-sm">
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-
-<div>
 <h5>เลขที่ออเดอร์ #<?= $order['o_id'] ?></h5>
 <small class="text-muted">
 สั่งซื้อเมื่อ <?= date("d/m/Y H:i", strtotime($order['o_date'])) ?>
 </small>
-</div>
-
-<div>
-<?php
-$status = $order['status'];
-$badge="bg-secondary";
-
-if($status=="รอชำระเงิน") $badge="bg-danger";
-elseif($status=="ที่ต้องจัดส่ง") $badge="bg-warning text-dark";
-elseif($status=="รอรับ") $badge="bg-primary";
-elseif($status=="จัดส่งสำเร็จ") $badge="bg-success";
-elseif($status=="ยกเลิก") $badge="bg-dark";
-?>
-
-<span class="status-badge <?= $badge ?>">
-<?= $status ?>
-</span>
-</div>
-
-</div>
 
 <hr>
 
+<!-- ==========================
+     ที่อยู่จัดส่ง
+========================== -->
+<h6 class="mb-3">📦 ที่อยู่จัดส่ง</h6>
+
+<?php if($order['name']): ?>
+<div class="mb-4">
+<strong><?= htmlspecialchars($order['name']) ?></strong><br>
+<?= htmlspecialchars($order['phone']) ?><br>
+<?= htmlspecialchars($order['address_line']) ?>
+</div>
+<?php else: ?>
+<div class="alert alert-warning">
+ไม่มีข้อมูลที่อยู่ในออเดอร์นี้
+</div>
+<?php endif; ?>
+
+<hr>
+
+<!-- ==========================
+     รายการสินค้า
+========================== -->
+<h6 class="mb-3">🛒 รายการสินค้า</h6>
+
 <?php 
 $total = 0;
-while($item = mysqli_fetch_assoc($detail_rs)): 
-$subtotal = $item['p_price'] * $item['q_ty'];
-$total += $subtotal;
+
+if(mysqli_num_rows($detail_rs) == 0){
+    echo "<div class='alert alert-danger'>ไม่พบสินค้าในออเดอร์นี้</div>";
+}else{
+    while($item = mysqli_fetch_assoc($detail_rs)){
+        $subtotal = $item['p_price'] * $item['q_ty'];
+        $total += $subtotal;
 ?>
 
 <div class="row align-items-center mb-3">
@@ -180,43 +124,19 @@ $total += $subtotal;
 
 </div>
 
-<?php endwhile; ?>
+<?php } } ?>
 
 <hr>
 
-<div class="summary-box mt-3">
-
-<div class="d-flex justify-content-between">
-<span>ยอดรวมสินค้า</span>
-<span><?= number_format($total,2) ?> บาท</span>
+<!-- ==========================
+     สรุปยอด
+========================== -->
+<div class="text-end">
+<h5>ยอดรวมสินค้า: <?= number_format($total,2) ?> บาท</h5>
+<h4 class="text-warning">
+ยอดชำระทั้งหมด: <?= number_format($order['total_price'],2) ?> บาท
+</h4>
 </div>
-
-<div class="d-flex justify-content-between fw-bold fs-5 mt-2">
-<span>ยอดชำระทั้งหมด</span>
-<span class="text-warning">
-<?= number_format($order['total_price'],2) ?> บาท
-</span>
-</div>
-
-</div>
-
-<?php if($order['status']=="รอชำระเงิน" || 
-          $order['status']=="ที่ต้องจัดส่ง"): ?>
-
-<a href="?id=<?= $oid ?>&cancel=1" 
-   class="btn btn-outline-danger mt-4"
-   onclick="return confirm('ยืนยันการยกเลิกคำสั่งซื้อ?')">
-   ยกเลิกคำสั่งซื้อ
-</a>
-
-<?php endif; ?>
-
-<?php if($order['status']=="ยกเลิก"): ?>
-<div class="alert alert-secondary mt-4">
-ยกเลิกเมื่อ <?= date("d/m/Y H:i", strtotime($order['cancelled_at'])) ?><br>
-เหตุผล: <?= $order['cancel_reason'] ?>
-</div>
-<?php endif; ?>
 
 </div>
 </div>
