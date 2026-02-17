@@ -13,7 +13,7 @@
 <!-- Bootstrap Icons -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
-<title><?= $title ?? 'Admin Panel' ?></title>
+<title><?= $title ?? '2M3WM Sneaker Shop' ?></title>
 
 <style>
 body{
