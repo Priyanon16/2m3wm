@@ -101,6 +101,14 @@ include("header.php");
     background: #ccc !important;
     cursor: not-allowed;
 }
+
+.product-detail {
+    white-space: pre-line;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.7;
+}
+
 </style>
 
 <div class="container py-5">
