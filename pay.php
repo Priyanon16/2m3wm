@@ -182,7 +182,7 @@ $shipping = 60;
                 <div class="card mb-3">
                     <h4 class="mb-3">
                         ที่อยู่จัดส่ง
-                        <a href="address_manage.php" class="edit-addr-btn">จัดการที่อยู่</a>
+                        <a href="myorders.php" class="edit-addr-btn">จัดการที่อยู่</a>
                     </h4>
                     
                     <?php if($has_address): ?>
