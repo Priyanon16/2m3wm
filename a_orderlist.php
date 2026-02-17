@@ -142,7 +142,7 @@ $result = mysqli_query($conn, $sql) or die(mysqli_error($conn));
                             <th>หลักฐาน</th>
                             <th>สถานะ</th>
                             <th>เปลี่ยนสถานะ</th>
-                            <th>จัดการ</th>
+                            <th>รายละเอียด</th>
                         </tr>
                     </thead>
                     <tbody>

@@ -15,7 +15,7 @@ if(!isset($_SESSION['user_id'])){
 $user_id = intval($_SESSION['user_id']);
 
 /* =========================================
-   ส่วนที่ 1: ประมวลผลเมื่อกดปุ่ม "ยืนยันการสั่งซื้อ" (เหมือนเดิม)
+   ส่วนที่ 1: ประมวลผลเมื่อกดปุ่ม "ยืนยันการสั่งซื้อ"
 ========================================= */
 if(isset($_POST['confirm_order'])){
 
@@ -26,7 +26,6 @@ if(isset($_POST['confirm_order'])){
 
     $payment_method = $_POST['payment_method'];
 
-    // 1.1 ดึงสินค้าในตะกร้า
     $sql_cart = "SELECT c.product_id, c.quantity, p.p_price 
                  FROM cart c 
                  JOIN products p ON c.product_id = p.p_id 
@@ -52,49 +51,43 @@ if(isset($_POST['confirm_order'])){
     $shipping_cost = 60; 
     $final_total = $total_price + $shipping_cost;
 
-   // 1.2 ดึง address ล่าสุดของ user
-$sql_addr2 = "SELECT address_id FROM addresses WHERE user_id = ? ORDER BY address_id DESC LIMIT 1";
-$stmt_addr2 = $conn->prepare($sql_addr2);
-$stmt_addr2->bind_param("i", $user_id);
-$stmt_addr2->execute();
-$res_addr2 = $stmt_addr2->get_result();
-$addr2 = $res_addr2->fetch_assoc();
+    // ดึง address ล่าสุดของ user
+    $sql_addr2 = "SELECT address_id FROM addresses WHERE user_id = ? ORDER BY address_id DESC LIMIT 1";
+    $stmt_addr2 = $conn->prepare($sql_addr2);
+    $stmt_addr2->bind_param("i", $user_id);
+    $stmt_addr2->execute();
+    $res_addr2 = $stmt_addr2->get_result();
+    $addr2 = $res_addr2->fetch_assoc();
 
-if(!$addr2){
-    die("ไม่พบที่อยู่ กรุณาเพิ่มที่อยู่ก่อนสั่งซื้อ");
-}
+    if(!$addr2){
+        die("ไม่พบที่อยู่ กรุณาเพิ่มที่อยู่ก่อนสั่งซื้อ");
+    }
 
-$address_id = $addr2['address_id'];
+    $address_id = $addr2['address_id'];
 
-// 1.3 สร้าง Order (เพิ่ม address_id เข้าไป)
-$stmt_order = $conn->prepare("
-    INSERT INTO orders 
-    (u_id, address_id, total_price, status, o_date, payment_method) 
-    VALUES (?, ?, ?, 'รอชำระเงิน', NOW(), ?)
-");
+    $stmt_order = $conn->prepare("
+        INSERT INTO orders 
+        (u_id, address_id, total_price, status, o_date, payment_method) 
+        VALUES (?, ?, ?, 'รอชำระเงิน', NOW(), ?)
+    ");
+    $stmt_order->bind_param("iids", $user_id, $address_id, $final_total, $payment_method);
 
-$stmt_order->bind_param("iids", $user_id, $address_id, $final_total, $payment_method);
+    if(!$stmt_order->execute()){
+        die("Error creating order: " . $conn->error);
+    }
 
-if(!$stmt_order->execute()){
-    die("Error creating order: " . $conn->error);
-}
+    $order_id = $stmt_order->insert_id;
 
-$order_id = $stmt_order->insert_id;
-
-
-    // 1.3 บันทึก Order Details
     $stmt_detail = $conn->prepare("INSERT INTO order_details (o_id, p_id, q_ty, price) VALUES (?, ?, ?, ?)");
     foreach($items as $item){
         $stmt_detail->bind_param("iiid", $order_id, $item['product_id'], $item['quantity'], $item['p_price']);
         $stmt_detail->execute();
     }
 
-    // 1.4 ล้างตะกร้า
     $stmt_clear = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
     $stmt_clear->bind_param("i", $user_id);
     $stmt_clear->execute();
 
-    // 1.5 เปลี่ยนหน้า
     if ($payment_method == 'cod') {
         header("Location: orderdetail.php?id=".$order_id."&success=1");
     } else {
@@ -102,13 +95,13 @@ $order_id = $stmt_order->insert_id;
     }
     exit();
 }
-include 'header.php'; 
+
+include 'header.php';
+
 /* =========================================
    ส่วนที่ 2: ดึงข้อมูลเพื่อแสดงผลหน้าเว็บ
 ========================================= */
 
-// 2.1 ดึงที่อยู่จากตาราง addresses (แก้ไขตรงนี้ให้ตรงกับรูปภาพ DB)
-// เลือกที่อยู่ล่าสุดที่ผู้ใช้เพิ่มเข้าไป (ORDER BY address_id DESC LIMIT 1)
 $sql_addr = "SELECT * FROM addresses WHERE user_id = ? ORDER BY address_id DESC LIMIT 1";
 $stmt_addr = $conn->prepare($sql_addr);
 $stmt_addr->bind_param("i", $user_id);
@@ -116,25 +109,17 @@ $stmt_addr->execute();
 $res_addr = $stmt_addr->get_result();
 $addr_row = $res_addr->fetch_assoc();
 
-// เตรียมตัวแปรสำหรับแสดงผล
 $show_fullname = 'ไม่ระบุชื่อ';
 $show_phone = '-';
 $show_address = '';
 $has_address = false;
 
 if ($addr_row) {
-    // มีที่อยู่: ดึงข้อมูลมาแสดง
     $show_fullname = $addr_row['fullname'];
     $show_phone = $addr_row['phone'];
-    
-    // รวมที่อยู่: address + district + province + postal_code
-    $show_address = $addr_row['address'] . ' ' . 
-                    'ต.' . $addr_row['district'] . ' ' . 
-                    'จ.' . $addr_row['province'] . ' ' . 
-                    $addr_row['postal_code'];
+    $show_address = $addr_row['address'] . ' ต.' . $addr_row['district'] . ' จ.' . $addr_row['province'] . ' ' . $addr_row['postal_code'];
     $has_address = true;
 } else {
-    // ไม่มีที่อยู่: ลองไปดึงชื่อจากตาราง users มาแสดงเป็น fallback
     $sql_u = "SELECT fullname FROM users WHERE user_id = ?";
     $stmt_u = $conn->prepare($sql_u);
     $stmt_u->bind_param("i", $user_id);
@@ -145,7 +130,6 @@ if ($addr_row) {
     }
 }
 
-// 2.2 ดึงสินค้าในตะกร้า
 $sql_view = "
     SELECT c.quantity, p.p_name, p.p_price,
            (SELECT img_path FROM product_images WHERE p_id = p.p_id LIMIT 1) AS p_img
@@ -159,149 +143,22 @@ $stmt_products->execute();
 $cart_result = $stmt_products->get_result();
 
 $total = 0;
-$shipping = 60; 
+$shipping = 60;
 ?>
 
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ชำระเงิน - 2M3WM</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
-    <style>
-        body{background:#f5f5f5;font-family:'Kanit',sans-serif;}
-        .container{ max-width: 900px; margin: 0 auto; padding: 20px;}
-        .card{ background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px;}
-        .summary-item{ display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .total-price{ font-size: 1.2rem; font-weight: bold; color: #ff7a00; }
-        .btn-confirm{ 
-            background: #ff7a00; color: #fff; width: 100%; padding: 12px; 
-            border: none; border-radius: 5px; font-size: 1.1rem; cursor: pointer;
-        }
-        .btn-confirm:hover{ background: #e66e00; }
-        .btn-confirm:disabled{ background: #ccc; cursor: not-allowed; }
-        .payment-option{ margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-        .item-row { border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
-        
-        .address-box { border-left: 4px solid #ff7a00; background: #fff8f0; padding: 15px; border-radius: 5px; }
-        .edit-addr-btn { float: right; font-size: 0.9rem; text-decoration: none; color: #ff7a00; }
-    </style>
-</head> 
-<body>
+<style>
+body{background:#f5f5f5;font-family:'Kanit',sans-serif;}
+.container{ max-width: 900px; margin: 0 auto; padding: 20px;}
+.card{ background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px;}
+.summary-item{ display: flex; justify-content: space-between; margin-bottom: 10px; }
+.total-price{ font-size: 1.2rem; font-weight: bold; color: #ff7a00; }
+.btn-confirm{ background: #ff7a00; color: #fff; width: 100%; padding: 12px; border: none; border-radius: 5px; font-size: 1.1rem; cursor: pointer;}
+.btn-confirm:hover{ background: #e66e00; }
+.btn-confirm:disabled{ background: #ccc; cursor: not-allowed; }
+.payment-option{ margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+.item-row { border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
+.address-box { border-left: 4px solid #ff7a00; background: #fff8f0; padding: 15px; border-radius: 5px; }
+.edit-addr-btn { float: right; font-size: 0.9rem; text-decoration: none; color: #ff7a00; }
+</style>
 
-    <div class="container py-5">
-        <h2 class="mb-4 text-center">ยืนยันการสั่งซื้อ</h2>
-
-        <div class="row">
-            <div class="col-md-7">
-                
-                <div class="card mb-3">
-                    <h4 class="mb-3">
-                        ที่อยู่จัดส่ง
-                        <a href="myorders.php" class="edit-addr-btn">จัดการที่อยู่</a>
-                    </h4>
-                    
-                    <?php if($has_address): ?>
-                        <div class="address-box">
-                            <strong><?= htmlspecialchars($show_fullname) ?></strong>
-                            <span class="text-muted ms-2">(<?= htmlspecialchars($show_phone) ?>)</span>
-                            <p class="mb-0 mt-2 text-secondary">
-                                <?= htmlspecialchars($show_address) ?>
-                            </p>
-                        </div>
-                    <?php else: ?>
-                        <div class="alert alert-warning mt-3 mb-0 text-center">
-                            <p class="mb-2">⚠️ คุณยังไม่มีที่อยู่จัดส่ง</p>
-                            <a href="address_manage.php" class="btn btn-sm btn-outline-primary">เพิ่มที่อยู่จัดส่งใหม่</a>
-                        </div>
-                    <?php endif; ?>
-                </div>
-
-                <div class="card">
-                    <h4 class="mb-3">รายการสินค้า</h4>
-                    
-                    <?php if($cart_result->num_rows > 0): ?>
-                        <?php 
-                        while($row = $cart_result->fetch_assoc()): 
-                            $subtotal = $row['p_price'] * $row['quantity'];
-                            $total += $subtotal; 
-                            $img = !empty($row['p_img']) ? $row['p_img'] : 'https://placehold.co/100x100?text=No+Image';
-                        ?>
-                        <div class="d-flex justify-content-between align-items-center item-row">
-                            <div style="display:flex; gap:15px; align-items:center;">
-                                <img src="<?= htmlspecialchars($img) ?>" 
-                                     style="width:60px; height:60px; object-fit:cover; border-radius:5px;">
-                                <div>
-                                    <h6 class="mb-0"><?= htmlspecialchars($row['p_name']) ?></h6>
-                                    <small class="text-muted">จำนวน: <?= $row['quantity'] ?> ชิ้น</small>
-                                </div>
-                            </div>
-                            <div class="fw-bold">฿<?= number_format($subtotal, 0) ?></div>
-                        </div>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <div class="text-center py-4 text-muted">
-                            <p>ไม่มีสินค้าในตะกร้า</p>
-                            <a href="index.php" class="btn btn-sm btn-outline-secondary">ไปเลือกซื้อสินค้า</a>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <div class="col-md-5">
-                <form action="pay.php" method="POST">
-                    
-                    <div class="card">
-                        <h4 class="mb-3">สรุปยอดชำระ</h4>
-                        <div class="summary-item">
-                            <span>ราคาสินค้า</span>
-                            <span>฿<?= number_format($total, 0) ?></span>
-                        </div>
-                        <div class="summary-item">
-                            <span>ค่าจัดส่ง</span>
-                            <span>฿<?= number_format($shipping, 0) ?></span>
-                        </div>
-                        <hr>
-                        <div class="summary-item">
-                            <strong>ยอดสุทธิ</strong>
-                            <strong class="total-price">฿<?= number_format($total + $shipping, 0) ?></strong>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <h4 class="mb-3">เลือกวิธีการชำระเงิน</h4>
-                        <div class="payment-option">
-                            <input type="radio" name="payment_method" value="transfer" id="pay1" required checked>
-                            <label for="pay1" class="ms-2">โอนเงินผ่านธนาคาร</label>
-                        </div>
-                        <div class="payment-option">
-                            <input type="radio" name="payment_method" value="cod" id="pay2">
-                            <label for="pay2" class="ms-2">เก็บเงินปลายทาง</label>
-                        </div>
-                    </div>
-
-                    <button type="submit" name="confirm_order" class="btn-confirm" 
-                        <?= ($total == 0 || !$has_address) ? 'disabled' : '' ?>
-                        <?= !$has_address ? 'title="กรุณาเพิ่มที่อยู่จัดส่งก่อน"' : '' ?> >
-                        ยืนยันการสั่งซื้อ
-                    </button>
-                    
-                    <?php if(!$has_address): ?>
-                        <div class="text-center text-danger mt-2 small">* กรุณาเพิ่มที่อยู่จัดส่งก่อนยืนยัน</div>
-                    <?php endif; ?>
-                    
-                    <a href="cart.php" class="d-block text-center mt-3 text-muted" style="text-decoration:none;">
-                        &lt; ย้อนกลับไปแก้ไขตะกร้า
-                    </a>
-                    
-
-                </form>
-            </div>
-        </div>
-    </div>
-
-</body>
-</html>
+<div class="container py-5">
