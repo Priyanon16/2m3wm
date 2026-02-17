@@ -109,20 +109,50 @@ include("header.php");
 <div class="col-md-6">
 
 <?php if(count($images)>0): ?>
-<div id="carouselExample" class="carousel slide">
+<div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
+
+  <!-- จุดเลื่อนด้านล่าง -->
+  <div class="carousel-indicators">
+    <?php foreach($images as $key=>$img): ?>
+      <button type="button"
+              data-bs-target="#carouselExample"
+              data-bs-slide-to="<?= $key ?>"
+              class="<?= $key==0?'active':'' ?>">
+      </button>
+    <?php endforeach; ?>
+  </div>
+
   <div class="carousel-inner">
     <?php foreach($images as $key=>$img): ?>
     <div class="carousel-item <?= $key==0?'active':'' ?>">
-      <img src="<?= htmlspecialchars($img) ?>" 
+      <img src="<?= htmlspecialchars($img) ?>"
            class="d-block w-100 rounded"
            style="height:450px;object-fit:cover;">
     </div>
     <?php endforeach; ?>
   </div>
+
+  <!-- ปุ่มซ้าย -->
+  <button class="carousel-control-prev"
+          type="button"
+          data-bs-target="#carouselExample"
+          data-bs-slide="prev">
+    <span class="carousel-control-prev-icon"></span>
+  </button>
+
+  <!-- ปุ่มขวา -->
+  <button class="carousel-control-next"
+          type="button"
+          data-bs-target="#carouselExample"
+          data-bs-slide="next">
+    <span class="carousel-control-next-icon"></span>
+  </button>
+
 </div>
 <?php else: ?>
 <img src="images/no-image.png" class="img-fluid rounded">
 <?php endif; ?>
+
 
 </div>
 
