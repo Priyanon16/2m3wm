@@ -188,7 +188,7 @@ if(isset($_SESSION['user_id'])){
       </li>
       <li class="nav-item">
         <a class="nav-link" 
-          href="https://lin.ee/ktGP4ZD" 
+          href="https://lin.ee/0eJUFha
           target="_blank">
           ติดต่อเรา
         </a>
