@@ -27,12 +27,21 @@ if(isset($_POST['confirm_order'])){
     $total_price    = floatval($_POST['total_price']);
 
     // 1. สร้างคำสั่งซื้อในตาราง orders
-    $stmt = $conn->prepare("INSERT INTO orders 
-        (user_id, total_price, payment_method, status, order_date)
-        VALUES (?, ?, ?, 'รอชำระเงิน', NOW())");
-    $stmt->bind_param("ids", $user_id, $total_price, $payment_method);
-    $stmt->execute();
-    $order_id = $stmt->insert_id;
+   $stmt = $conn->prepare("
+    INSERT INTO orders 
+    (u_id, total_price, status, o_date)
+    VALUES (?, ?, 'รอชำระเงิน', NOW())
+");
+
+if(!$stmt){
+    die("Prepare failed: " . $conn->error);
+}
+
+$stmt->bind_param("id", $user_id, $total_price);
+$stmt->execute();
+
+$order_id = $stmt->insert_id;
+
 
     // 2. ดึงสินค้าจากตะกร้าในฐานข้อมูล
     $stmt_cart = $conn->prepare("SELECT product_id, quantity FROM cart WHERE user_id = ?");
