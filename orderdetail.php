@@ -17,20 +17,19 @@ if(!isset($_GET['id'])){
 $oid = intval($_GET['id']);
 
 /* ==========================
-   ดึงข้อมูลออเดอร์ + ที่อยู่
+   ดึงข้อมูลออเดอร์จริง
 ========================== */
-$order_sql = "
-SELECT o.*, a.name, a.phone, a.address_line
-FROM orders o
-LEFT JOIN addresses a ON o.address_id = a.address_id
-WHERE o.o_id='$oid'
-AND o.u_id='$uid'
-LIMIT 1
-";
+$stmt = $conn->prepare("
+    SELECT *
+    FROM orders
+    WHERE o_id = ? AND u_id = ?
+    LIMIT 1
+");
+$stmt->bind_param("ii", $oid, $uid);
+$stmt->execute();
+$order_rs = $stmt->get_result();
 
-$order_rs = mysqli_query($conn,$order_sql);
-
-if(mysqli_num_rows($order_rs) == 0){
+if($order_rs->num_rows == 0){
     die("<div class='container mt-5'>
             <div class='alert alert-danger text-center'>
             ไม่พบคำสั่งซื้อนี้
@@ -38,19 +37,36 @@ if(mysqli_num_rows($order_rs) == 0){
           </div>");
 }
 
-$order = mysqli_fetch_assoc($order_rs);
+$order = $order_rs->fetch_assoc();
+
+/* ==========================
+   ดึงที่อยู่ล่าสุดของ user (กรณีไม่มี address_id)
+========================== */
+$stmt_addr = $conn->prepare("
+    SELECT *
+    FROM addresses
+    WHERE user_id = ?
+    ORDER BY address_id DESC
+    LIMIT 1
+");
+$stmt_addr->bind_param("i", $uid);
+$stmt_addr->execute();
+$addr_rs = $stmt_addr->get_result();
+$address = $addr_rs->fetch_assoc();
 
 /* ==========================
    ดึงสินค้าในออเดอร์
 ========================== */
-$detail_sql = "
-SELECT p.p_name, p.p_price, p.p_img, od.q_ty
-FROM order_details od
-JOIN products p ON od.p_id = p.p_id
-WHERE od.o_id='$oid'
-";
-
-$detail_rs = mysqli_query($conn,$detail_sql);
+$stmt_detail = $conn->prepare("
+    SELECT od.q_ty, od.price, p.p_name,
+           (SELECT img_path FROM product_images WHERE p_id = p.p_id LIMIT 1) AS p_img
+    FROM order_details od
+    JOIN products p ON od.p_id = p.p_id
+    WHERE od.o_id = ?
+");
+$stmt_detail->bind_param("i", $oid);
+$stmt_detail->execute();
+$detail_rs = $stmt_detail->get_result();
 ?>
 
 <?php include("header.php"); ?>
@@ -70,51 +86,49 @@ $detail_rs = mysqli_query($conn,$detail_sql);
 
 <hr>
 
-<!-- ==========================
-     ที่อยู่จัดส่ง
-========================== -->
-<h6 class="mb-3">📦 ที่อยู่จัดส่ง</h6>
+<h6>📦 ที่อยู่จัดส่ง</h6>
 
-<?php if($order['name']): ?>
+<?php if($address): ?>
 <div class="mb-4">
-<strong><?= htmlspecialchars($order['name']) ?></strong><br>
-<?= htmlspecialchars($order['phone']) ?><br>
-<?= htmlspecialchars($order['address_line']) ?>
+<strong><?= htmlspecialchars($address['fullname']) ?></strong><br>
+<?= htmlspecialchars($address['phone']) ?><br>
+<?= htmlspecialchars($address['address']) ?> 
+ต.<?= htmlspecialchars($address['district']) ?> 
+จ.<?= htmlspecialchars($address['province']) ?> 
+<?= htmlspecialchars($address['postal_code']) ?>
 </div>
 <?php else: ?>
 <div class="alert alert-warning">
-ไม่มีข้อมูลที่อยู่ในออเดอร์นี้
+ยังไม่มีที่อยู่จัดส่ง
 </div>
 <?php endif; ?>
 
 <hr>
 
-<!-- ==========================
-     รายการสินค้า
-========================== -->
-<h6 class="mb-3">🛒 รายการสินค้า</h6>
+<h6>🛒 รายการสินค้า</h6>
 
 <?php 
 $total = 0;
 
-if(mysqli_num_rows($detail_rs) == 0){
+if($detail_rs->num_rows == 0){
     echo "<div class='alert alert-danger'>ไม่พบสินค้าในออเดอร์นี้</div>";
 }else{
-    while($item = mysqli_fetch_assoc($detail_rs)){
-        $subtotal = $item['p_price'] * $item['q_ty'];
+    while($item = $detail_rs->fetch_assoc()){
+        $subtotal = $item['price'] * $item['q_ty'];
         $total += $subtotal;
 ?>
 
 <div class="row align-items-center mb-3">
 
 <div class="col-md-2">
-<img src="<?= $item['p_img'] ?>" class="img-fluid rounded">
+<img src="<?= $item['p_img'] ?: 'https://placehold.co/100x100' ?>" 
+     class="img-fluid rounded">
 </div>
 
 <div class="col-md-6">
 <strong><?= htmlspecialchars($item['p_name']) ?></strong><br>
 <small class="text-muted">
-ราคา <?= number_format($item['p_price'],2) ?> บาท × <?= $item['q_ty'] ?>
+ราคา <?= number_format($item['price'],2) ?> บาท × <?= $item['q_ty'] ?>
 </small>
 </div>
 
@@ -128,9 +142,6 @@ if(mysqli_num_rows($detail_rs) == 0){
 
 <hr>
 
-<!-- ==========================
-     สรุปยอด
-========================== -->
 <div class="text-end">
 <h5>ยอดรวมสินค้า: <?= number_format($total,2) ?> บาท</h5>
 <h4 class="text-warning">
