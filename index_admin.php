@@ -2,15 +2,6 @@
     session_start();
     include_once("connectdb.php");
     
-    // ตรวจสอบสิทธิ์ Admin (ถ้ามีระบบ Login แยกสำหรับ Admin ให้เช็คตรงนี้)
-    // if(!isset($_SESSION['admin_id'])) { header("Location: login.php"); exit(); }
-    
-    // ถ้าไม่มี session uname ให้ redirect กลับไป login (ใช้ตาม check_login.php เดิมของคุณ)
-    if(!isset($_SESSION['uname'])){
-        header("Location: login.php");
-        exit();
-    }
-
     /* ===========================================
        ดึงข้อมูลสถิติ (Real-time Statistics)
     =========================================== */
@@ -282,7 +273,7 @@ header {
     </div>
 
     <footer class="text-center pb-5 mt-5">
-        <p class="small text-muted">&copy; 2026 2M3WM SNEAKER HUB - ADMIN PANEL</p>
+        <p class="small text-muted">&copy; 2026 2M3WM SNEAKER HUB - รวยแน่แม่จ๋า</p>
     </footer>
 </div>
 
