@@ -189,7 +189,7 @@ if(isset($_POST['email'])){
                 <label><i class="fa-solid fa-key me-1"></i> รหัสผ่าน</label>
                 <div class="input-wrapper">
                     <i class="fa-solid fa-lock"></i>
-                    <input type="password" name="password" placeholder="********" required>
+                    <input type="password" name="password" placeholder="******" required>
                 </div>
             </div>
 

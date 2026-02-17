@@ -11,6 +11,8 @@ mysqli_set_charset($conn,"utf8");
 if(isset($_GET['delete_id'])){
     $id = intval($_GET['delete_id']);
 
+    // หมายเหตุ: ตรงนี้โค้ดยังเป็นแบบเดิมที่ดึงจาก products 
+    // ถ้าอนาคตต้องการลบรูปจริงจาก folder ด้วย อาจต้องแก้ให้ดึงจาก product_images
     $img = mysqli_query($conn,"SELECT p_img FROM products WHERE p_id=$id");
     $imgRow = mysqli_fetch_assoc($img);
 
@@ -38,9 +40,11 @@ if(isset($_GET['brand_id']) && $_GET['brand_id'] != ""){
 }
 
 /* =========================
-   ดึงสินค้า
+   ดึงสินค้า (แก้ไข SQL)
 ========================= */
-$sql = "SELECT p.*, c.c_name, b.brand_name
+// [แก้ไข] เพิ่ม Subquery เพื่อดึงรูปภาพ 1 รูปมาเป็น thumbnail
+$sql = "SELECT p.*, c.c_name, b.brand_name,
+        (SELECT img_path FROM product_images WHERE p_id = p.p_id LIMIT 1) AS thumbnail
         FROM products p
         LEFT JOIN category c ON p.c_id = c.c_id
         LEFT JOIN brand b ON p.brand_id = b.brand_id
@@ -95,6 +99,15 @@ body{
 .btn-theme:hover{
     background:#e64a19;
 }
+
+/* เพิ่ม CSS สำหรับรูปภาพ thumbnail */
+.img-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
 </style>
 </head>
 
@@ -102,12 +115,10 @@ body{
 
 <div class="layout">
 
-    <!-- เรียก Sidebar -->
     <?php include("sidebar.php"); ?>
 
     <div class="main-content">
 
-        <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="fw-bold">
                 <i class="bi bi-box-seam text-warning me-2"></i>
@@ -119,7 +130,6 @@ body{
             </a>
         </div>
 
-        <!-- Filter -->
         <div class="card p-3 mb-4">
             <form method="GET" class="row align-items-center g-3">
                 <div class="col-md-4">
@@ -145,18 +155,17 @@ body{
             </form>
         </div>
 
-        <!-- ตาราง -->
         <div class="card p-4">
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>ชื่อสินค้า</th>
+                            <th>รูป</th> <th>ชื่อสินค้า</th>
                             <th>หมวดหมู่</th>
                             <th>แบรนด์</th>
                             <th>เพศ</th>
-                            <th>ราคา</th>
+                            <th>คงเหลือ</th> <th>ราคา</th>
                             <th class="text-center">จัดการ</th>
                         </tr>
                     </thead>
@@ -166,6 +175,15 @@ body{
                     <?php while($row=mysqli_fetch_assoc($result)): ?>
                     <tr>
                         <td>#<?= $row['p_id']; ?></td>
+                        
+                        <td>
+                            <?php if(!empty($row['thumbnail'])): ?>
+                                <img src="<?= $row['thumbnail']; ?>" class="img-thumb">
+                            <?php else: ?>
+                                <span class="text-muted small">ไม่มีรูป</span>
+                            <?php endif; ?>
+                        </td>
+
                         <td><?= $row['p_name']; ?></td>
                         <td><?= $row['c_name'] ?? '-'; ?></td>
                         <td>
@@ -183,6 +201,15 @@ body{
                             echo '<span class="badge bg-success">Unisex</span>';
                         ?>
                         </td>
+
+                        <td>
+                            <?php if($row['p_qty'] <= 0): ?>
+                                <span class="badge bg-danger">สินค้าหมด</span>
+                            <?php else: ?>
+                                <?= number_format($row['p_qty']); ?> ชิ้น
+                            <?php endif; ?>
+                        </td>
+
                         <td class="price">฿<?= number_format($row['p_price']); ?></td>
                         <td class="text-center">
                             <a href="admin_edit.php?id=<?= $row['p_id']; ?>" 
@@ -200,8 +227,7 @@ body{
                     <?php endwhile; ?>
                     <?php else: ?>
                     <tr>
-                        <td colspan="7" class="text-center py-4">
-                            ยังไม่มีสินค้าในระบบ
+                        <td colspan="9" class="text-center py-4"> ยังไม่มีสินค้าในระบบ
                         </td>
                     </tr>
                     <?php endif; ?>
