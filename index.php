@@ -189,21 +189,22 @@ body { font-family: 'Kanit', sans-serif; background: #f8f9fa; }
 </div>
 
 <!-- PRODUCT GRID -->
+<div class="container py-5">
 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
 
 <?php if(mysqli_num_rows($rs) > 0): ?>
-<?php while($p = mysqli_fetch_assoc($rs)): ?>
+<?php while($row = mysqli_fetch_assoc($rs)): ?>
 
 <?php
-$img = !empty($p['main_img']) 
-       ? $p['main_img'] 
+$img = !empty($row['main_img']) 
+       ? $row['main_img'] 
        : 'images/no-image.png';
 ?>
 
 <div class="col">
 <div class="product-card">
 
-<a href="product_detail.php?id=<?= $p['p_id']; ?>" 
+<a href="product_detail.php?id=<?= $row['p_id']; ?>" 
    class="text-decoration-none text-dark">
 
 <img src="<?= htmlspecialchars($img); ?>" 
@@ -216,17 +217,17 @@ $img = !empty($p['main_img'])
 </span>
 
 <div class="product-title">
-<?= htmlspecialchars($p['p_name']); ?>
+<?= htmlspecialchars($row['p_name']); ?>
 </div>
 
 <div class="text-muted small mb-1">
-<?= ucfirst($p['p_type']); ?>
+<?= ucfirst($row['p_type']); ?>
 </div>
 
 <div class="mb-2">
-<?php if($p['p_qty'] > 0): ?>
+<?php if($row['p_qty'] > 0): ?>
 <small class="text-success">
-คงเหลือ <?= number_format($p['p_qty']); ?> คู่
+คงเหลือ <?= number_format($row['p_qty']); ?> คู่
 </small>
 <?php else: ?>
 <small class="text-danger fw-bold">
@@ -236,7 +237,7 @@ $img = !empty($p['main_img'])
 </div>
 
 <div class="product-price">
-฿<?= number_format($p['p_price'], 0); ?>
+฿<?= number_format($row['p_price'], 0); ?>
 </div>
 
 </div>
@@ -244,8 +245,8 @@ $img = !empty($p['main_img'])
 
 <div class="product-actions">
 
-<?php if($p['p_qty'] > 0): ?>
-<a href="?add_to_cart=<?= $p['p_id']; ?>" 
+<?php if($row['p_qty'] > 0): ?>
+<a href="?add_to_cart=<?= $row['p_id']; ?>" 
    class="btn btn-cart">
 เพิ่มลงตะกร้า
 </a>
@@ -255,8 +256,8 @@ $img = !empty($p['main_img'])
 </button>
 <?php endif; ?>
 
-<a href="?add_to_fav=<?= $p['p_id']; ?>" 
-   class="btn btn-fav">
+<a href="?add_to_fav=<?= $row['p_id']; ?>" 
+   class="btn-fav">
 <i class="bi bi-heart"></i>
 </a>
 
@@ -269,11 +270,12 @@ $img = !empty($p['main_img'])
 <?php else: ?>
 
 <div class="col-12 text-center">
-<h5 class="text-muted">ไม่พบสินค้า</h5>
+<h5 class="text-muted">ยังไม่มีสินค้าในระบบ</h5>
 </div>
 
 <?php endif; ?>
 
+</div>
 </div>
 
 </body>
