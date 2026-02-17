@@ -215,7 +215,10 @@ include("header.php");
 
 <hr>
 
-<p><?= nl2br(htmlspecialchars($product['p_detail'])) ?></p>
+<p class="product-detail">
+<?= htmlspecialchars($product['p_detail']) ?>
+</p>
+
 
 <?php if($product['p_qty'] > 0): ?>
     <button class="btn buy-btn btn-lg"
