@@ -6,8 +6,7 @@ include_once("functions.php");
 include_once("bootstrap.php");
 
 /* =========================================================
-   [แก้ไข] ส่วนเพิ่มตะกร้า : เปลี่ยนเป็นบันทึกลง Database โดยตรง
-   เพื่อให้เชื่อมโยงกับหน้า cart.php
+   [แก้ไข] ส่วนเพิ่มตะกร้า : บันทึกลง Database พร้อม Size
 ========================================================= */
 if(isset($_GET['add_to_cart'])){
     
@@ -20,33 +19,48 @@ if(isset($_GET['add_to_cart'])){
     $pid = intval($_GET['add_to_cart']);
     $uid = intval($_SESSION['user_id']);
 
-    // 2. ดึงข้อมูลสินค้าเพื่อเช็คสต็อก และ หาไซส์แรก (Default Size)
-    // เพราะหน้า Index ไม่มีตัวเลือกไซส์ เราจะหยิบไซส์แรกสุดมาใส่ให้อัตโนมัติ
+    // 2. ดึงข้อมูลสินค้า (เพิ่ม p_size เข้ามา)
     $q_prod = mysqli_query($conn, "SELECT p_qty, p_size FROM products WHERE p_id = $pid");
     $prod   = mysqli_fetch_assoc($q_prod);
 
     if($prod['p_qty'] > 0){
         
-        // แปลง string ไซส์ (เช่น "38,39,40") ให้เป็น array แล้วเอาตัวแรก
+        // [เพิ่ม] ดึงไซส์แรกมาเป็น Default
+        // (เช่น p_size = "40,41,42" -> หยิบ "40" มาใช้)
         $size_arr = explode(',', $prod['p_size']); 
-        $default_size = isset($size_arr[0]) ? trim($size_arr[0]) : ''; 
+        $default_size = isset($size_arr[0]) ? trim($size_arr[0]) : '-'; 
 
         // 3. เช็คว่ามีสินค้านี้ (และไซส์นี้) ในตะกร้าหรือยัง
-        $check_cart = mysqli_query($conn, "SELECT * FROM cart WHERE user_id=$uid AND product_id=$pid AND size='$default_size'");
+        $check_cart = mysqli_query($conn, "
+            SELECT * FROM cart 
+            WHERE user_id=$uid 
+            AND product_id=$pid 
+            AND size='$default_size'
+        ");
 
         if(mysqli_num_rows($check_cart) > 0){
-            // มีแล้ว -> อัปเดตจำนวน +1 (แต่ต้องไม่เกินสต็อก)
+            // มีแล้ว -> อัปเดตจำนวน +1 (เช็คไม่ให้เกินสต็อก)
             $cart_item = mysqli_fetch_assoc($check_cart);
             if($cart_item['quantity'] < $prod['p_qty']){
-                mysqli_query($conn, "UPDATE cart SET quantity = quantity + 1 WHERE user_id=$uid AND product_id=$pid AND size='$default_size'");
+                mysqli_query($conn, "
+                    UPDATE cart 
+                    SET quantity = quantity + 1 
+                    WHERE user_id=$uid 
+                    AND product_id=$pid 
+                    AND size='$default_size'
+                ");
             }
         } else {
-            // ยังไม่มี -> Insert ใหม่
-            mysqli_query($conn, "INSERT INTO cart (user_id, product_id, quantity, size) VALUES ($uid, $pid, 1, '$default_size')");
+            // ยังไม่มี -> Insert ใหม่ (พร้อม Size)
+            $sql_insert = "
+                INSERT INTO cart (user_id, product_id, quantity, size) 
+                VALUES ($uid, $pid, 1, '$default_size')
+            ";
+            mysqli_query($conn, $sql_insert);
         }
 
-        // แจ้งเตือนและไปหน้าตะกร้าทันที
-        echo "<script>alert('เพิ่มสินค้าลงตะกร้าเรียบร้อย'); window.location='cart.php';</script>";
+        // แจ้งเตือน (ระบุไซส์ให้ลูกค้าทราบนิดนึง)
+        echo "<script>alert('เพิ่มสินค้าลงตะกร้าเรียบร้อย (Size: $default_size)'); window.location='cart.php';</script>";
         
     } else {
         echo "<script>alert('สินค้าหมด'); window.location='index.php';</script>";
@@ -62,7 +76,7 @@ if(isset($_GET['add_to_fav'])){
 }
 
 /* =========================
-   2. ดึงสินค้า + รูปหลัก
+   [คงเดิม] ดึงสินค้า + รูปหลัก
 ========================= */
 $sql = "
 SELECT p.*, 
@@ -79,7 +93,6 @@ LEFT JOIN category c ON p.c_id = c.c_id
 LEFT JOIN brand b ON p.brand_id = b.brand_id
 ORDER BY p.p_id DESC
 ";
-
 
 $rs = mysqli_query($conn,$sql);
 
