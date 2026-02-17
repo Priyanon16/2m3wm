@@ -77,7 +77,8 @@ if(isset($_POST['confirm_order'])){
 
         $stmt_detail = $conn->prepare("
             INSERT INTO order_details
-            (o_id, p_id, qty, price)
+            (o_id, p_id, quantity
+, price)
             VALUES (?, ?, ?, ?)
         ");
 

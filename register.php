@@ -194,7 +194,7 @@ if (isset($_POST['Submit'])) {
             <label>ชื่อ-นามสกุล</label>
             <div class="input-wrapper">
                 <i class="fa-regular fa-user"></i>
-                <input type="text" name="fullname" placeholder="ชื่อ นามสกุล" value="<?php echo isset($_POST['fullname']) ? htmlspecialchars($_POST['fullname']) : ''; ?>" required>
+                <input type="text" name="fullname" placeholder="ตัวอย่าง เอก เฉิดฉาย" value="<?php echo isset($_POST['fullname']) ? htmlspecialchars($_POST['fullname']) : ''; ?>" required>
             </div>
         </div>
 
