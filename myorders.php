@@ -202,7 +202,7 @@ body{
 
 <div class="card mb-4 p-4">
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center">
 
 <div>
 <strong>เลขที่ออเดอร์ #<?= $order['o_id'] ?></strong><br>
@@ -211,66 +211,41 @@ body{
 </small>
 </div>
 
-<div>
+<div class="text-end">
+
 <?php
 $status = $order['status'];
 
-if($status=="รอชำระเงิน"){
-    echo '<span class="status-badge status-pay">รอชำระเงิน</span>';
-}elseif($status=="ที่ต้องจัดส่ง"){
-    echo '<span class="status-badge status-ship">ที่ต้องจัดส่ง</span>';
-}elseif($status=="รอรับ"){
-    echo '<span class="status-badge status-wait">รอรับ</span>';
-}elseif($status=="จัดส่งสำเร็จ"){
-    echo '<span class="status-badge status-done">จัดส่งสำเร็จ</span>';
-}elseif($status=="คืนสินค้า"){
-    echo '<span class="status-badge status-return">คืนสินค้า</span>';
-}else{
-    echo '<span class="badge bg-secondary">'.$status.'</span>';
-}
-?>
-</div>
+$badgeClass = "bg-secondary";
 
-</div>
-
-<hr>
-
-<?php
-$oid = $order['o_id'];
-
-$detail_sql = "
-SELECT p.p_name, p.p_price, p.p_img, od.q_ty
-FROM order_details od
-JOIN products p ON od.p_id = p.p_id
-WHERE od.o_id = '$oid'
-";
-
-$detail_rs = mysqli_query($conn,$detail_sql);
-
-while($item = mysqli_fetch_assoc($detail_rs)):
+if($status=="รอชำระเงิน") $badgeClass="bg-danger";
+elseif($status=="ที่ต้องจัดส่ง") $badgeClass="bg-warning";
+elseif($status=="รอรับ") $badgeClass="bg-primary";
+elseif($status=="จัดส่งสำเร็จ") $badgeClass="bg-success";
+elseif($status=="ยกเลิก") $badgeClass="bg-dark";
 ?>
 
-<div class="row align-items-center mb-3">
+<span class="badge <?= $badgeClass ?>">
+<?= $status ?>
+</span>
 
-<div class="col-md-2">
-<img src="<?= $item['p_img'] ?>" 
-class="img-fluid rounded">
+<div class="mt-2 fw-bold text-warning">
+฿<?= number_format($order['total_price'],2) ?>
 </div>
 
-<div class="col-md-6">
-<?= htmlspecialchars($item['p_name']) ?><br>
-<small class="text-muted">
-จำนวน <?= $item['q_ty'] ?> ชิ้น
-</small>
+<a href="orderdetail.php?id=<?= $order['o_id'] ?>"
+   class="btn btn-sm btn-outline-dark mt-2">
+   ดูรายละเอียด
+</a>
+
 </div>
 
-<div class="col-md-4 text-end">
-<?= number_format($item['p_price'],2) ?> บาท
 </div>
 
 </div>
 
 <?php endwhile; ?>
+
 
 <hr>
 
