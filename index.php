@@ -163,7 +163,7 @@ body { font-family: 'Kanit', sans-serif; background: #f8f9fa; }
                 <a href="all_products.php" class="btn btn-warning me-2">
                     ดูสินค้าทั้งหมด
                 </a>
-                <a href="#" class="btn btn-outline-light" onclick="alert('โทษทียังไม่ได้ทำ')">
+                <a href="#" class="btn btn-outline-light">
                     โปรโมชั่น
                 </a>
             </div>
