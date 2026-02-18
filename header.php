@@ -163,6 +163,7 @@ if(isset($_SESSION['user_id'])){
     outline: none !important;
     box-shadow: none !important;
 }
+
 .nav-menu .nav-link:hover {
     color: #ff7a00 !important;
 }
