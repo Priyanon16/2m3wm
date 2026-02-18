@@ -149,6 +149,7 @@ body { font-family: 'Kanit', sans-serif; background: #f8f9fa; }
 
 <body>
 
+
 <div id="bannerSlider" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
 
     <div class="carousel-inner">
