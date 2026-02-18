@@ -154,23 +154,21 @@ body { font-family: 'Kanit', sans-serif; background: #f8f9fa; }
 
     <div class="carousel-inner">
 
-    <div class="carousel-item active position-relative">
-        <img src="images/1.jpg" class="d-block w-100 slider-img">
-        <div class="slider-caption">
-            <h1>2M3WM Sneaker</h1>
-            <p>รองเท้าของแท้ สำหรับทุกสไตล์</p>
-            <div class="mt-3">
-                <a href="all_products.php" class="btn btn-warning me-2">
-                    ดูสินค้าทั้งหมด
-                </a>
-                <a href="#" class="btn btn-outline-light">
-                    โปรโมชั่น
-                </a>
+        <div class="carousel-item active position-relative">
+            <img src="images/1.jpg" class="d-block w-100 slider-img">
+            <div class="slider-caption">
+                <h1>2M3WM Sneaker</h1>
+                <p>รองเท้าของแท้ สำหรับทุกสไตล์</p>
+                <div class="mt-3">
+                    <a href="all_products.php" class="btn btn-warning me-2">
+                        ดูสินค้าทั้งหมด
+                    </a>
+                    <a href="#" class="btn btn-outline-light">
+                        โปรโมชั่น
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
-
-</div>
 
         <div class="carousel-item">
             <img src="images/2.jpg" class="d-block w-100 slider-img">
@@ -193,6 +191,7 @@ body { font-family: 'Kanit', sans-serif; background: #f8f9fa; }
     </button>
 
 </div>
+
 
 <div class="container py-5">
 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
