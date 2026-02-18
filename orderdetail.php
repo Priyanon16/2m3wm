@@ -152,13 +152,13 @@ $step = 1;
 if($status == "รอชำระเงิน") {
     $step = 1;
 }
-elseif($status == "ที่ต้องจัดส่ง") {
+elseif($status == "รอตรวจสอบ") {
     $step = 2;
 }
-elseif($status == "รอรับ") {
+elseif($status == "ชำระแล้ว") {
     $step = 3;
 }
-elseif($status == "จัดส่งสำเร็จ") {
+elseif($status == "จัดส่งแล้ว") {
     $step = 4;
 }
 elseif($status == "ยกเลิก") {
@@ -188,13 +188,13 @@ elseif($status == "ยกเลิก") {
 <div class="step <?= $step>=2?'active':'' ?>">
     <div class="step-line"></div>
     <div class="step-circle">2</div>
-    <div class="step-label">ที่ต้องจัดส่ง</div>
+    <div class="step-label">รอตรวจสอบ</div>
 </div>
 
 <div class="step <?= $step>=3?'active':'' ?>">
     <div class="step-line"></div>
     <div class="step-circle">3</div>
-    <div class="step-label">รอรับ</div>
+    <div class="step-label">ชำระแล้ว</div>
 </div>
 
 <div class="step <?= $step>=4?'active':'' ?>">
