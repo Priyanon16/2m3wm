@@ -160,6 +160,11 @@ body{
     border-color: #ff5722;
     color: white;
 }
+
+.badge.bg-danger{
+    font-size:13px;
+    padding:6px 10px;
+}
 </style>
 </head>
 
@@ -230,6 +235,7 @@ body{
                             <th width="10%">เพศ</th>
                             <th width="25%">สต็อก (ไซส์ : จำนวน)</th> 
                             <th width="10%">ราคา</th>
+                            <th width="10%">โปร</th>
                             <th width="10%" class="text-center">จัดการ</th>
                         </tr>
                     </thead>
@@ -292,7 +298,28 @@ body{
                             ?>
                         </td>
 
-                        <td class="price">฿<?= number_format($row['p_price']); ?></td>
+                        <td class="price">
+                        <?php
+                        if($row['is_promo'] == 1 && $row['discount_percent'] > 0){
+                            $old = $row['p_price'];
+                            $new = $old - ($old * $row['discount_percent'] / 100);
+                            echo '<div style="text-decoration:line-through;color:#999;font-size:13px;">฿'.number_format($old).'</div>';
+                            echo '<div style="color:#ff5722;font-weight:700;">฿'.number_format($new).'</div>';
+                        } else {
+                            echo '฿'.number_format($row['p_price']);
+                        }
+                        ?>
+                        </td>
+
+                        <td>
+                        <?php
+                        if($row['is_promo'] == 1 && $row['discount_percent'] > 0){
+                            echo '<span class="badge bg-danger">ลด '.$row['discount_percent'].'%</span>';
+                        } else {
+                            echo '<span class="badge bg-secondary">ปกติ</span>';
+                        }
+                        ?>
+                        </td>
                         <td class="text-center">
                             <a href="admin_edit.php?id=<?= $row['p_id']; ?>" 
                                class="btn btn-sm btn-outline-secondary" title="แก้ไข">
