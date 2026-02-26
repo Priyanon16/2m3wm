@@ -155,10 +155,12 @@ body { font-family: 'Kanit', sans-serif; background: #f8f9fa; }
     left:15px;
     background:#dc3545;
     color:#fff;
-    padding:6px 10px;
-    border-radius:20px;
-    font-size:13px;
-    font-weight:600;
+    padding:10px 18px;        /* ใหญ่ขึ้น */
+    border-radius:30px;       /* โค้งมากขึ้น */
+    font-size:16px;           /* ตัวหนังสือใหญ่ */
+    font-weight:700;
+    box-shadow:0 4px 10px rgba(0,0,0,.25);  /* เพิ่มเงา */
+    z-index:5;
 }
 .product-card{
     position:relative;
