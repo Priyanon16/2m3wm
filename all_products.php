@@ -318,9 +318,9 @@ if($stock > 0):
 <div class="product-actions">
 
 <?php if($stock > 0): ?>
-<a href="?add_to_cart=<?= $p['p_id']; ?>" 
+<a href="product_detail.php?id=<?= $p['p_id']; ?>" 
    class="btn btn-cart">
-เพิ่มลงตะกร้า
+เลือกไซส์
 </a>
 <?php else: ?>
 <button class="btn btn-secondary w-100 disabled">
