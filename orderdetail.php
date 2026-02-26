@@ -247,6 +247,7 @@ if(mysqli_num_rows($detail_rs) == 0){
 
 </div>
 
+
 <?php
     }
 }

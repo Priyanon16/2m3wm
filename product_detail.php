@@ -163,12 +163,42 @@ include("header.php");
     padding:12px 25px;
 }
 
+.product-image-wrapper{
+    position:relative;
+}
+
+.promo-badge-large{
+    position:absolute;
+    top:20px;
+    left:20px;
+    background:#dc3545;
+    color:#fff;
+    padding:12px 22px;
+    border-radius:40px;
+    font-size:20px;
+    font-weight:800;
+    box-shadow:0 6px 15px rgba(0,0,0,.3);
+    z-index:10;
+}
 </style>
 
 <div class="container py-5">
 <div class="row">
 
 <div class="col-md-6">
+<div class="product-image-wrapper">
+
+<?php
+$old = $product['p_price'];
+$discount = $product['discount_percent'] ?? 0;
+$is_promo = $product['is_promo'] ?? 0;
+?>
+
+<?php if($is_promo == 1 && $discount > 0): ?>
+<div class="promo-badge-large">
+    ลด <?= $discount ?>%
+</div>
+<?php endif; ?>
 
 <?php if(count($images)>0): ?>
 <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
@@ -209,7 +239,7 @@ include("header.php");
           data-bs-slide="next">
     <span class="carousel-control-next-icon"></span>
   </button>
-
+</div> <!-- product-image-wrapper -->
 </div>
 <?php else: ?>
 <img src="images/no-image.png" class="img-fluid rounded">
@@ -245,10 +275,6 @@ if($is_promo == 1 && $discount > 0){
         <div style="color:#ff5722;font-weight:700;font-size:28px;">
             ฿<?= number_format($new,0); ?>
         </div>
-
-        <span class="badge bg-danger fs-6">
-            ลด <?= $discount ?>%
-        </span>
 
     </div>
 <?php
