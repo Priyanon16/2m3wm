@@ -395,16 +395,11 @@ if($is_promo == 1 && $discount > 0){
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    if(!localStorage.getItem("promoShown")){
+    var promoModal = new bootstrap.Modal(
+        document.getElementById('promoModal')
+    );
 
-        var promoModal = new bootstrap.Modal(
-            document.getElementById('promoModal')
-        );
-
-        promoModal.show();
-
-        localStorage.setItem("promoShown", "yes");
-    }
+    promoModal.show();
 
 });
 </script>
