@@ -72,7 +72,12 @@ SELECT
         FROM product_images 
         WHERE product_images.p_id = p.p_id 
         LIMIT 1
-    ) AS main_img
+    ) AS main_img,
+    (
+        SELECT SUM(p_qty_stock)
+        FROM product_stock
+        WHERE product_stock.p_id = p.p_id
+    ) AS total_stock
 FROM products p
 LEFT JOIN brand b ON p.brand_id = b.brand_id
 LEFT JOIN category c ON p.c_id = c.c_id
@@ -289,9 +294,12 @@ $img = !empty($p['main_img'])
 </div>
 
 <div class="mb-2">
-<?php if($p['p_qty'] > 0): ?>
+<?php 
+$stock = $p['total_stock'] ?? 0;
+if($stock > 0): 
+?>
 <small class="text-success">
-คงเหลือ <?= number_format($p['p_qty']); ?> คู่
+คงเหลือ <?= number_format($stock); ?> คู่
 </small>
 <?php else: ?>
 <small class="text-danger fw-bold">
@@ -309,7 +317,7 @@ $img = !empty($p['main_img'])
 
 <div class="product-actions">
 
-<?php if($p['p_qty'] > 0): ?>
+<?php if($stock > 0): ?>
 <a href="?add_to_cart=<?= $p['p_id']; ?>" 
    class="btn btn-cart">
 เพิ่มลงตะกร้า
