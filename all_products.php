@@ -177,6 +177,23 @@ body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
     padding: 15px;
 }
 
+.product-card{
+    position:relative;
+}
+
+.promo-badge{
+    position:absolute;
+    top:15px;
+    left:15px;
+    background:#dc3545;
+    color:#fff;
+    padding:10px 18px;
+    border-radius:30px;
+    font-size:16px;
+    font-weight:700;
+    box-shadow:0 4px 10px rgba(0,0,0,.25);
+    z-index:5;
+}
 </style>
 </head>
 <body>
@@ -270,6 +287,17 @@ $img = !empty($p['main_img'])
 <div class="col">
 <div class="product-card">
 
+<?php
+$old = $p['p_price'];
+$discount = $p['discount_percent'] ?? 0;
+$is_promo = $p['is_promo'] ?? 0;
+?>
+
+<?php if($is_promo == 1 && $discount > 0): ?>
+<div class="promo-badge">
+    ลด <?= $discount ?>%
+</div>
+<?php endif; ?>
 <a href="product_detail.php?id=<?= $p['p_id']; ?>" 
    class="text-decoration-none text-dark">
 
@@ -305,9 +333,28 @@ if($stock > 0):
 <?php endif; ?>
 </div>
 
-<div class="product-price">
-฿<?= number_format($p['p_price'], 0); ?>
-</div>
+<?php
+if($is_promo == 1 && $discount > 0){
+    $new = $old - ($old * $discount / 100);
+?>
+    <div class="product-price">
+
+        <div style="text-decoration:line-through;color:#999;font-size:14px;">
+            ฿<?= number_format($old,0); ?>
+        </div>
+
+        <div style="color:#ff5722;font-weight:700;font-size:20px;">
+            ฿<?= number_format($new,0); ?>
+        </div>
+
+    </div>
+<?php
+} else {
+?>
+    <div class="product-price">
+        ฿<?= number_format($old,0); ?>
+    </div>
+<?php } ?>
 
 </div>
 </a>
