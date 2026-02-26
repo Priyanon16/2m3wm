@@ -97,7 +97,7 @@ include_once("bootstrap.php");
                                     <a href="edit_customer.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-dark">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
-                                    <a href="delete_data.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-danger" 
+                                    <a href="delete_customer.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-danger" 
                                        onclick="return confirm('คุณต้องการลบสมาชิก [<?= $row['name']; ?>] ใช่หรือไม่?');">
                                         <i class="bi bi-trash"></i>
                                     </a>
