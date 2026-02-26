@@ -364,7 +364,7 @@ style="width:18px;height:18px;accent-color:#ff7a00;">
 <h5 class="d-flex justify-content-between">
 <span>ยอดสุทธิ</span>
 <span class="text-warning" id="grandTotal">
-฿<?= number_format(($total ?? 0)+50,0); ?>
+฿<?= number_format(($total ?? 0)+60,0); ?>
 </span>
 </h5>
 
