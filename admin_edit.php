@@ -69,13 +69,21 @@ if (isset($_POST['update'])) {
     // String รายชื่อไซส์ (สำหรับ Frontend)
     $p_size_str = implode(",", $available_sizes);
 
+    $discount = intval($_POST['discount_percent'] ?? 0);
+    $is_promo = isset($_POST['is_promo']) ? 1 : 0;
     // อัปเดตตารางหลัก
     mysqli_query($conn, "
         UPDATE products SET
-        p_name='$name', p_price='$price',
-        p_qty='$total_qty', p_size='$p_size_str',
-        p_type='$type', p_detail='$detail',
-        c_id='$c_id', brand_id='$brand_id'
+        p_name='$name',
+        p_price='$price',
+        discount_percent='$discount',
+        is_promo='$is_promo',
+        p_qty='$total_qty',
+        p_size='$p_size_str',
+        p_type='$type',
+        p_detail='$detail',
+        c_id='$c_id',
+        brand_id='$brand_id'
         WHERE p_id=$id
     ");
 
@@ -136,9 +144,30 @@ body { font-family: 'Kanit', sans-serif; background: #f8f9fa; }
         </div>
 
         <div class="row">
-            <div class="col-md-6 mb-3">
+            <div class="col-md-4 mb-3">
                 <label>ราคา</label>
                 <input type="number" name="p_price" class="form-control" value="<?= $row['p_price']; ?>" required>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label>ส่วนลด (%)</label>
+                <input type="number" name="discount_percent"
+                    class="form-control"
+                    min="0" max="90"
+                    value="<?= $row['discount_percent'] ?? 0; ?>">
+            </div>
+
+            <div class="col-md-4 mb-3 d-flex align-items-end">
+                <div class="form-check">
+                    <input type="checkbox"
+                        name="is_promo"
+                        value="1"
+                        class="form-check-input"
+                        <?= ($row['is_promo'] ?? 0) ? 'checked' : ''; ?>>
+                    <label class="form-check-label">
+                        เป็นสินค้าโปรโมชั่น
+                    </label>
+                </div>
             </div>
             </div>
 
