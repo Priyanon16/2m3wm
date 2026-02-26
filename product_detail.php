@@ -159,6 +159,7 @@ include("header.php");
 .btn-outline-danger{
     border-radius:40px;      /* ทำให้โค้งมน */
     font-weight:600;
+    font-size:16px; 
     padding:12px 25px;
 }
 
