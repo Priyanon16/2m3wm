@@ -128,7 +128,6 @@ include("header.php");
     padding:14px 40px;
     font-weight:700;
     font-size:18px;
-    width:100%;
     transition:0.2s;
 }
 
