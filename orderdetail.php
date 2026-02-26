@@ -55,7 +55,8 @@ $detail_sql = "
 SELECT p.p_name,
        (SELECT img_path FROM product_images WHERE p_id = p.p_id LIMIT 1) AS p_img,
        od.q_ty,
-       od.price
+       od.price,
+       od.size
 FROM order_details od
 JOIN products p ON od.p_id = p.p_id
 WHERE od.o_id = '$oid'
@@ -234,7 +235,9 @@ if(mysqli_num_rows($detail_rs) == 0){
 <div class="col-md-6">
 <strong><?= htmlspecialchars($item['p_name']) ?></strong><br>
 <small class="text-muted">
-ราคา <?= number_format($item['price'],2) ?> × <?= $item['q_ty'] ?>
+ไซส์ <?= htmlspecialchars($item['size']) ?><br>
+ราคาต่อชิ้น <?= number_format($item['price'],2) ?> บาท<br>
+จำนวน <?= $item['q_ty'] ?> ชิ้น
 </small>
 </div>
 
@@ -251,8 +254,32 @@ if(mysqli_num_rows($detail_rs) == 0){
 
 <hr>
 
+<hr>
+
+<h6>💳 วิธีชำระเงิน</h6>
+
+<?php
+$pay_method = $order['payment_method'];
+
+if($pay_method == 'transfer'){
+    echo "<div class='alert alert-info'>โอนเงินผ่านธนาคาร</div>";
+}
+elseif($pay_method == 'cod'){
+    echo "<div class='alert alert-warning'>เก็บเงินปลายทาง</div>";
+}
+else{
+    echo "<div class='alert alert-secondary'>ไม่ระบุวิธีชำระเงิน</div>";
+}
+?>
+
 <div class="text-end">
+<?php
+$shipping = $order['total_price'] - $total;
+?>
+
 <h5>ยอดรวมสินค้า: <?= number_format($total,2) ?> บาท</h5>
+<h5>ค่าจัดส่ง: <?= number_format($shipping,2) ?> บาท</h5>
+
 <h4 class="text-warning">
 ยอดชำระทั้งหมด: <?= number_format($order['total_price'],2) ?> บาท
 </h4>
