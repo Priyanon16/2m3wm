@@ -156,6 +156,11 @@ include("header.php");
     word-break: break-word;
 }
 
+.btn-outline-danger{
+    border-radius:40px;      /* ทำให้โค้งมน */
+    font-weight:600;
+    padding:12px 25px;
+}
 
 </style>
 
