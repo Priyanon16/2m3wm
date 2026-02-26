@@ -47,10 +47,11 @@ if(isset($_POST['confirm_order'])){
         $address_id = $res_check->fetch_assoc()['address_id'];
 
         // ดึงสินค้าในตะกร้า (ต้องดึงไซส์มาด้วยถ้ามี)
-        $sql_cart = "SELECT c.product_id, c.quantity, c.size, p.p_price 
-                     FROM cart c 
-                     JOIN products p ON c.product_id = p.p_id 
-                     WHERE c.user_id = ?";
+        $sql_cart = "SELECT c.product_id, c.quantity, c.size, 
+                    p.p_price, p.is_promo, p.discount_percent
+             FROM cart c 
+             JOIN products p ON c.product_id = p.p_id 
+             WHERE c.user_id = ?";
         $stmt_cart = $conn->prepare($sql_cart);
         $stmt_cart->bind_param("i", $user_id);
         $stmt_cart->execute();
@@ -94,8 +95,21 @@ if(isset($_POST['confirm_order'])){
             $update_stock->bind_param("iii", $qty, $pid, $size);
             $update_stock->execute();
 
-            $subtotal = $row['p_price'] * $qty;
+            $old_price = $row['p_price'];
+            $is_promo  = $row['is_promo'];
+            $discount  = $row['discount_percent'];
+
+            if($is_promo == 1 && $discount > 0){
+                $unit_price = $old_price - ($old_price * $discount / 100);
+            } else {
+                $unit_price = $old_price;
+            }
+
+            $subtotal = $unit_price * $qty;
             $total_price += $subtotal;
+
+            // เก็บราคาโปรไว้ด้วย
+            $row['final_price'] = $unit_price;
             $items[] = $row;
         }
 
@@ -124,7 +138,7 @@ if(isset($_POST['confirm_order'])){
                 $order_id, 
                 $item['product_id'], 
                 $item['quantity'], 
-                $item['p_price'],
+                $item['final_price'],   // ใช้ราคาโปร
                 $item['size']
             );
 
@@ -198,7 +212,9 @@ if ($addr_row) {
 
 // 2.2 ดึงสินค้าในตะกร้า
 $sql_view = "
-    SELECT c.quantity, c.size, p.p_name, p.p_price,
+    SELECT c.quantity, c.size, 
+       p.p_name, p.p_price, 
+       p.is_promo, p.discount_percent,
            (SELECT img_path FROM product_images WHERE p_id = p.p_id LIMIT 1) AS p_img
     FROM cart c
     JOIN products p ON c.product_id = p.p_id
@@ -263,10 +279,19 @@ body{background:#f5f5f5;font-family:'Kanit',sans-serif;}
                 <h4 class="mb-3">รายการสินค้า</h4>
                 <?php if($cart_result->num_rows > 0): ?>
                     <?php while($row = $cart_result->fetch_assoc()): 
-                        $unit_price = $row['p_price'];
+                        $old_price = $row['p_price'];
+                        $is_promo  = $row['is_promo'];
+                        $discount  = $row['discount_percent'];
+
+                        if($is_promo == 1 && $discount > 0){
+                            $unit_price = $old_price - ($old_price * $discount / 100);
+                        } else {
+                            $unit_price = $old_price;
+                        }
+
                         $qty = $row['quantity'];
                         $subtotal = $unit_price * $qty;
-                        $total += $subtotal; 
+                        $total += $subtotal;
                         $img = !empty($row['p_img']) ? $row['p_img'] : 'https://placehold.co/100x100?text=No+Image';
                     ?>
                     <div class="d-flex justify-content-between align-items-center item-row">
@@ -277,7 +302,16 @@ body{background:#f5f5f5;font-family:'Kanit',sans-serif;}
                                 <h6 class="mb-0"><?= htmlspecialchars($row['p_name']) ?></h6>
                                 <small class="text-muted">
                                     ไซส์: <?= htmlspecialchars($row['size']) ?><br>
-                                    ราคาต่อชิ้น: ฿<?= number_format($unit_price,0) ?><br>
+                                    <?php if($is_promo == 1 && $discount > 0): ?>
+                                    <span style="text-decoration:line-through;color:#999;">
+                                        ฿<?= number_format($old_price,0) ?>
+                                    </span><br>
+                                <?php endif; ?>
+
+                                ราคาต่อชิ้น: 
+                                <span class="text-danger fw-bold">
+                                    ฿<?= number_format($unit_price,0) ?>
+                                </span><br>
                                     จำนวน: <?= $qty ?> ชิ้น
                                 </small>
                             </div>
