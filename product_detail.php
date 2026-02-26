@@ -121,12 +121,19 @@ include("header.php");
     border:none;
 }
 .buy-btn{
-    background:#ff7a00;
-    color:#fff;
+    background:#FFC107;   /* สีเหลืองแบบในรูป */
+    color:#000;           /* ตัวหนังสือสีดำ */
     border:none;
+    border-radius:40px;   /* โค้งมากแบบ pill */
+    padding:14px 40px;
+    font-weight:700;
+    font-size:18px;
+    width:100%;
+    transition:0.2s;
 }
+
 .buy-btn:hover{
-    background:#e96b00;
+    background:#e6ac00;   /* เหลืองเข้มขึ้นตอน hover */
 }
 /* [เพิ่ม CSS] สำหรับปุ่มที่กดไม่ได้ */
 .btn-disabled {
