@@ -228,9 +228,36 @@ include("header.php");
 <?= htmlspecialchars($product['c_name']) ?>
 </p>
 
-<h4 class="text-warning mb-3">
-฿<?= number_format($product['p_price'],0) ?>
-</h4>
+<?php
+$old = $product['p_price'];
+$discount = $product['discount_percent'] ?? 0;
+$is_promo = $product['is_promo'] ?? 0;
+
+if($is_promo == 1 && $discount > 0){
+    $new = $old - ($old * $discount / 100);
+?>
+    <div class="mb-3">
+
+        <div style="text-decoration:line-through;color:#999;font-size:18px;">
+            ฿<?= number_format($old,0); ?>
+        </div>
+
+        <div style="color:#ff5722;font-weight:700;font-size:28px;">
+            ฿<?= number_format($new,0); ?>
+        </div>
+
+        <span class="badge bg-danger fs-6">
+            ลด <?= $discount ?>%
+        </span>
+
+    </div>
+<?php
+} else {
+?>
+    <h4 class="text-warning mb-3">
+        ฿<?= number_format($old,0); ?>
+    </h4>
+<?php } ?>
 
 <hr>
 
