@@ -156,7 +156,8 @@ foreach($statuses as $st):
     <?php
 /* ดึงรายการสินค้าในออเดอร์นี้ */
 $stmt_detail = $conn->prepare("
-    SELECT p.p_name, p.p_price,
+    SELECT p.p_name,
+           od.price,   -- ใช้ราคาจริงตอนสั่งซื้อ
            (SELECT img_path FROM product_images WHERE p_id = p.p_id LIMIT 1) AS p_img,
            od.q_ty
     FROM order_details od
@@ -182,12 +183,12 @@ $detail_rs = $stmt_detail->get_result();
     <div class="ms-3 flex-grow-1">
         <strong><?= htmlspecialchars($item['p_name']) ?></strong><br>
         <small class="text-muted">
-            ราคา <?= number_format($item['p_price'],2) ?> × <?= $item['q_ty'] ?>
+            ราคา <?= number_format($item['price'],2) ?> × <?= $item['q_ty'] ?>
         </small>
     </div>
 
     <div class="fw-bold text-end">
-        <?= number_format($item['p_price'] * $item['q_ty'],2) ?> บาท
+        <?= number_format($item['price'] * $item['q_ty'],2) ?> บาท
     </div>
 
 </div>
