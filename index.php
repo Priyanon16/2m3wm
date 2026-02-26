@@ -165,6 +165,17 @@ body { font-family: 'Kanit', sans-serif; background: #f8f9fa; }
 .product-card{
     position:relative;
 }
+.promo-box{
+    border-radius:20px;
+    border:none;
+    box-shadow:0 20px 40px rgba(0,0,0,.2);
+    animation: popZoom .4s ease;
+}
+
+@keyframes popZoom{
+    from{ transform: scale(.8); opacity:0;}
+    to{ transform: scale(1); opacity:1;}
+}
 </style>
 </head>
 
@@ -345,5 +356,57 @@ if($is_promo == 1 && $discount > 0){
 </div>
 </div>
 
+<!-- PROMOTION POPUP -->
+<div class="modal fade" id="promoModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content promo-box">
+
+      <div class="modal-body text-center p-4 position-relative">
+
+        <button type="button" class="btn-close position-absolute end-0 me-3"
+                data-bs-dismiss="modal"></button>
+
+        <h2 class="fw-bold text-danger mb-3">
+            🔥 FLASH SALE 🔥
+        </h2>
+
+        <h4 class="mb-3">
+            ลดสูงสุด <span class="text-danger fw-bold">50%</span>
+        </h4>
+
+        <p class="text-muted">
+            เฉพาะวันนี้เท่านั้น! รีบช้อปก่อนหมด
+        </p>
+
+        <img src="images/promo.jpg"
+             class="img-fluid rounded mb-3"
+             style="max-height:250px;object-fit:cover;">
+
+        <a href="promotion.php" class="btn btn-warning btn-lg w-100">
+            ดูโปรโมชั่นทั้งหมด
+        </a>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    if(!localStorage.getItem("promoShown")){
+
+        var promoModal = new bootstrap.Modal(
+            document.getElementById('promoModal')
+        );
+
+        promoModal.show();
+
+        localStorage.setItem("promoShown", "yes");
+    }
+
+});
+</script>
 </body>
 </html>
