@@ -263,23 +263,30 @@ body{background:#f5f5f5;font-family:'Kanit',sans-serif;}
                 <h4 class="mb-3">รายการสินค้า</h4>
                 <?php if($cart_result->num_rows > 0): ?>
                     <?php while($row = $cart_result->fetch_assoc()): 
-                        $subtotal = $row['p_price'] * $row['quantity'];
+                        $unit_price = $row['p_price'];
+                        $qty = $row['quantity'];
+                        $subtotal = $unit_price * $qty;
                         $total += $subtotal; 
                         $img = !empty($row['p_img']) ? $row['p_img'] : 'https://placehold.co/100x100?text=No+Image';
                     ?>
                     <div class="d-flex justify-content-between align-items-center item-row">
                         <div style="display:flex; gap:15px; align-items:center;">
                             <img src="<?= htmlspecialchars($img) ?>" 
-                                 style="width:60px; height:60px; object-fit:cover; border-radius:5px;">
+                                style="width:60px; height:60px; object-fit:cover; border-radius:5px;">
                             <div>
                                 <h6 class="mb-0"><?= htmlspecialchars($row['p_name']) ?></h6>
                                 <small class="text-muted">
-                                ไซส์: <?= htmlspecialchars($row['size']) ?> |
-                                จำนวน: <?= $row['quantity'] ?> ชิ้น
+                                    ไซส์: <?= htmlspecialchars($row['size']) ?><br>
+                                    ราคาต่อชิ้น: ฿<?= number_format($unit_price,0) ?><br>
+                                    จำนวน: <?= $qty ?> ชิ้น
                                 </small>
                             </div>
                         </div>
-                        <div class="fw-bold">฿<?= number_format($subtotal, 0) ?></div>
+
+                        <div class="fw-bold text-end">
+                            รวม<br>
+                            ฿<?= number_format($subtotal, 0) ?>
+                        </div>
                     </div>
                     <?php endwhile; ?>
                 <?php else: ?>
