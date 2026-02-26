@@ -53,6 +53,24 @@ while($row = mysqli_fetch_assoc($size_rs)){
     $sizeStocks[$row['p_size']] = $row['p_qty_stock'];
 }
 
+/* =========================
+   ดึงสินค้าแนะนำ (หมวดเดียวกัน)
+========================= */
+$cat_id = intval($product['c_id']);
+
+$rec_sql = "
+SELECT p.*, 
+       (SELECT img_path FROM product_images 
+        WHERE p_id = p.p_id LIMIT 1) AS main_img
+FROM products p
+WHERE p.c_id = $cat_id
+AND p.p_id != $id
+ORDER BY RAND()
+LIMIT 4
+";
+
+$rec_rs = mysqli_query($conn, $rec_sql);
+
 
 /* แยกไซส์ */
 $sizes = [];
@@ -275,6 +293,49 @@ onclick="addToFav(<?= $product['p_id'] ?>)">
 
 </div>
 </div>
+
+<hr class="my-5">
+
+<h4 class="fw-bold mb-4">สินค้าแนะนำสำหรับคุณ</h4>
+
+<div class="row">
+
+<?php while($rec = mysqli_fetch_assoc($rec_rs)): ?>
+
+<?php
+$rec_img = !empty($rec['main_img']) 
+           ? $rec['main_img'] 
+           : 'images/no-image.png';
+?>
+
+<div class="col-md-3 mb-4">
+<div class="card h-100 shadow-sm">
+
+<a href="product_detail.php?id=<?= $rec['p_id']; ?>" 
+   class="text-decoration-none text-dark">
+
+<img src="<?= htmlspecialchars($rec_img); ?>"
+     class="card-img-top"
+     style="height:220px;object-fit:cover;">
+
+<div class="card-body">
+    <h6 class="fw-bold mb-1">
+        <?= htmlspecialchars($rec['p_name']); ?>
+    </h6>
+    <div class="text-warning fw-bold">
+        ฿<?= number_format($rec['p_price'],0); ?>
+    </div>
+</div>
+
+</a>
+
+</div>
+</div>
+
+<?php endwhile; ?>
+
+</div>
+
 </div>
 
 
