@@ -8,9 +8,6 @@ include_once("bootstrap.php");
 /* =========================
    เพิ่มตะกร้า / โปรด
 ========================= */
-if(isset($_GET['add_to_cart'])){
-    addToCart($_GET['add_to_cart']);
-}
 
 if(isset($_GET['add_to_fav'])){
     addToFavorite($_GET['add_to_fav']);
