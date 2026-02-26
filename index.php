@@ -249,9 +249,38 @@ if($stock > 0):
 <?php endif; ?>
 </div>
 
-<div class="product-price">
-฿<?= number_format($row['p_price'], 0); ?>
-</div>
+<?php
+$old = $row['p_price'];
+$discount = $row['discount_percent'] ?? 0;
+$is_promo = $row['is_promo'] ?? 0;
+
+if($is_promo == 1 && $discount > 0){
+
+    $new = $old - ($old * $discount / 100);
+?>
+    <div class="product-price">
+
+        <div style="text-decoration:line-through;color:#999;font-size:14px;">
+            ฿<?= number_format($old,0); ?>
+        </div>
+
+        <div style="color:#ff5722;font-weight:700;font-size:20px;">
+            ฿<?= number_format($new,0); ?>
+        </div>
+
+        <span class="badge bg-danger">
+            ลด <?= $discount ?>%
+        </span>
+
+    </div>
+
+<?php
+} else {
+?>
+    <div class="product-price">
+        ฿<?= number_format($old,0); ?>
+    </div>
+<?php } ?>
 
 </div>
 </a>
