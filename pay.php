@@ -114,17 +114,20 @@ if(isset($_POST['confirm_order'])){
 
         // บันทึก order details
         $stmt_detail = $conn->prepare("
-            INSERT INTO order_details (o_id, p_id, q_ty, price) 
-            VALUES (?, ?, ?, ?)
+            INSERT INTO order_details (o_id, p_id, q_ty, price, size) 
+            VALUES (?, ?, ?, ?, ?)
         ");
 
         foreach($items as $item){
-            $stmt_detail->bind_param("iiid", 
+
+            $stmt_detail->bind_param("iiidi", 
                 $order_id, 
                 $item['product_id'], 
                 $item['quantity'], 
-                $item['p_price']
+                $item['p_price'],
+                $item['size']
             );
+
             $stmt_detail->execute();
         }
 
@@ -195,7 +198,7 @@ if ($addr_row) {
 
 // 2.2 ดึงสินค้าในตะกร้า
 $sql_view = "
-    SELECT c.quantity, p.p_name, p.p_price,
+    SELECT c.quantity, c.size, p.p_name, p.p_price,
            (SELECT img_path FROM product_images WHERE p_id = p.p_id LIMIT 1) AS p_img
     FROM cart c
     JOIN products p ON c.product_id = p.p_id
@@ -270,7 +273,10 @@ body{background:#f5f5f5;font-family:'Kanit',sans-serif;}
                                  style="width:60px; height:60px; object-fit:cover; border-radius:5px;">
                             <div>
                                 <h6 class="mb-0"><?= htmlspecialchars($row['p_name']) ?></h6>
-                                <small class="text-muted">จำนวน: <?= $row['quantity'] ?> ชิ้น</small>
+                                <small class="text-muted">
+                                ไซส์: <?= htmlspecialchars($row['size']) ?> |
+                                จำนวน: <?= $row['quantity'] ?> ชิ้น
+                                </small>
                             </div>
                         </div>
                         <div class="fw-bold">฿<?= number_format($subtotal, 0) ?></div>
