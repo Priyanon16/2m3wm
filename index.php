@@ -227,6 +227,18 @@ $img = !empty($row['main_img'])
 <div class="col">
 <div class="product-card">
 
+<?php
+$old = $row['p_price'];
+$discount = $row['discount_percent'] ?? 0;
+$is_promo = $row['is_promo'] ?? 0;
+?>
+
+<?php if($is_promo == 1 && $discount > 0): ?>
+<div class="promo-badge">
+    ลด <?= $discount ?>%
+</div>
+<?php endif; ?>
+
 <a href="product_detail.php?id=<?= $row['p_id']; ?>" 
    class="text-decoration-none text-dark">
 
