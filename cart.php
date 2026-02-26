@@ -356,7 +356,7 @@ style="width:18px;height:18px;accent-color:#ff7a00;">
 
 <div class="d-flex justify-content-between">
 <span>ค่าจัดส่ง</span>
-<span>฿50</span>
+<span>฿60</span>
 </div>
 
 <hr>
