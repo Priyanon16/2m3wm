@@ -279,7 +279,17 @@ while($item = mysqli_fetch_assoc($rs)):
     $max_stock = $item['p_qty']; // จำนวนสต็อกสูงสุด
     
     // คำนวณราคารวม
-    $subtotal = $item['p_price'] * $qty;
+    $old_price = $item['p_price'];
+    $discount  = $item['discount_percent'] ?? 0;
+    $is_promo  = $item['is_promo'] ?? 0;
+
+    if($is_promo == 1 && $discount > 0){
+        $price = $old_price - ($old_price * $discount / 100);
+    } else {
+        $price = $old_price;
+    }
+
+    $subtotal = $price * $qty;
     $total += $subtotal;
 
     $img = !empty($item['main_img']) 
@@ -294,7 +304,7 @@ while($item = mysqli_fetch_assoc($rs)):
 
 <input type="checkbox"
 class="item-check"
-data-price="<?= $item['p_price']; ?>"
+data-price="<?= $price; ?>"
 data-qty="<?= $qty; ?>"
 checked
 style="width:18px;height:18px;accent-color:#ff7a00;">
@@ -323,7 +333,15 @@ style="width:18px;height:18px;accent-color:#ff7a00;">
 
 <div>
     <div class="price">
+
+    <?php if($is_promo == 1 && $discount > 0): ?>
+        <div style="text-decoration:line-through;color:#999;font-size:14px;">
+            ฿<?= number_format($old_price * $qty,0); ?>
+        </div>
+    <?php endif; ?>
+
         ฿<?= number_format($subtotal,0); ?>
+
     </div>
 
     <a href="?remove=<?= $item['p_id']; ?>" 
@@ -398,7 +416,7 @@ function calculateTotal(){
         "฿" + subtotal.toLocaleString();
 
     document.getElementById('grandTotal').innerText =
-        "฿" + (subtotal + 50).toLocaleString();
+        "฿" + (subtotal + 60).toLocaleString();
 }
 
 /* Select All */
