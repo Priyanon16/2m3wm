@@ -149,6 +149,20 @@ body { font-family: 'Kanit', sans-serif; background: #f8f9fa; }
     color: #fff;
 }
 
+.promo-badge{
+    position:absolute;
+    top:15px;
+    left:15px;
+    background:#dc3545;
+    color:#fff;
+    padding:6px 10px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:600;
+}
+.product-card{
+    position:relative;
+}
 </style>
 </head>
 
