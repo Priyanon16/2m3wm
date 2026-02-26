@@ -29,94 +29,126 @@ if(isset($_POST['confirm_order'])){
 
     $payment_method = $_POST['payment_method'];
 
-    // -----------------------------------------------------------
-    // [แก้ไขใหม่] 1. ตรวจสอบที่อยู่ก่อน
-    // -----------------------------------------------------------
-    $sql_check_addr = "SELECT address_id FROM addresses WHERE user_id = ? ORDER BY address_id DESC LIMIT 1";
-    $stmt_check = $conn->prepare($sql_check_addr);
-    $stmt_check->bind_param("i", $user_id);
-    $stmt_check->execute();
-    $res_check = $stmt_check->get_result();
+    mysqli_begin_transaction($conn); // ✅ เริ่ม Transaction
 
-    if($res_check->num_rows == 0){
-        echo "<script>alert('กรุณาเพิ่มที่อยู่จัดส่งก่อนทำการสั่งซื้อ'); window.location='address.php';</script>";
+    try{
+
+        // ตรวจสอบที่อยู่
+        $sql_check_addr = "SELECT address_id FROM addresses WHERE user_id = ? ORDER BY address_id DESC LIMIT 1";
+        $stmt_check = $conn->prepare($sql_check_addr);
+        $stmt_check->bind_param("i", $user_id);
+        $stmt_check->execute();
+        $res_check = $stmt_check->get_result();
+
+        if($res_check->num_rows == 0){
+            throw new Exception("กรุณาเพิ่มที่อยู่จัดส่งก่อนทำการสั่งซื้อ");
+        }
+
+        $address_id = $res_check->fetch_assoc()['address_id'];
+
+        // ดึงสินค้าในตะกร้า (ต้องดึงไซส์มาด้วยถ้ามี)
+        $sql_cart = "SELECT c.product_id, c.quantity, c.size, p.p_price 
+                     FROM cart c 
+                     JOIN products p ON c.product_id = p.p_id 
+                     WHERE c.user_id = ?";
+        $stmt_cart = $conn->prepare($sql_cart);
+        $stmt_cart->bind_param("i", $user_id);
+        $stmt_cart->execute();
+        $cart = $stmt_cart->get_result();
+
+        if($cart->num_rows == 0){
+            throw new Exception("ไม่มีสินค้าในตะกร้า");
+        }
+
+        $total_price = 0;
+        $items = [];
+
+        while($row = $cart->fetch_assoc()){
+
+            $pid = $row['product_id'];
+            $qty = $row['quantity'];
+            $size = $row['size'];
+
+            // 🔎 ล็อกสต๊อก
+            $check_stock = $conn->prepare("
+                SELECT p_qty_stock 
+                FROM product_stock 
+                WHERE p_id = ? AND p_size = ? 
+                FOR UPDATE
+            ");
+            $check_stock->bind_param("ii", $pid, $size);
+            $check_stock->execute();
+            $stock_result = $check_stock->get_result();
+            $stock_row = $stock_result->fetch_assoc();
+
+            if(!$stock_row || $stock_row['p_qty_stock'] < $qty){
+                throw new Exception("สินค้าไซส์ $size สต๊อกไม่พอ");
+            }
+
+            // 🔻 ตัดสต๊อก
+            $update_stock = $conn->prepare("
+                UPDATE product_stock 
+                SET p_qty_stock = p_qty_stock - ? 
+                WHERE p_id = ? AND p_size = ?
+            ");
+            $update_stock->bind_param("iii", $qty, $pid, $size);
+            $update_stock->execute();
+
+            $subtotal = $row['p_price'] * $qty;
+            $total_price += $subtotal;
+            $items[] = $row;
+        }
+
+        $shipping_cost = 60;
+        $final_total = $total_price + $shipping_cost;
+
+        // สร้าง order
+        $stmt_order = $conn->prepare("
+            INSERT INTO orders 
+            (u_id, address_id, total_price, status, o_date, payment_method) 
+            VALUES (?, ?, ?, 'รอชำระเงิน', NOW(), ?)
+        ");
+        $stmt_order->bind_param("iids", $user_id, $address_id, $final_total, $payment_method);
+        $stmt_order->execute();
+        $order_id = $stmt_order->insert_id;
+
+        // บันทึก order details
+        $stmt_detail = $conn->prepare("
+            INSERT INTO order_details (o_id, p_id, q_ty, price) 
+            VALUES (?, ?, ?, ?)
+        ");
+
+        foreach($items as $item){
+            $stmt_detail->bind_param("iiid", 
+                $order_id, 
+                $item['product_id'], 
+                $item['quantity'], 
+                $item['p_price']
+            );
+            $stmt_detail->execute();
+        }
+
+        // ล้างตะกร้า
+        $stmt_clear = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
+        $stmt_clear->bind_param("i", $user_id);
+        $stmt_clear->execute();
+
+        mysqli_commit($conn); // ✅ สำเร็จทั้งหมด
+
+        if ($payment_method == 'cod') {
+            header("Location: orderdetail.php?id=".$order_id."&success=1");
+        } else {
+            header("Location: qrcode.php?id=".$order_id);
+        }
+        exit();
+
+    } catch(Exception $e){
+
+        mysqli_rollback($conn); // ❌ ถ้ามีพลาด คืนค่าเดิม
+
+        echo "<script>alert('".$e->getMessage()."');window.location='cart.php';</script>";
         exit();
     }
-
-    $addr_row_check = $res_check->fetch_assoc();
-    $address_id = $addr_row_check['address_id'];
-    // -----------------------------------------------------------
-
-
-    // 1.1 ดึงสินค้าในตะกร้า
-    $sql_cart = "SELECT c.product_id, c.quantity, p.p_price 
-                 FROM cart c 
-                 JOIN products p ON c.product_id = p.p_id 
-                 WHERE c.user_id = ?";
-    $stmt_cart = $conn->prepare($sql_cart);
-    $stmt_cart->bind_param("i", $user_id);
-    $stmt_cart->execute();
-    $cart = $stmt_cart->get_result();
-
-    if($cart->num_rows == 0){
-        echo "<script>alert('ไม่มีสินค้าในตะกร้า');window.location='index.php';</script>";
-        exit();
-    }
-
-    $total_price = 0;
-    $items = [];
-    while($row = $cart->fetch_assoc()){
-        $subtotal = $row['p_price'] * $row['quantity'];
-        $total_price += $subtotal;
-        $items[] = $row;
-    }
-    
-    $shipping_cost = 60; 
-    $final_total = $total_price + $shipping_cost;
-
-    // 1.2 สร้าง Order
-    $stmt_order = $conn->prepare("
-        INSERT INTO orders 
-        (u_id, address_id, total_price, status, o_date, payment_method) 
-        VALUES (?, ?, ?, 'รอชำระเงิน', NOW(), ?)
-    ");
-    
-    if(!$stmt_order){
-        die("Prepare Error (Order): " . $conn->error);
-    }
-
-    $stmt_order->bind_param("iids", $user_id, $address_id, $final_total, $payment_method);
-    
-    if(!$stmt_order->execute()){
-        die("Execute Error (Order): " . $stmt_order->error);
-    }
-    
-    $order_id = $stmt_order->insert_id;
-
-    // 1.3 บันทึก Order Details
-    $stmt_detail = $conn->prepare("INSERT INTO order_details (o_id, p_id, q_ty, price) VALUES (?, ?, ?, ?)");
-    foreach($items as $item){
-        $stmt_detail->bind_param("iiid", 
-            $order_id, 
-            $item['product_id'], 
-            $item['quantity'], 
-            $item['p_price']
-        );
-        $stmt_detail->execute();
-    }
-
-    // 1.4 ล้างตะกร้า
-    $stmt_clear = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
-    $stmt_clear->bind_param("i", $user_id);
-    $stmt_clear->execute();
-
-    // 1.5 เปลี่ยนหน้า
-    if ($payment_method == 'cod') {
-        header("Location: orderdetail.php?id=".$order_id."&success=1");
-    } else {
-        header("Location: qrcode.php?id=".$order_id);
-    }
-    exit();
 }
 
 /* =========================================
