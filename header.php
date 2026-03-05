@@ -125,32 +125,6 @@ if(isset($_SESSION['user_id'])){
   padding:0 4px;
 }
 
-
-/* SEARCH */
-.search-box{
-  position:relative;
-  width:250px;
-}
-
-.search-box input{
-  background:#222;
-  border:none;
-  color:#fff;
-  border-radius:50px;
-  padding:8px 40px 8px 15px;
-}
-
-.search-box input::placeholder{
-  color:#aaa;
-}
-
-.search-box i{
-  position:absolute;
-  right:15px;
-  top:50%;
-  transform:translateY(-50%);
-  color:#aaa;
-}
 .nav-menu .nav-link::after{
   display:none;
 }
@@ -238,12 +212,6 @@ if(isset($_SESSION['user_id'])){
 
     <!-- RIGHT SIDE -->
     <div class="d-flex align-items-center gap-4">
-
-      <!-- SEARCH -->
-      <div class="search-box d-none d-lg-block">
-        <input type="text" placeholder="ค้นหาสินค้า...">
-        <i class="bi bi-search"></i>
-      </div>
 
       <!-- ICONS -->
       <div class="d-flex gap-3 header-icons">
