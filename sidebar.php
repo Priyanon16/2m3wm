@@ -192,6 +192,12 @@ body {
                     <span>จัดการแบรนด์</span>
                 </a>
             </li>
+            <li>
+                <a href="admin_add_promo.php" class="nav-link text-white">
+                    <i class="bi bi-megaphone"></i>
+                    <span>จัดการ Popup</span>
+                </a>
+            </li>
 
         </ul>
 
