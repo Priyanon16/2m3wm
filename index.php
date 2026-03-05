@@ -378,7 +378,7 @@ if($is_promo == 1 && $discount > 0){
             เฉพาะวันนี้เท่านั้น! รีบช้อปก่อนหมด
         </p>
 
-       <img src="promo.jpg"
+       <img src="images/promo.jpg"
         class="img-fluid rounded mb-3"
         style="max-height:250px;object-fit:cover;">
 

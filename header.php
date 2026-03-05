@@ -208,6 +208,10 @@ if(isset($_SESSION['user_id'])){
         </ul>
     </li>
 
+    <li class="nav-item">
+        <a class="nav-link" href="promotion.php">โปรโมชั่น</a>
+    </li>
+
     </ul>
 
     <!-- RIGHT SIDE -->
