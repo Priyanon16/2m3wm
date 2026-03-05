@@ -379,8 +379,9 @@ if($is_promo == 1 && $discount > 0){
         </p>
 
         <img src="images/promo.jpg"
-             class="img-fluid rounded mb-3"
-             style="max-height:250px;object-fit:cover;">
+        onerror="this.src='images/no-image.png'"
+        class="img-fluid rounded mb-3"
+        style="max-height:250px;object-fit:cover;">
 
         <a href="promotion.php" class="btn btn-warning btn-lg w-100">
             ดูโปรโมชั่นทั้งหมด
