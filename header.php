@@ -176,6 +176,9 @@ if(isset($_SESSION['user_id'])){
         <a class="nav-link" href="all_products.php">สินค้าทั้งหมด</a>
       </li>
       <li class="nav-item">
+        <a class="nav-link" href="promotion.php">โปรโมชั่น</a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link" 
           href="https://lin.ee/0eJUFha"
           target="_blank">
@@ -208,9 +211,7 @@ if(isset($_SESSION['user_id'])){
         </ul>
     </li>
 
-    <li class="nav-item">
-        <a class="nav-link" href="promotion.php">โปรโมชั่น</a>
-    </li>
+    
 
     </ul>
 
