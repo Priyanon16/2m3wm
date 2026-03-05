@@ -356,6 +356,16 @@ if($is_promo == 1 && $discount > 0){
 </div>
 </div>
 
+<?php
+$promo = mysqli_query($conn,"
+SELECT * FROM popup
+WHERE status=1 
+ORDER BY promo_id DESC 
+LIMIT 1
+");
+
+$promoData = mysqli_fetch_assoc($promo);
+?>
 <!-- PROMOTION POPUP -->
 <div class="modal fade" id="promoModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
@@ -367,22 +377,23 @@ if($is_promo == 1 && $discount > 0){
                 data-bs-dismiss="modal"></button>
 
         <h2 class="fw-bold text-danger mb-3">
-            🔥 FLASH SALE 🔥
+            <?= $promoData['title'] ?>
         </h2>
 
         <h4 class="mb-3">
-            ลดสูงสุด <span class="text-danger fw-bold">50%</span>
+            <?= $promoData['subtitle'] ?>
         </h4>
 
         <p class="text-muted">
-            เฉพาะวันนี้เท่านั้น! รีบช้อปก่อนหมด
+            <?= $promoData['description'] ?>
         </p>
 
-       <img src="images/3.jpg"
+        <img src="images/<?= $promoData['image'] ?>"
         class="img-fluid rounded mb-3"
         style="max-height:250px;object-fit:cover;">
 
-        <a href="promotion.php" class="btn btn-warning btn-lg w-100">
+        <a href="<?= $promoData['link'] ?>" 
+           class="btn btn-warning btn-lg w-100">
             ดูโปรโมชั่นทั้งหมด
         </a>
 
@@ -393,15 +404,12 @@ if($is_promo == 1 && $discount > 0){
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-
+window.onload = function(){
     var promoModal = new bootstrap.Modal(
         document.getElementById('promoModal')
     );
-
     promoModal.show();
-
-});
+}
 </script>
 </body>
 </html>
