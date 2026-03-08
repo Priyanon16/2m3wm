@@ -1,12 +1,18 @@
 <?php
 include("connectdb.php");
 
-/* ดึง popup เดิม */
+/* =========================
+   ดึง popup ล่าสุด
+========================= */
 
-$result = mysqli_query($conn,"SELECT * FROM popup LIMIT 1");
+$sql = "SELECT * FROM popup ORDER BY promo_id DESC LIMIT 1";
+$result = mysqli_query($conn,$sql);
 $data = mysqli_fetch_assoc($result);
 
-/* บันทึก */
+
+/* =========================
+   บันทึกข้อมูล
+========================= */
 
 if(isset($_POST['save'])){
 
@@ -18,13 +24,13 @@ $status = 1;
 $image = $_FILES['image']['name'];
 $tmp = $_FILES['image']['tmp_name'];
 
-/* ถ้ามี popup อยู่แล้ว */
+/* ถ้ามี popup อยู่แล้ว → UPDATE */
 
 if($data){
 
 $id = $data['promo_id'];
 
-if($image != ""){
+if(!empty($image)){
 
 move_uploaded_file($tmp,"../images/".$image);
 
@@ -49,11 +55,9 @@ WHERE promo_id='$id'";
 
 mysqli_query($conn,$sql);
 
-echo "<script>alert('แก้ไขโปรโมชั่นสำเร็จ');</script>";
-
 }
 
-/* ถ้ายังไม่มี popup */
+/* ถ้ายังไม่มี popup → INSERT */
 
 else{
 
@@ -64,17 +68,18 @@ VALUES('$title','$subtitle','$desc','$image','$status')";
 
 mysqli_query($conn,$sql);
 
-echo "<script>alert('เพิ่มโปรโมชั่นสำเร็จ');</script>";
-
 }
 
+/* reload หน้า */
+
+echo "<script>
+alert('บันทึกสำเร็จ');
+window.location.href=window.location.href;
+</script>";
+
+exit();
+
 }
-
-/* โหลดข้อมูลใหม่ */
-
-$result = mysqli_query($conn,"SELECT * FROM popup LIMIT 1");
-$data = mysqli_fetch_assoc($result);
-
 ?>
 
 <!DOCTYPE html>
@@ -153,10 +158,12 @@ border-radius:6px;
 <form method="post" enctype="multipart/form-data">
 
 ชื่อโปรโมชั่น
-<input type="text" name="title" value="<?php echo $data['title'] ?? ''; ?>" required>
+<input type="text" name="title" 
+value="<?php echo $data['title'] ?? ''; ?>" required>
 
 หัวข้อย่อย
-<input type="text" name="subtitle" value="<?php echo $data['subtitle'] ?? ''; ?>">
+<input type="text" name="subtitle" 
+value="<?php echo $data['subtitle'] ?? ''; ?>">
 
 รายละเอียด
 <textarea name="description"><?php echo $data['description'] ?? ''; ?></textarea>
