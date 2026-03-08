@@ -366,6 +366,9 @@ LIMIT 1
 
 $promoData = mysqli_fetch_assoc($promo);
 ?>
+
+<?php if($promoData){ ?>
+
 <!-- PROMOTION POPUP -->
 <div class="modal fade" id="promoModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
@@ -373,26 +376,27 @@ $promoData = mysqli_fetch_assoc($promo);
 
       <div class="modal-body text-center p-4 position-relative">
 
-        <button type="button" class="btn-close position-absolute end-0 me-3"
+        <button type="button"
+                class="btn-close position-absolute end-0 me-3"
                 data-bs-dismiss="modal"></button>
 
         <h2 class="fw-bold text-danger mb-3">
-            <?= $promoData['title'] ?>
+            <?= htmlspecialchars($promoData['title']) ?>
         </h2>
 
         <h4 class="mb-3">
-            <?= $promoData['subtitle'] ?>
+            <?= htmlspecialchars($promoData['subtitle']) ?>
         </h4>
 
         <p class="text-muted">
-            <?= $promoData['description'] ?>
+            <?= htmlspecialchars($promoData['description']) ?>
         </p>
 
-        <img src="images/<?= $promoData['image'] ?>"
+        <img src="images/<?= htmlspecialchars($promoData['image']) ?>"
         class="img-fluid rounded mb-3"
         style="max-height:250px;object-fit:cover;">
 
-        <a href="<?= $promoData['link'] ?>" 
+        <a href="promotion.php"
            class="btn btn-warning btn-lg w-100">
             ดูโปรโมชั่นทั้งหมด
         </a>
@@ -411,5 +415,7 @@ window.onload = function(){
     promoModal.show();
 }
 </script>
+
+<?php } ?>
 </body>
 </html>
