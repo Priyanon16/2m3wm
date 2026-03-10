@@ -34,7 +34,11 @@ if(isset($_POST['confirm_order'])){
     try{
 
         // ตรวจสอบที่อยู่
-        $sql_check_addr = "SELECT address_id FROM addresses WHERE user_id = ? ORDER BY address_id DESC LIMIT 1";
+        $sql_check_addr = "SELECT address_id 
+                   FROM addresses 
+                   WHERE user_id = ? 
+                   ORDER BY is_default DESC, address_id DESC 
+                   LIMIT 1";
         $stmt_check = $conn->prepare($sql_check_addr);
         $stmt_check->bind_param("i", $user_id);
         $stmt_check->execute();
@@ -175,7 +179,10 @@ include 'bootstrap.php';
 include 'header.php'; 
 
 // 2.1 ดึงที่อยู่มาแสดง
-$sql_addr = "SELECT * FROM addresses WHERE user_id = ? ORDER BY address_id DESC LIMIT 1";
+$sql_addr = "SELECT * FROM addresses 
+             WHERE user_id = ? 
+             ORDER BY is_default DESC, address_id DESC 
+             LIMIT 1";
 $stmt_addr = $conn->prepare($sql_addr);
 $stmt_addr->bind_param("i", $user_id);
 $stmt_addr->execute();
