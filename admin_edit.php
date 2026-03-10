@@ -89,20 +89,36 @@ if (isset($_POST['update'])) {
 
     /* เพิ่มรูปใหม่ (เหมือนเดิม) */
     if (isset($_FILES['p_img']) && !empty($_FILES['p_img']['name'][0])) {
-        foreach ($_FILES['p_img']['name'] as $key => $val) {
-            if ($_FILES['p_img']['error'][$key] === 0) {
-                $ext = strtolower(pathinfo($val, PATHINFO_EXTENSION));
-                $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-                if (in_array($ext, $allowed)) {
-                    $new_name = "product_" . time() . "_" . uniqid() . "." . $ext;
-                    $target_path = $upload_dir . $new_name;
-                    if (move_uploaded_file($_FILES['p_img']['tmp_name'][$key], $target_path)) {
-                        $db_path = "uploads/products/" . $new_name;
-                        mysqli_query($conn, "INSERT INTO product_images (p_id,img_path) VALUES ($id,'$db_path')");
-                    }
-                }
+        $img_index = 1;
+
+foreach ($_FILES['p_img']['name'] as $key => $val) {
+
+    if ($_FILES['p_img']['error'][$key] === 0) {
+
+        $ext = strtolower(pathinfo($val, PATHINFO_EXTENSION));
+        $allowed = ['jpg','jpeg','png','gif','webp'];
+
+        if (in_array($ext, $allowed)) {
+
+            // ตั้งชื่อรูป = productID_ลำดับ
+            $new_name = $id . "_" . $img_index . "." . $ext;
+
+            $target_path = $upload_dir . $new_name;
+
+            if (move_uploaded_file($_FILES['p_img']['tmp_name'][$key], $target_path)) {
+
+                $db_path = "uploads/products/" . $new_name;
+
+                mysqli_query($conn,"
+                INSERT INTO product_images(p_id,img_path)
+                VALUES($id,'$db_path')
+                ");
+
+                $img_index++;
             }
         }
+    }
+}
     }
     echo "<script>alert('อัปเดตข้อมูลและสต็อกเรียบร้อย');window.location='admin_product.php';</script>";
     exit();
