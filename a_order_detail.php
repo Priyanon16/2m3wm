@@ -14,13 +14,22 @@ $order_id = intval($_GET['id']);
    1. ดึงข้อมูลออเดอร์ + ข้อมูล User + สลิป (JOIN users ON u.id)
 =========================================== */
 $sql_order = "
-    SELECT o.*, u.name, u.email, u.phone, 
-           p.slip_image, p.pay_date, p.amount as pay_amount
-    FROM orders o
-    LEFT JOIN users u ON o.u_id = u.id  
-    LEFT JOIN payments p ON o.o_id = p.order_id
-    WHERE o.o_id = $order_id
+SELECT o.*, 
+       u.name, u.email, u.phone, 
+       a.fullname, 
+       a.phone as addr_phone,
+       a.address,
+       a.district,
+       a.province,
+       a.postal_code,
+       p.slip_image, p.pay_date, p.amount as pay_amount
+FROM orders o
+LEFT JOIN users u ON o.u_id = u.id
+LEFT JOIN addresses a ON o.address_id = a.address_id
+LEFT JOIN payments p ON o.o_id = p.order_id
+WHERE o.o_id = $order_id
 ";
+
 $rs_order = mysqli_query($conn, $sql_order) or die(mysqli_error($conn));
 
 if(mysqli_num_rows($rs_order) == 0){
@@ -29,22 +38,7 @@ if(mysqli_num_rows($rs_order) == 0){
 
 $order = mysqli_fetch_assoc($rs_order);
 
-/* ===========================================
-   2. ดึงที่อยู่จากตาราง addresses (ดึงอันล่าสุด)
-=========================================== */
-$uid = $order['u_id'];
-$sql_addr = "SELECT * FROM addresses WHERE user_id = $uid ORDER BY address_id DESC LIMIT 1";
-$rs_addr  = mysqli_query($conn, $sql_addr);
-$addr_row = mysqli_fetch_assoc($rs_addr);
 
-// จัดรูปแบบที่อยู่
-$user_address_text = "ไม่ระบุที่อยู่";
-if($addr_row) {
-    $user_address_text = $addr_row['address'] . " " .
-                         "ต." . $addr_row['district'] . " " .
-                         "จ." . $addr_row['province'] . " " .
-                         $addr_row['postal_code'];
-}
 
 /* ===========================================
    3. ดึงรายการสินค้า
@@ -138,13 +132,16 @@ $rs_items = mysqli_query($conn, $sql_items);
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong>ชื่อลูกค้า:</strong> <?= htmlspecialchars($order['fullname'] ?? '-') ?></p>
-                        <p><strong>เบอร์โทร:</strong> <?= htmlspecialchars($order['phone'] ?? '-') ?></p>
+                        <p><strong>เบอร์โทร:</strong> <?= htmlspecialchars($order['addr_phone'] ?? '-') ?></p>
                         <p><strong>อีเมล:</strong> <?= htmlspecialchars($order['email'] ?? '-') ?></p>
                     </div>
                     <div class="col-md-6">
                         <p><strong>ที่อยู่จัดส่ง:</strong></p>
                         <div class="alert alert-light border">
-                            <?= nl2br(htmlspecialchars($user_address_text)) ?>
+                            <?= htmlspecialchars($order['address']) ?> 
+                            ต.<?= htmlspecialchars($order['district']) ?>
+                            จ.<?= htmlspecialchars($order['province']) ?>
+                            <?= htmlspecialchars($order['postal_code']) ?>
                         </div>
                     </div>
                 </div>
