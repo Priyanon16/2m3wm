@@ -101,10 +101,11 @@ exit();
 body{
 font-family: Arial;
 background: linear-gradient(135deg,#1e1e1e,#444);
-height:100vh;
+min-height:100vh;
 display:flex;
 justify-content:center;
-align-items:center;
+align-items:flex-start;
+padding:40px 0;
 }
 
 .box{
@@ -180,7 +181,7 @@ value="<?php echo isset($data['subtitle']) ? $data['subtitle'] : ''; ?>">
 
 รูปปัจจุบัน : <b><?php echo $data['image']; ?></b><br><br>
 
-<img src="/2m3wm/images/<?php echo $data['image']; ?>" width="150">
+<img src="/2m3wm/images/<?php echo $data['image']; ?>" width="250">
 
 <?php } ?>
 
