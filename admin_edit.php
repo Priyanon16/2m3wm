@@ -89,7 +89,15 @@ if (isset($_POST['update'])) {
 
     /* เพิ่มรูปใหม่ (เหมือนเดิม) */
     if (isset($_FILES['p_img']) && !empty($_FILES['p_img']['name'][0])) {
-        $img_index = 1;
+        $img_count_rs = mysqli_query($conn,"
+        SELECT COUNT(*) as total
+        FROM product_images
+        WHERE p_id=$id
+        ");
+
+$img_count = mysqli_fetch_assoc($img_count_rs)['total'];
+
+$img_index = $img_count + 1;
 
 foreach ($_FILES['p_img']['name'] as $key => $val) {
 
