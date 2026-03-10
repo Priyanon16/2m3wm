@@ -25,7 +25,32 @@ if(isset($_GET['delete'])){
     header("Location: address.php");
     exit;
 }
+/* =========================
+   ตั้งเป็นที่อยู่หลัก
+========================= */
 
+if(isset($_GET['default'])){
+
+    $id = intval($_GET['default']);
+
+    /* รีเซ็ตทั้งหมดก่อน */
+    mysqli_query($conn,"
+        UPDATE addresses 
+        SET is_default=0 
+        WHERE user_id='$uid'
+    ");
+
+    /* ตั้งที่อยู่ที่เลือก */
+    mysqli_query($conn,"
+        UPDATE addresses 
+        SET is_default=1 
+        WHERE address_id='$id'
+        AND user_id='$uid'
+    ");
+
+    header("Location: address.php");
+    exit;
+}
 /* =========================
    ดึงข้อมูลแก้ไข
 ========================= */
@@ -92,7 +117,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 ========================= */
 $sql = "SELECT * FROM addresses 
         WHERE user_id='$uid'
-        ORDER BY address_id DESC";
+        ORDER BY is_default DESC, address_id DESC";
 
 $rs = mysqli_query($conn,$sql);
 ?>
@@ -215,14 +240,29 @@ value="<?= $editData['postal_code'] ?? '' ?>" required>
 <?php while($row = mysqli_fetch_assoc($rs)): ?>
 <div class="address-card mb-3">
 
-<strong><?= htmlspecialchars($row['fullname']) ?></strong><br>
+<strong><?= htmlspecialchars($row['fullname']) ?></strong>
+
+<?php if($row['is_default'] == 1): ?>
+<span class="badge bg-success">ที่อยู่หลัก</span>
+<?php endif; ?>
+
+<br>
 <?= htmlspecialchars($row['phone']) ?><br>
 <?= htmlspecialchars($row['address']) ?><br>
 <?= htmlspecialchars($row['district']) ?>
 <?= htmlspecialchars($row['province']) ?>
 <?= htmlspecialchars($row['postal_code']) ?>
 
+
 <div class="mt-3">
+
+<?php if($row['is_default'] == 0): ?>
+<a href="address.php?default=<?= $row['address_id'] ?>"
+   class="btn btn-sm btn-primary">
+   ตั้งเป็นที่อยู่หลัก
+</a>
+<?php endif; ?>
+
 <a href="address.php?edit=<?= $row['address_id'] ?>"
    class="btn btn-sm btn-warning">
    แก้ไข
@@ -233,6 +273,7 @@ value="<?= $editData['postal_code'] ?? '' ?>" required>
    onclick="return confirm('ยืนยันการลบ?')">
    ลบ
 </a>
+
 </div>
 
 </div>
