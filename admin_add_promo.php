@@ -154,6 +154,22 @@ margin-bottom:10px;
 border-radius:6px;
 }
 
+.btn-back{
+display:block;
+text-align:center;
+margin-top:10px;
+padding:10px;
+background:#6c757d;
+color:white;
+text-decoration:none;
+border-radius:6px;
+font-size:14px;
+}
+
+.btn-back:hover{
+background:#5a6268;
+}
+
 </style>
 
 </head>
@@ -189,6 +205,8 @@ value="<?php echo isset($data['subtitle']) ? $data['subtitle'] : ''; ?>">
 <input type="file" name="image">
 
 <button type="submit" name="save">บันทึกโปรโมชั่น</button>
+
+<a href="admin_product.php" class="btn-back">← กลับไปหน้าจัดการสินค้า</a>
 
 </form>
 
