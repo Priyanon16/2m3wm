@@ -30,6 +30,8 @@ if($data){
 
 $id = $data['promo_id'];
 
+/* ถ้ามีการอัปโหลดรูปใหม่ */
+
 if(!empty($image)){
 
 move_uploaded_file($tmp,"../images/".$image);
@@ -42,7 +44,11 @@ image='$image',
 status='$status'
 WHERE promo_id='$id'";
 
-}else{
+}
+
+/* ถ้าไม่ได้อัปโหลดรูป */
+
+else{
 
 $sql = "UPDATE popup SET
 title='$title',
@@ -61,7 +67,9 @@ mysqli_query($conn,$sql);
 
 else{
 
+if(!empty($image)){
 move_uploaded_file($tmp,"../images/".$image);
+}
 
 $sql = "INSERT INTO popup(title,subtitle,description,image,status)
 VALUES('$title','$subtitle','$desc','$image','$status')";
@@ -158,15 +166,15 @@ border-radius:6px;
 <form method="post" enctype="multipart/form-data">
 
 ชื่อโปรโมชั่น
-<input type="text" name="title" 
-value="<?php echo $data['title'] ?? ''; ?>" required>
+<input type="text" name="title"
+value="<?php echo isset($data['title']) ? $data['title'] : ''; ?>" required>
 
 หัวข้อย่อย
-<input type="text" name="subtitle" 
-value="<?php echo $data['subtitle'] ?? ''; ?>">
+<input type="text" name="subtitle"
+value="<?php echo isset($data['subtitle']) ? $data['subtitle'] : ''; ?>">
 
 รายละเอียด
-<textarea name="description"><?php echo $data['description'] ?? ''; ?></textarea>
+<textarea name="description"><?php echo isset($data['description']) ? $data['description'] : ''; ?></textarea>
 
 <?php if(!empty($data['image'])){ ?>
 
@@ -178,7 +186,7 @@ value="<?php echo $data['subtitle'] ?? ''; ?>">
 อัปโหลดรูปใหม่
 <input type="file" name="image">
 
-<button name="save">บันทึกโปรโมชั่น</button>
+<button type="submit" name="save">บันทึกโปรโมชั่น</button>
 
 </form>
 
