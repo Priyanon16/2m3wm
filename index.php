@@ -176,6 +176,22 @@ body { font-family: 'Kanit', sans-serif; background: #f8f9fa; }
     from{ transform: scale(.8); opacity:0;}
     to{ transform: scale(1); opacity:1;}
 }
+
+.flash-title{
+font-size:36px;
+font-weight:800;
+color:#e63946;
+animation: fireGlow 1s infinite alternate;
+}
+
+@keyframes fireGlow{
+from{
+text-shadow:0 0 5px #ff0000;
+}
+to{
+text-shadow:0 0 20px #ff7300,0 0 30px #ff0000;
+}
+}
 </style>
 </head>
 
@@ -380,8 +396,8 @@ $promoData = mysqli_fetch_assoc($promo);
                 class="btn-close position-absolute end-0 me-3"
                 data-bs-dismiss="modal"></button>
 
-        <h2 class="fw-bold text-danger mb-3">
-            <?= htmlspecialchars($promoData['title']) ?>
+       <h2 class="fw-bold text-danger mb-3 flash-title">
+        🔥 <?= htmlspecialchars($promoData['title']) ?> 🔥
         </h2>
 
         <h4 class="mb-3">
