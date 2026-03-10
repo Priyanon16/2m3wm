@@ -178,8 +178,9 @@ value="<?php echo isset($data['subtitle']) ? $data['subtitle'] : ''; ?>">
 
 <?php if(!empty($data['image'])){ ?>
 
-รูปปัจจุบัน
-<img src="../images/<?php echo $data['image']; ?>">
+รูปปัจจุบัน : <b><?php echo $data['image']; ?></b><br><br>
+
+<img src="../images/<?php echo $data['image']; ?>" width="250">
 
 <?php } ?>
 
