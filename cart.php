@@ -18,13 +18,18 @@ if(isset($_GET['add'])){
     $qty  = intval($_GET['qty']);
     $size = mysqli_real_escape_string($conn, $_GET['size']);
 
-    // 1. เช็คสต็อกจริงก่อนว่ามีพอไหม
-    $stock_sql = mysqli_query($conn, "SELECT p_qty FROM products WHERE p_id = $pid");
+   // 1. เช็คสต็อกตามไซส์จริง
+    $stock_sql = mysqli_query($conn,"
+    SELECT p_qty_stock 
+    FROM product_stock 
+    WHERE p_id = $pid AND p_size = '$size'
+    ");
+
     $stock_data = mysqli_fetch_assoc($stock_sql);
-    $max_stock = $stock_data['p_qty'];
+    $max_stock = $stock_data['p_qty_stock'] ?? 0;
 
     if($max_stock <= 0){
-        echo "<script>alert('สินค้าหมด'); window.location='index.php';</script>";
+        echo "<script>alert('ไซส์นี้สินค้าหมด'); window.location='product_detail.php?id=$pid';</script>";
         exit;
     }
 
@@ -71,15 +76,17 @@ if(isset($_GET['update'])){
 
     // ดึงสต็อกปัจจุบัน และ จำนวนในตะกร้าปัจจุบัน
     $q_check = mysqli_query($conn, "
-        SELECT c.quantity, p.p_qty 
+        SELECT c.quantity, ps.p_qty_stock
         FROM cart c
-        JOIN products p ON c.product_id = p.p_id
+        JOIN product_stock ps 
+        ON c.product_id = ps.p_id 
+        AND c.size = ps.p_size
         WHERE c.user_id=$uid AND c.product_id=$pid
     ");
     $data = mysqli_fetch_assoc($q_check);
     
     $current_qty = $data['quantity'];
-    $max_stock   = $data['p_qty'];
+    $max_stock   = $data['p_qty_stock'];
 
     if($action == "plus"){
         // [แก้ไข] เช็คว่าถ้าบวก 1 แล้วเกินสต็อกไหม
@@ -125,7 +132,8 @@ if(isset($_GET['remove'])){
 $sql = "
 SELECT 
     c.quantity,
-    c.size, 
+    c.size,
+    ps.p_qty_stock,
     p.*,
     (
         SELECT img_path 
@@ -135,6 +143,9 @@ SELECT
     ) AS main_img
 FROM cart c
 JOIN products p ON c.product_id = p.p_id
+JOIN product_stock ps 
+ON c.product_id = ps.p_id 
+AND c.size = ps.p_size
 WHERE c.user_id = $uid
 ";
 
@@ -276,7 +287,7 @@ style="width:18px;height:18px;accent-color:#ff7a00;">
 $total = 0;
 while($item = mysqli_fetch_assoc($rs)):
     $qty = $item['quantity'];
-    $max_stock = $item['p_qty']; // จำนวนสต็อกสูงสุด
+    $max_stock = $item['p_qty_stock']; // จำนวนสต็อกสูงสุด
     
     // คำนวณราคารวม
     $old_price = $item['p_price'];

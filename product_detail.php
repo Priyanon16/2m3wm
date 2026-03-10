@@ -52,6 +52,7 @@ WHERE p_id = $id
 while($row = mysqli_fetch_assoc($size_rs)){
     $sizeStocks[$row['p_size']] = $row['p_qty_stock'];
 }
+$total_stock = array_sum($sizeStocks);
 
 /* =========================
    ดึงสินค้าแนะนำ (หมวดเดียวกัน)
@@ -180,6 +181,11 @@ include("header.php");
     box-shadow:0 6px 15px rgba(0,0,0,.3);
     z-index:10;
 }
+.size-btn:disabled{
+    background:#eee;
+    color:#999;
+    cursor:not-allowed;
+}
 </style>
 
 <div class="container py-5">
@@ -295,9 +301,10 @@ if($is_promo == 1 && $discount > 0){
     $stock = $sizeStocks[$size] ?? 0;
 ?>
     <button type="button"
-        class="size-btn"
-        onclick="selectSize(this,'<?= $size ?>', <?= $stock ?>)">
-        <?= $size ?>
+    class="size-btn <?= $stock<=0?'btn-disabled':'' ?>"
+    <?= $stock<=0?'disabled':'' ?>
+    onclick="selectSize(this,'<?= $size ?>', <?= $stock ?>)">
+    <?= $size ?>
     </button>
 <?php endforeach; ?>
 </div>
@@ -317,7 +324,7 @@ if($is_promo == 1 && $discount > 0){
 <input type="hidden" id="max_stock" value="0">
 
 
-<?php if($product['p_qty'] > 0): // ถ้ามีสินค้ามากกว่า 0 ?>
+<?php if($total_stock > 0): // ถ้ามีสินค้ามากกว่า 0 ?>
     <div class="qty-box mb-3">
         <button type="button" onclick="decrease()">-</button>
         <input type="text" id="qty" value="1" readonly>
@@ -339,7 +346,7 @@ if($is_promo == 1 && $discount > 0){
 
 
 
-<?php if($product['p_qty'] > 0): ?>
+<?php if($total_stock > 0): ?>
     <button class="btn buy-btn btn-lg"
     onclick="addToCart(<?= $product['p_id'] ?>)">
     เพิ่มลงตะกร้า
