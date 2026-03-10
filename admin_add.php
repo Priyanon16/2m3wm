@@ -3,158 +3,210 @@ session_start();
 include_once("check_login.php");
 include_once("connectdb.php");
 
-mysqli_set_charset($conn, "utf8");
+mysqli_set_charset($conn,"utf8");
 
-if (!isset($_GET['id'])) {
-    header("Location: admin_product.php");
-    exit();
-}
+/* =========================
+   ดึงหมวดหมู่ / แบรนด์
+========================= */
+$result_category = mysqli_query($conn, "SELECT * FROM category ORDER BY c_name ASC");
+$result_brand = mysqli_query($conn, "SELECT * FROM brand ORDER BY brand_name ASC");
 
-$id = intval($_GET['id']);
-
-/* 1. ดึงข้อมูลสินค้า */
-$product_query = mysqli_query($conn, "SELECT * FROM products WHERE p_id=$id");
-$row = mysqli_fetch_assoc($product_query);
-
-if (!$row) {
-    header("Location: admin_product.php");
-    exit();
-}
-
-/* 2. ดึงข้อมูลสต็อกรายไซส์ */
-$stock_map = [];
-
-$stock_rs = mysqli_query($conn, "SELECT * FROM product_stock WHERE p_id=$id");
-while ($s = mysqli_fetch_assoc($stock_rs)) {
-    $stock_map[$s['p_size']] = $s['p_qty_stock'];
-}
-
-/* 3. ดึงหมวดหมู่/แบรนด์ */
-$cat_query   = mysqli_query($conn, "SELECT * FROM category ORDER BY c_name ASC");
-$brand_query = mysqli_query($conn, "SELECT * FROM brand ORDER BY brand_name ASC");
-
+/* =========================
+   สร้างโฟลเดอร์
+========================= */
 $upload_dir = __DIR__ . "/uploads/products/";
-
-/* 4. ลบรูป */
-if (isset($_GET['delete_img'])) {
-
-    $img_id = intval($_GET['delete_img']);
-
-    $img_rs = mysqli_query($conn,
-        "SELECT img_path FROM product_images WHERE img_id=$img_id"
-    );
-
-    $img = mysqli_fetch_assoc($img_rs);
-
-    if ($img) {
-
-        $file_path = __DIR__ . "/" . $img['img_path'];
-
-        if (file_exists($file_path)) {
-            unlink($file_path);
-        }
-
-        mysqli_query($conn,
-            "DELETE FROM product_images WHERE img_id=$img_id"
-        );
-    }
-
-    header("Location: admin_edit.php?id=" . $id);
-    exit();
+if(!is_dir($upload_dir)){
+    mkdir($upload_dir, 0755, true);
 }
 
-/* 5. UPDATE ข้อมูล */
-if (isset($_POST['update'])) {
+/* =========================
+   บันทึกสินค้า
+========================= */
+if(isset($_POST['save'])){
 
     $name   = mysqli_real_escape_string($conn, $_POST['p_name']);
     $price  = floatval($_POST['p_price']);
+    $type   = mysqli_real_escape_string($conn, $_POST['p_type']);
     $detail = mysqli_real_escape_string($conn, $_POST['p_detail']);
     $c_id   = intval($_POST['c_id']);
     $brand_id = intval($_POST['brand_id']);
-    $type   = mysqli_real_escape_string($conn, $_POST['p_type']);
 
-    /* จัดการสต็อก */
+    // รับค่า Array ของ Stock ที่กรอกมา (key=size, value=qty)
     $stocks = $_POST['stock_qty'] ?? [];
 
+    // คำนวณผลรวมทั้งหมด และ สร้าง string ไซส์ เพื่อบันทึกในตารางหลัก
     $total_qty = 0;
     $available_sizes = [];
 
-    mysqli_query($conn,
-        "DELETE FROM product_stock WHERE p_id=$id"
-    );
-
-    foreach ($stocks as $size => $qty) {
-
+    foreach($stocks as $size => $qty){
         $qty = intval($qty);
-
-        if ($qty > 0) {
-
-            mysqli_query($conn,
-                "INSERT INTO product_stock (p_id, p_size, p_qty_stock)
-                 VALUES ($id, '$size', $qty)"
-            );
-
+        if($qty > 0){
             $total_qty += $qty;
             $available_sizes[] = $size;
         }
     }
-
+    
+    // แปลง array ไซส์ เป็น string (เช่น "39,40,41") เพื่อให้ frontend เดิมทำงานได้
     $p_size_str = implode(",", $available_sizes);
 
-    $discount = intval($_POST['discount_percent'] ?? 0);
-    $is_promo = isset($_POST['is_promo']) ? 1 : 0;
+    /* ===== 1️⃣ INSERT ลงตารางหลัก (products) ===== */
+    $sql = "INSERT INTO products
+            (p_name, p_price, p_qty, p_size, p_type, p_detail, c_id, brand_id)
+            VALUES
+            ('$name', '$price', '$total_qty', '$p_size_str', '$type', '$detail', '$c_id', '$brand_id')";
 
-    mysqli_query($conn,
-        "UPDATE products SET
-            p_name='$name',
-            p_price='$price',
-            discount_percent='$discount',
-            is_promo='$is_promo',
-            p_qty='$total_qty',
-            p_size='$p_size_str',
-            p_type='$type',
-            p_detail='$detail',
-            c_id='$c_id',
-            brand_id='$brand_id'
-         WHERE p_id=$id"
-    );
+    if(mysqli_query($conn, $sql)){
 
-    /* เพิ่มรูปใหม่ */
-    if (isset($_FILES['p_img']) && !empty($_FILES['p_img']['name'][0])) {
+        $new_product_id = mysqli_insert_id($conn);
 
-        foreach ($_FILES['p_img']['name'] as $key => $val) {
+        /* ===== 2️⃣ INSERT ลงตารางสต็อกแยกไซส์ (product_stock) ===== */
+        foreach($stocks as $size => $qty){
+            $qty = intval($qty);
+            if($qty > 0){
+                $s_sql = "INSERT INTO product_stock (p_id, p_size, p_qty_stock) 
+                          VALUES ($new_product_id, '$size', $qty)";
+                mysqli_query($conn, $s_sql);
+            }
+        }
 
-            if ($_FILES['p_img']['error'][$key] === 0) {
+        /* ===== 3️⃣ อัปโหลดรูปภาพ ===== */
+        if(isset($_FILES['p_img']) && !empty($_FILES['p_img']['name'][0])){
+            foreach($_FILES['p_img']['name'] as $key => $val){
+                if($_FILES['p_img']['error'][$key] === 0){
+                    $ext = strtolower(pathinfo($val, PATHINFO_EXTENSION));
+                    $allowed = ['jpg','jpeg','png','gif','webp'];
 
-                $ext = strtolower(pathinfo($val, PATHINFO_EXTENSION));
+                    if(in_array($ext, $allowed)){
+                        $new_name = "product_" . time() . "_" . uniqid() . "." . $ext;
+                        $target = $upload_dir . $new_name;
 
-                $allowed = ['jpg','jpeg','png','gif','webp'];
-
-                if (in_array($ext, $allowed)) {
-
-                    $new_name = "product_" . time() . "_" . uniqid() . "." . $ext;
-
-                    $target_path = $upload_dir . $new_name;
-
-                    if (move_uploaded_file($_FILES['p_img']['tmp_name'][$key], $target_path)) {
-
-                        $db_path = "uploads/products/" . $new_name;
-
-                        mysqli_query($conn,
-                            "INSERT INTO product_images (p_id,img_path)
-                             VALUES ($id,'$db_path')"
-                        );
+                        if(move_uploaded_file($_FILES['p_img']['tmp_name'][$key], $target)){
+                            $img_path = "uploads/products/" . $new_name;
+                            mysqli_query($conn,"INSERT INTO product_images (p_id, img_path) VALUES ('$new_product_id', '$img_path')");
+                        }
                     }
                 }
             }
         }
+
+        echo "<script>alert('เพิ่มสินค้าและสต็อกเรียบร้อย'); window.location='admin_product.php';</script>";
+        exit();
+
+    } else {
+        echo "<div style='color:red;'>Error: ".mysqli_error($conn)."</div>";
     }
-
-    echo "<script>
-            alert('อัปเดตข้อมูลและสต็อกเรียบร้อย');
-            window.location='admin_product.php';
-          </script>";
-
-    exit();
 }
 ?>
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>เพิ่มสินค้าใหม่</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Kanit',sans-serif;background:#f4f6f9;}
+.card-box{background:#fff;border-radius:20px;padding:40px;box-shadow:0 15px 35px rgba(0,0,0,.08);border-top:5px solid #ff5722;}
+.btn-theme{background:#ff5722;color:#fff;border:none;border-radius:50px;padding:10px 25px;}
+.btn-theme:hover{background:#e64a19;}
+/* CSS สำหรับตารางไซส์ */
+.stock-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+}
+.stock-item {
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 5px;
+    text-align: center;
+}
+.stock-item label { font-weight: bold; display: block; margin-bottom: 2px; }
+.stock-item input { text-align: center; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="container py-5">
+<div class="card-box">
+<h3 class="mb-4 text-center fw-bold">เพิ่มสินค้าใหม่ (ระบุจำนวนตามไซส์)</h3>
+
+<form method="post" enctype="multipart/form-data">
+
+    <div class="mb-3">
+        <label>ชื่อสินค้า</label>
+        <input type="text" name="p_name" class="form-control" required>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label>ราคา (บาท)</label>
+            <input type="number" name="p_price" class="form-control" required>
+        </div>
+        </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label>หมวดหมู่</label>
+            <select name="c_id" class="form-select" required>
+                <option value="">-- เลือกหมวด --</option>
+                <?php while($c=mysqli_fetch_assoc($result_category)){ ?>
+                <option value="<?= $c['c_id']; ?>"><?= $c['c_name']; ?></option>
+                <?php } ?>
+            </select>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label>แบรนด์</label>
+            <select name="brand_id" class="form-select" required>
+                <option value="">-- เลือกแบรนด์ --</option>
+                <?php while($b=mysqli_fetch_assoc($result_brand)){ ?>
+                <option value="<?= $b['brand_id']; ?>"><?= $b['brand_name']; ?></option>
+                <?php } ?>
+            </select>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label>เพศ</label><br>
+        <input type="radio" name="p_type" value="male" required> ชาย
+        <input type="radio" name="p_type" value="female"> หญิง
+        <input type="radio" name="p_type" value="unisex"> Unisex
+    </div>
+
+    <div class="card p-3 bg-light mb-3">
+        <label class="fw-bold mb-2">กำหนดจำนวนสินค้า ในแต่ละไซส์</label>
+        <p class="small text-muted mb-2">* กรอกจำนวนเฉพาะไซส์ที่มี (ถ้าไม่มีให้เว้นว่างหรือใส่ 0)</p>
+        
+        <div class="stock-grid">
+            <?php for($i=36; $i<=46; $i++): ?>
+            <div class="stock-item">
+                <label>Size <?= $i ?></label>
+                <input type="number" name="stock_qty[<?= $i ?>]" class="form-control form-control-sm" min="0" placeholder="0">
+            </div>
+            <?php endfor; ?>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label>รูปภาพ (หลายรูปได้)</label>
+        <input type="file" name="p_img[]" class="form-control" accept="image/*" multiple required>
+    </div>
+
+    <div class="mb-4">
+        <label>รายละเอียด</label>
+        <textarea name="p_detail" class="form-control" rows="4"></textarea>
+    </div>
+
+    <div class="text-center">
+        <button type="submit" name="save" class="btn btn-theme">
+            บันทึกสินค้า
+        </button>
+    </div>
+
+</form>
+</div>
+</div>
+</body>
+</html>
