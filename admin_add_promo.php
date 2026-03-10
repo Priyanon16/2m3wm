@@ -24,6 +24,10 @@ $status = 1;
 $image = $_FILES['image']['name'];
 $tmp = $_FILES['image']['tmp_name'];
 
+$upload = __DIR__."/../images/";
+
+$newname = time()."_".$image;
+
 /* ถ้ามี popup อยู่แล้ว → UPDATE */
 
 if($data){
@@ -34,7 +38,8 @@ $id = $data['promo_id'];
 
 if(!empty($image)){
 
-move_uploaded_file($tmp,"../images/".$image);
+move_uploaded_file($tmp,$upload.$newname);
+$image = $newname;
 
 $sql = "UPDATE popup SET
 title='$title',

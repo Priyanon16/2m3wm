@@ -23,7 +23,7 @@ while($s = mysqli_fetch_assoc($stock_rs)){
 $cat_query   = mysqli_query($conn, "SELECT * FROM category ORDER BY c_name ASC");
 $brand_query = mysqli_query($conn, "SELECT * FROM brand ORDER BY brand_name ASC");
 
-$upload_dir = __DIR__ . "/uploads/products/";
+$upload_dir = $_SERVER['DOCUMENT_ROOT']."/2m3wm/uploads/products/";
 
 /* 4. ลบรูป (เหมือนเดิม) */
 if (isset($_GET['delete_img'])) {
