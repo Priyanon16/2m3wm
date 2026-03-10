@@ -88,7 +88,7 @@ if (!empty($date)) {
 }
 if (!empty($keyword)) {
     $kw = mysqli_real_escape_string($conn, $keyword);
-    $sql .= " AND (o.o_id LIKE '%$kw%' OR u.name LIKE '%$kw%') ";
+    $sql .= " AND (CAST(o.o_id AS CHAR) LIKE '%$kw%' OR u.name LIKE '%$kw%') ";
 }
 
 $sql .= " GROUP BY o.o_id ORDER BY o.o_date DESC ";
