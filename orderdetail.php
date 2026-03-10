@@ -29,7 +29,9 @@ SELECT o.*,
        a.province,
        a.postal_code
 FROM orders o
-LEFT JOIN addresses a ON o.address_id = a.address_id
+LEFT JOIN addresses a 
+ON a.user_id = o.u_id 
+AND a.is_default = 1
 WHERE o.o_id = '$oid'
 AND o.u_id = '$uid'
 LIMIT 1
