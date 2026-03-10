@@ -180,7 +180,7 @@ value="<?php echo isset($data['subtitle']) ? $data['subtitle'] : ''; ?>">
 
 รูปปัจจุบัน : <b><?php echo $data['image']; ?></b><br><br>
 
-<img src="/2m3wm/images/<?php echo $data['image']; ?>" width="250">
+<img src="/2m3wm/images/<?php echo $data['image']; ?>" width="150">
 
 <?php } ?>
 
